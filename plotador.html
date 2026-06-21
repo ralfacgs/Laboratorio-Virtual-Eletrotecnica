@@ -1,0 +1,1741 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plotador Gráfico Avançado - IFRN Lab</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.8.0/math.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&family=Fira+Code:wght@400;500&display=swap');
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+        }
+
+        .math-font {
+            font-family: 'Fira Code', monospace;
+        }
+
+        input[type=number]::-webkit-inner-spin-button,
+        input[type=number]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        input[type=number] {
+            -moz-appearance: textfield;
+        }
+
+        input[type=range] {
+            accent-color: #4f46e5;
+        }
+
+        .cursor-grab {
+            cursor: ew-resize;
+        }
+
+        .modal-backdrop {
+            background: rgba(15, 23, 42, 0.72);
+            backdrop-filter: blur(4px);
+        }
+    </style>
+</head>
+
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
+
+<header class="bg-emerald-700 text-white shadow-md py-4 px-6 relative z-10">
+    <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+        <div class="flex items-center gap-4">
+            <div class="bg-white p-2 rounded shadow-sm text-emerald-700 font-bold text-xl flex items-center justify-center h-12 w-12">
+                <i class="fa-solid fa-bolt-lightning"></i>
+            </div>
+
+            <div>
+                <h1 class="text-xl font-bold tracking-wide">INSTITUTO FEDERAL DO RIO GRANDE DO NORTE</h1>
+                <p class="text-xs text-emerald-100 font-medium">Campus João Câmara | Curso Técnico em Eletrotécnica</p>
+            </div>
+        </div>
+
+        <div class="text-center md:text-right">
+            <p class="text-sm font-semibold text-emerald-50">Ferramentas de Apoio</p>
+            <p class="text-xs text-emerald-200">Prof. Rafael Cândido Gomes da Silva</p>
+        </div>
+    </div>
+</header>
+
+<main class="flex-grow max-w-7xl w-full mx-auto p-4 md:p-6 flex flex-col gap-6">
+
+    <div>
+        <a href="index.html"
+           class="inline-flex items-center gap-2 text-indigo-600 hover:text-indigo-800 font-semibold transition-colors bg-indigo-50 hover:bg-indigo-100 px-4 py-2 rounded-lg border border-indigo-200 shadow-sm">
+            <i class="fa-solid fa-arrow-left"></i>
+            Voltar ao Início
+        </a>
+    </div>
+
+    <div class="grid grid-cols-1 xl:grid-cols-12 gap-6">
+
+        <!-- PAINEL LATERAL -->
+        <aside class="xl:col-span-4 flex flex-col gap-6">
+
+            <!-- FUNÇÕES -->
+            <section class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 border-t-4 border-t-indigo-600">
+                <h2 class="text-sm font-black text-slate-400 uppercase tracking-widest mb-5 flex items-center gap-2">
+                    <i class="fa-solid fa-bezier-curve text-indigo-500"></i>
+                    Funções Gráficas
+                </h2>
+
+                <div id="functions-container" class="flex flex-col gap-3 mb-2">
+                    <div class="flex items-center gap-2 function-row" data-function-index="0">
+                        <label class="func-label text-sm font-bold text-slate-700 w-16 shrink-0">
+                            f<sub>1</sub>(x) =
+                        </label>
+
+                        <input
+                            type="text"
+                            value="A * sin(w * x + phi)"
+                            class="func-input w-full min-w-0 math-font text-base border-2 border-slate-200 px-3 py-2 rounded-lg text-slate-800 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all shadow-inner"
+                        >
+
+                        <div class="w-8 shrink-0"></div>
+                    </div>
+
+                    <div class="flex items-center gap-2 function-row" data-function-index="1">
+                        <label class="func-label text-sm font-bold text-slate-700 w-16 shrink-0">
+                            f<sub>2</sub>(x) =
+                        </label>
+
+                        <input
+                            type="text"
+                            value="0.01 * der(f1)"
+                            class="func-input w-full min-w-0 math-font text-base border-2 border-slate-200 px-3 py-2 rounded-lg text-slate-800 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all shadow-inner"
+                        >
+
+                        <button
+                            onclick="removeFunctionInput(this)"
+                            class="w-8 shrink-0 text-slate-400 hover:text-rose-500 transition-colors"
+                            title="Remover função"
+                        >
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <button
+                    onclick="addFunctionInput()"
+                    class="text-xs text-indigo-600 hover:text-indigo-800 font-bold self-start mb-4 flex items-center gap-1 px-2 py-1 rounded hover:bg-indigo-50 transition-colors"
+                >
+                    <i class="fa-solid fa-circle-plus"></i>
+                    Adicionar Função
+                </button>
+
+                <div class="text-[11px] leading-relaxed text-slate-500 bg-slate-50 border border-slate-200 rounded-lg p-3 mb-5">
+                    <p><strong>Exemplos:</strong> <code>sin(x)</code>, <code>x^2 - 4</code>, <code>A*sin(w*x+phi)</code>.</p>
+                    <p class="mt-1"><strong>Operadores especiais:</strong> <code>f1</code>, <code>der(f1)</code> e <code>int(f1)</code>.</p>
+                    <p class="mt-1">Uma função só pode usar funções anteriores.</p>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4 mb-5">
+                    <div>
+                        <label for="xMin" class="block text-xs font-bold text-slate-600 mb-1">
+                            X Inicial:
+                        </label>
+
+                        <input
+                            type="number"
+                            id="xMin"
+                            value="-0.05"
+                            step="0.01"
+                            class="w-full text-center text-sm font-bold bg-slate-50 border border-slate-300 px-2 py-2 rounded text-slate-700 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                        >
+                    </div>
+
+                    <div>
+                        <label for="xMax" class="block text-xs font-bold text-slate-600 mb-1">
+                            X Final:
+                        </label>
+
+                        <input
+                            type="number"
+                            id="xMax"
+                            value="0.05"
+                            step="0.01"
+                            class="w-full text-center text-sm font-bold bg-slate-50 border border-slate-300 px-2 py-2 rounded text-slate-700 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                        >
+                    </div>
+                </div>
+
+                <div id="errorMsg"
+                     class="hidden text-xs text-rose-600 bg-rose-50 p-3 rounded-lg border border-rose-200 mb-4 font-semibold">
+                    <i class="fa-solid fa-circle-exclamation mr-1"></i>
+                    <span id="errorText">Erro de sintaxe.</span>
+                </div>
+
+                <button
+                    onclick="plotFunction()"
+                    class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-xl shadow-md transition-all flex items-center justify-center gap-2"
+                >
+                    <i class="fa-solid fa-paintbrush"></i>
+                    Plotar Gráfico
+                </button>
+            </section>
+
+            <!-- VARIÁVEIS -->
+            <section class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 border-t-4 border-t-emerald-600">
+                <div class="flex justify-between items-start gap-3 mb-5">
+                    <h2 class="text-sm font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                        <i class="fa-solid fa-sliders text-emerald-600"></i>
+                        Variáveis Dinâmicas
+                    </h2>
+
+                    <button
+                        onclick="addVariable()"
+                        class="text-xs text-emerald-700 hover:text-emerald-900 font-bold flex items-center gap-1 px-2 py-1 rounded hover:bg-emerald-50"
+                    >
+                        <i class="fa-solid fa-plus"></i>
+                        Variável
+                    </button>
+                </div>
+
+                <div id="variables-container" class="flex flex-col gap-4"></div>
+            </section>
+
+            <!-- MODOS E MEDIÇÕES -->
+            <section class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 border-t-4 border-t-amber-500">
+                <h2 class="text-sm font-black text-slate-400 uppercase tracking-widest mb-5 flex items-center gap-2">
+                    <i class="fa-solid fa-ruler-combined text-amber-500"></i>
+                    Modos e Medições
+                </h2>
+
+                <div class="flex items-center justify-between gap-3 p-3 rounded-lg bg-slate-50 border border-slate-200 mb-4">
+                    <div>
+                        <p class="text-sm font-bold text-slate-700">Modo X-Y</p>
+                        <p class="text-[10px] text-slate-500">X = f1 e Y = f2</p>
+                    </div>
+
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input id="xyMode" type="checkbox" class="sr-only peer" onchange="plotFunction()">
+                        <div class="w-11 h-6 bg-slate-300 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-indigo-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+                    </label>
+                </div>
+
+                <div class="flex items-center justify-between gap-3 p-3 rounded-lg bg-slate-50 border border-slate-200 mb-4">
+                    <div>
+                        <p class="text-sm font-bold text-slate-700">Cursores verticais</p>
+                        <p class="text-[10px] text-slate-500">Arraste C1 e C2 no gráfico</p>
+                    </div>
+
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input id="cursorMode" type="checkbox" class="sr-only peer" onchange="toggleCursors()">
+                        <div class="w-11 h-6 bg-slate-300 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-amber-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-500"></div>
+                    </label>
+                </div>
+
+                <div class="flex items-center justify-between gap-3 p-3 rounded-lg bg-slate-50 border border-slate-200 mb-4">
+                    <div>
+                        <p class="text-sm font-bold text-slate-700">Cursores horizontais</p>
+                        <p class="text-[10px] text-slate-500">Arraste H1 e H2 no gráfico</p>
+                    </div>
+
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input id="horizontalCursorMode" type="checkbox" class="sr-only peer" onchange="toggleHorizontalCursors()">
+                        <div class="w-11 h-6 bg-slate-300 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-cyan-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-cyan-600"></div>
+                    </label>
+                </div>
+
+                <div id="cursorPanel" class="hidden bg-amber-50 border border-amber-200 rounded-lg p-4">
+                    <label for="measurementDataset" class="block text-xs font-bold text-slate-600 mb-1">
+                        Curva usada para ΔY:
+                    </label>
+
+                    <select
+                        id="measurementDataset"
+                        onchange="updateCursorMeasurements()"
+                        class="w-full text-sm border border-amber-300 rounded px-2 py-2 bg-white mb-3"
+                    ></select>
+
+                    <div class="grid grid-cols-2 gap-2 text-xs math-font">
+                        <div class="bg-white border border-amber-100 p-2 rounded">
+                            C1: <span id="cursor1Value">—</span>
+                        </div>
+                        <div class="bg-white border border-amber-100 p-2 rounded">
+                            C2: <span id="cursor2Value">—</span>
+                        </div>
+                        <div class="bg-white border border-amber-100 p-2 rounded">
+                            ΔX: <span id="deltaXValue">—</span>
+                        </div>
+                        <div class="bg-white border border-amber-100 p-2 rounded">
+                            ΔY: <span id="deltaYValue">—</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="horizontalCursorPanel" class="hidden bg-cyan-50 border border-cyan-200 rounded-lg p-4 mt-3">
+                    <p class="text-[10px] font-black uppercase tracking-wider text-cyan-700 mb-2">
+                        Medição horizontal
+                    </p>
+
+                    <div class="grid grid-cols-2 gap-2 text-xs math-font">
+                        <div class="bg-white border border-cyan-100 p-2 rounded">
+                            H1: <span id="horizontal1Value">—</span>
+                        </div>
+                        <div class="bg-white border border-cyan-100 p-2 rounded">
+                            H2: <span id="horizontal2Value">—</span>
+                        </div>
+                        <div class="bg-white border border-cyan-100 p-2 rounded col-span-2">
+                            ΔY horizontal: <span id="horizontalDeltaYValue">—</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+        </aside>
+
+        <!-- GRÁFICO -->
+        <section class="xl:col-span-8 xl:sticky xl:top-4 xl:self-start">
+            <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 flex flex-col min-h-[500px] xl:min-h-[540px]">
+
+                <div class="flex flex-col md:flex-row md:justify-between md:items-center gap-3 mb-3">
+                    <div>
+                        <h2 id="chartTitle" class="text-lg font-bold text-slate-900 flex items-center gap-2">
+                            <i class="fa-solid fa-chart-line text-indigo-600"></i>
+                            Plano Cartesiano
+                        </h2>
+
+                        <p id="chartSubtitle" class="text-xs text-slate-500 mt-1">
+                            Modo temporal: x representa a variável independente.
+                        </p>
+                    </div>
+
+                    <div class="flex flex-wrap gap-2">
+                        <button
+                            onclick="resetZoomAndCursors()"
+                            class="text-xs font-bold text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 px-3 py-2 rounded-lg border border-slate-200"
+                        >
+                            <i class="fa-solid fa-rotate-left mr-1"></i>
+                            Reposicionar cursores
+                        </button>
+
+                        <button
+                            onclick="openLatexModal()"
+                            class="text-xs font-bold text-white bg-rose-600 hover:bg-rose-700 px-3 py-2 rounded-lg shadow-sm"
+                        >
+                            <i class="fa-solid fa-file-export mr-1"></i>
+                            Exportar para LaTeX
+                        </button>
+                    </div>
+                </div>
+
+                <div class="relative w-full h-[430px] md:h-[500px] cursor-grab">
+                    <canvas id="plotChart"></canvas>
+                </div>
+            </div>
+        </section>
+    </div>
+</main>
+
+<footer class="bg-slate-900 text-slate-400 text-center py-4 text-xs border-t border-slate-800 mt-auto w-full">
+    Material de Apoio Didático — Desenvolvido para o Curso Técnico em Eletrotécnica IFRN
+</footer>
+
+<!-- MODAL LATEX -->
+<div id="latexModal" class="hidden fixed inset-0 z-50 modal-backdrop items-center justify-center p-4">
+    <div class="bg-white w-full max-w-4xl rounded-2xl shadow-2xl overflow-hidden">
+
+        <div class="flex justify-between items-center px-6 py-4 border-b border-slate-200">
+            <div>
+                <h3 class="text-lg font-black text-slate-900">Exportação PGFPlots / TikZ</h3>
+                <p class="text-xs text-slate-500">Copie o código e cole em um documento com o pacote pgfplots.</p>
+            </div>
+
+            <button onclick="closeLatexModal()" class="text-slate-400 hover:text-rose-600 text-xl">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+
+        <div class="p-6">
+            <textarea
+                id="latexOutput"
+                readonly
+                class="w-full h-[430px] resize-none math-font text-xs bg-slate-950 text-emerald-300 rounded-xl p-4 border border-slate-800 focus:outline-none"
+            ></textarea>
+
+            <div class="flex flex-col sm:flex-row justify-between items-center gap-3 mt-4">
+                <p class="text-xs text-slate-500">
+                    Requer: <code>\usepackage{pgfplots}</code> e <code>\pgfplotsset{compat=1.18}</code>.
+                </p>
+
+                <button
+                    onclick="copyLatexCode()"
+                    class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm px-5 py-2.5 rounded-lg"
+                >
+                    <i class="fa-regular fa-copy mr-1"></i>
+                    Copiar código
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let chart;
+
+    const colorPalette = [
+        '#4f46e5',
+        '#10b981',
+        '#f43f5e',
+        '#f59e0b',
+        '#8b5cf6',
+        '#06b6d4',
+        '#0f766e',
+        '#be123c'
+    ];
+
+    const variableState = [
+        { name: 'A', value: 311, min: 0, max: 400, step: 1 },
+        { name: 'w', value: 377, min: 0, max: 800, step: 1 },
+        { name: 'phi', value: 0.5, min: -3.1416, max: 3.1416, step: 0.01 }
+    ];
+
+    const cursorState = {
+        enabled: false,
+        horizontalEnabled: false,
+        x1: -0.01,
+        x2: 0.01,
+        y1: -100,
+        y2: 100,
+        dragging: null,
+        hitTolerance: 12
+    };
+
+    let sampledFunctions = [];
+    let temporalDatasets = [];
+    let currentXValues = [];
+
+    const hoverMarkerState = {
+        visible: false,
+        datasetIndex: null,
+        pointIndex: null,
+        point: null
+    };
+
+    let cursorWasDragged = false;
+
+    function sanitizeVariableName(name) {
+        return String(name)
+            .trim()
+            .replace(/[^\p{L}\p{N}_]/gu, '')
+            .replace(/^(\d)/, '_$1');
+    }
+
+    function formatNumber(value, digits = 6) {
+        if (!Number.isFinite(value)) return '—';
+
+        const absolute = Math.abs(value);
+
+        if ((absolute !== 0 && absolute < 1e-4) || absolute >= 1e6) {
+            return value.toExponential(4);
+        }
+
+        return Number(value.toFixed(digits)).toString();
+    }
+
+    function escapeLatex(text) {
+        return String(text)
+            .replace(/\\/g, '\\textbackslash{}')
+            .replace(/_/g, '\\_')
+            .replace(/\^/g, '\\textasciicircum{}')
+            .replace(/%/g, '\\%')
+            .replace(/#/g, '\\#')
+            .replace(/&/g, '\\&');
+    }
+
+    function debounce(callback, delay = 60) {
+        let timeout;
+
+        return (...args) => {
+            clearTimeout(timeout);
+            timeout = setTimeout(() => callback(...args), delay);
+        };
+    }
+
+    const debouncedPlot = debounce(plotFunction, 35);
+
+    function renderVariables() {
+        const container = document.getElementById('variables-container');
+        container.innerHTML = '';
+
+        variableState.forEach((variable, index) => {
+            const wrapper = document.createElement('div');
+            wrapper.className = 'rounded-lg border border-slate-200 bg-slate-50 p-3';
+
+            wrapper.innerHTML = `
+                <div class="flex items-center gap-2 mb-2">
+                    <input
+                        type="text"
+                        value="${variable.name}"
+                        aria-label="Nome da variável"
+                        class="variable-name w-20 math-font text-sm font-bold text-center border border-slate-300 rounded px-2 py-1.5 bg-white"
+                        onchange="updateVariableName(${index}, this.value)"
+                    >
+
+                    <input
+                        type="number"
+                        value="${variable.value}"
+                        step="${variable.step}"
+                        aria-label="Valor da variável"
+                        class="variable-number flex-1 math-font text-sm font-bold text-center border border-slate-300 rounded px-2 py-1.5 bg-white"
+                        oninput="updateVariableValue(${index}, this.value)"
+                    >
+
+                    <button
+                        onclick="removeVariable(${index})"
+                        class="text-slate-400 hover:text-rose-500 w-7"
+                        title="Remover variável"
+                    >
+                        <i class="fa-solid fa-trash"></i>
+                    </button>
+                </div>
+
+                <input
+                    type="range"
+                    min="${variable.min}"
+                    max="${variable.max}"
+                    step="${variable.step}"
+                    value="${variable.value}"
+                    class="variable-range w-full"
+                    oninput="updateVariableValue(${index}, this.value)"
+                >
+
+                <div class="grid grid-cols-3 gap-2 mt-2">
+                    <label class="text-[10px] text-slate-500">
+                        Mín.
+                        <input
+                            type="number"
+                            value="${variable.min}"
+                            step="${variable.step}"
+                            class="w-full mt-1 text-center border border-slate-300 rounded px-1 py-1 bg-white"
+                            onchange="updateVariableLimit(${index}, 'min', this.value)"
+                        >
+                    </label>
+
+                    <label class="text-[10px] text-slate-500">
+                        Máx.
+                        <input
+                            type="number"
+                            value="${variable.max}"
+                            step="${variable.step}"
+                            class="w-full mt-1 text-center border border-slate-300 rounded px-1 py-1 bg-white"
+                            onchange="updateVariableLimit(${index}, 'max', this.value)"
+                        >
+                    </label>
+
+                    <label class="text-[10px] text-slate-500">
+                        Passo
+                        <input
+                            type="number"
+                            value="${variable.step}"
+                            min="0.000001"
+                            class="w-full mt-1 text-center border border-slate-300 rounded px-1 py-1 bg-white"
+                            onchange="updateVariableLimit(${index}, 'step', this.value)"
+                        >
+                    </label>
+                </div>
+            `;
+
+            container.appendChild(wrapper);
+        });
+    }
+
+    function addVariable() {
+        const existingNames = new Set(variableState.map(item => item.name));
+        let counter = 1;
+        let name = `k${counter}`;
+
+        while (existingNames.has(name)) {
+            counter += 1;
+            name = `k${counter}`;
+        }
+
+        variableState.push({
+            name,
+            value: 1,
+            min: -10,
+            max: 10,
+            step: 0.1
+        });
+
+        renderVariables();
+        plotFunction();
+    }
+
+    function removeVariable(index) {
+        variableState.splice(index, 1);
+        renderVariables();
+        plotFunction();
+    }
+
+    function updateVariableName(index, newName) {
+        const sanitized = sanitizeVariableName(newName);
+
+        if (!sanitized) {
+            renderVariables();
+            return;
+        }
+
+        const repeated = variableState.some((item, itemIndex) =>
+            itemIndex !== index && item.name === sanitized
+        );
+
+        if (repeated) {
+            alert('Já existe uma variável com esse nome.');
+            renderVariables();
+            return;
+        }
+
+        variableState[index].name = sanitized;
+        renderVariables();
+        plotFunction();
+    }
+
+    function updateVariableValue(index, rawValue) {
+        const value = Number(rawValue);
+
+        if (!Number.isFinite(value)) return;
+
+        const variable = variableState[index];
+        variable.value = Math.min(variable.max, Math.max(variable.min, value));
+
+        const wrappers = document.querySelectorAll('#variables-container > div');
+        const wrapper = wrappers[index];
+
+        if (wrapper) {
+            wrapper.querySelector('.variable-number').value = variable.value;
+            wrapper.querySelector('.variable-range').value = variable.value;
+        }
+
+        debouncedPlot();
+    }
+
+    function updateVariableLimit(index, property, rawValue) {
+        const value = Number(rawValue);
+        if (!Number.isFinite(value)) return;
+
+        const variable = variableState[index];
+
+        if (property === 'step') {
+            variable.step = Math.max(Math.abs(value), 0.000001);
+        } else {
+            variable[property] = value;
+        }
+
+        if (variable.min >= variable.max) {
+            if (property === 'min') variable.max = variable.min + Math.max(variable.step, 1);
+            if (property === 'max') variable.min = variable.max - Math.max(variable.step, 1);
+        }
+
+        variable.value = Math.min(variable.max, Math.max(variable.min, variable.value));
+
+        renderVariables();
+        plotFunction();
+    }
+
+    function getVariableScope() {
+        return variableState.reduce((scope, variable) => {
+            scope[variable.name] = variable.value;
+            return scope;
+        }, {});
+    }
+
+    function updateFunctionLabels() {
+        const rows = document.querySelectorAll('.function-row');
+
+        rows.forEach((row, index) => {
+            row.dataset.functionIndex = index;
+            row.querySelector('.func-label').innerHTML = `f<sub>${index + 1}</sub>(x) =`;
+        });
+    }
+
+    function bindFunctionInput(input) {
+        input.addEventListener('keydown', event => {
+            if (event.key === 'Enter') plotFunction();
+        });
+
+        input.addEventListener('input', debouncedPlot);
+    }
+
+    function addFunctionInput() {
+        const container = document.getElementById('functions-container');
+        const row = document.createElement('div');
+        row.className = 'flex items-center gap-2 function-row';
+
+        row.innerHTML = `
+            <label class="func-label text-sm font-bold text-slate-700 w-16 shrink-0"></label>
+
+            <input
+                type="text"
+                class="func-input w-full min-w-0 math-font text-base border-2 border-slate-200 px-3 py-2 rounded-lg text-slate-800 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all shadow-inner"
+                placeholder="Ex.: 2 * int(f1)"
+            >
+
+            <button
+                onclick="removeFunctionInput(this)"
+                class="w-8 shrink-0 text-slate-400 hover:text-rose-500 transition-colors"
+                title="Remover função"
+            >
+                <i class="fa-solid fa-trash"></i>
+            </button>
+        `;
+
+        container.appendChild(row);
+        updateFunctionLabels();
+
+        const input = row.querySelector('.func-input');
+        bindFunctionInput(input);
+        input.focus();
+    }
+
+    function removeFunctionInput(button) {
+        button.closest('.function-row').remove();
+        updateFunctionLabels();
+        plotFunction();
+    }
+
+    function createXValues(xMin, xMax, steps = 600) {
+        const values = [];
+        const step = (xMax - xMin) / steps;
+
+        for (let i = 0; i <= steps; i++) {
+            values.push(xMin + i * step);
+        }
+
+        return values;
+    }
+
+    function trapezoidalIntegral(values, xValues) {
+        const integrated = new Array(values.length).fill(null);
+        let accumulated = 0;
+        integrated[0] = 0;
+
+        for (let i = 1; i < values.length; i++) {
+            const y0 = values[i - 1];
+            const y1 = values[i];
+            const dx = xValues[i] - xValues[i - 1];
+
+            if (Number.isFinite(y0) && Number.isFinite(y1)) {
+                accumulated += 0.5 * (y0 + y1) * dx;
+                integrated[i] = accumulated;
+            } else {
+                integrated[i] = null;
+            }
+        }
+
+        return integrated;
+    }
+
+    function numericalDerivative(values, xValues) {
+        const derivative = new Array(values.length).fill(null);
+
+        for (let i = 0; i < values.length; i++) {
+            let result = null;
+
+            if (i === 0 && Number.isFinite(values[0]) && Number.isFinite(values[1])) {
+                result = (values[1] - values[0]) / (xValues[1] - xValues[0]);
+            } else if (
+                i === values.length - 1 &&
+                Number.isFinite(values[i]) &&
+                Number.isFinite(values[i - 1])
+            ) {
+                result = (values[i] - values[i - 1]) / (xValues[i] - xValues[i - 1]);
+            } else if (
+                i > 0 &&
+                i < values.length - 1 &&
+                Number.isFinite(values[i - 1]) &&
+                Number.isFinite(values[i + 1])
+            ) {
+                result = (values[i + 1] - values[i - 1]) / (xValues[i + 1] - xValues[i - 1]);
+            }
+
+            derivative[i] = Number.isFinite(result) ? result : null;
+        }
+
+        return derivative;
+    }
+
+    function replaceSpecialReferences(expression, functionIndex) {
+        const references = new Set();
+
+        const transformed = expression
+            .replace(/\bder\s*\(\s*f(\d+)\s*\)/gi, (_, rawIndex) => {
+                const refIndex = Number(rawIndex) - 1;
+
+                if (refIndex < 0 || refIndex >= functionIndex) {
+                    throw new Error(`der(f${rawIndex}) deve referenciar uma função anterior.`);
+                }
+
+                references.add(refIndex);
+                return `__der_${refIndex}`;
+            })
+            .replace(/\bint\s*\(\s*f(\d+)\s*\)/gi, (_, rawIndex) => {
+                const refIndex = Number(rawIndex) - 1;
+
+                if (refIndex < 0 || refIndex >= functionIndex) {
+                    throw new Error(`int(f${rawIndex}) deve referenciar uma função anterior.`);
+                }
+
+                references.add(refIndex);
+                return `__int_${refIndex}`;
+            })
+            .replace(/\bf(\d+)\b/gi, (_, rawIndex) => {
+                const refIndex = Number(rawIndex) - 1;
+
+                if (refIndex < 0 || refIndex >= functionIndex) {
+                    throw new Error(`f${rawIndex} deve referenciar uma função anterior.`);
+                }
+
+                references.add(refIndex);
+                return `__f_${refIndex}`;
+            });
+
+        return { transformed, references: [...references] };
+    }
+
+    function evaluateFunctions(expressions, xValues) {
+        const scopeVariables = getVariableScope();
+        const functions = [];
+
+        expressions.forEach((expression, functionIndex) => {
+            if (!expression) {
+                functions.push({
+                    expression: '',
+                    values: xValues.map(() => null),
+                    derivative: xValues.map(() => null),
+                    integral: xValues.map(() => null),
+                    valid: false
+                });
+
+                return;
+            }
+
+            const { transformed } = replaceSpecialReferences(expression, functionIndex);
+            const compiled = math.compile(transformed);
+            const values = [];
+
+            for (let pointIndex = 0; pointIndex < xValues.length; pointIndex++) {
+                const x = xValues[pointIndex];
+                const scope = { ...scopeVariables, x };
+
+                for (let refIndex = 0; refIndex < functionIndex; refIndex++) {
+                    scope[`__f_${refIndex}`] = functions[refIndex].values[pointIndex];
+                    scope[`__der_${refIndex}`] = functions[refIndex].derivative[pointIndex];
+                    scope[`__int_${refIndex}`] = functions[refIndex].integral[pointIndex];
+                }
+
+                let y = compiled.evaluate(scope);
+
+                if (typeof y === 'number' && Number.isFinite(y)) {
+                    values.push(y);
+                } else {
+                    values.push(null);
+                }
+            }
+
+            functions.push({
+                expression,
+                values,
+                derivative: numericalDerivative(values, xValues),
+                integral: trapezoidalIntegral(values, xValues),
+                valid: true
+            });
+        });
+
+        return functions;
+    }
+
+    function createTemporalDatasets(expressions, functions, xValues) {
+        return functions
+            .map((item, index) => {
+                if (!item.valid || !expressions[index]) return null;
+
+                return {
+                    label: `f${index + 1}(x) = ${expressions[index]}`,
+                    data: xValues.map((x, pointIndex) => ({
+                        x,
+                        y: item.values[pointIndex]
+                    })),
+                    borderColor: colorPalette[index % colorPalette.length],
+                    backgroundColor: colorPalette[index % colorPalette.length],
+                    borderWidth: 2.5,
+                    pointRadius: 0,
+                    pointHoverRadius: 5,
+                    spanGaps: false,
+                    tension: 0.06,
+                    fill: false
+                };
+            })
+            .filter(Boolean);
+    }
+
+    function createXYDataset(expressions, functions) {
+        const validIndexes = functions
+            .map((item, index) => item.valid && expressions[index] ? index : null)
+            .filter(index => index !== null);
+
+        if (validIndexes.length < 2) {
+            throw new Error('O modo X-Y exige pelo menos duas funções válidas.');
+        }
+
+        const xIndex = validIndexes[0];
+        const yIndex = validIndexes[1];
+        const points = [];
+
+        for (let i = 0; i < functions[xIndex].values.length; i++) {
+            const xValue = functions[xIndex].values[i];
+            const yValue = functions[yIndex].values[i];
+
+            if (Number.isFinite(xValue) && Number.isFinite(yValue)) {
+                points.push({ x: xValue, y: yValue });
+            }
+        }
+
+        return [{
+            label: `X: f${xIndex + 1} | Y: f${yIndex + 1}`,
+            data: points,
+            borderColor: colorPalette[0],
+            backgroundColor: colorPalette[0],
+            borderWidth: 2.5,
+            pointRadius: 0,
+            pointHoverRadius: 4,
+            showLine: true,
+            tension: 0.04,
+            fill: false
+        }];
+    }
+
+    function showError(message) {
+        const errorMsg = document.getElementById('errorMsg');
+        document.getElementById('errorText').innerText = message;
+        errorMsg.classList.remove('hidden');
+    }
+
+    function clearError() {
+        document.getElementById('errorMsg').classList.add('hidden');
+    }
+
+    function plotFunction() {
+        const inputs = [...document.querySelectorAll('.func-input')];
+        const expressions = inputs.map(input => input.value.trim());
+        const xMin = Number(document.getElementById('xMin').value);
+        const xMax = Number(document.getElementById('xMax').value);
+        const xyMode = document.getElementById('xyMode').checked;
+
+        inputs.forEach(input => {
+            input.classList.remove('border-rose-500', 'ring-rose-200');
+        });
+
+        if (!Number.isFinite(xMin) || !Number.isFinite(xMax) || xMin >= xMax) {
+            showError('O valor de X Inicial deve ser menor que X Final.');
+            return;
+        }
+
+        try {
+            clearError();
+
+            currentXValues = createXValues(xMin, xMax, 600);
+            sampledFunctions = evaluateFunctions(expressions, currentXValues);
+            temporalDatasets = createTemporalDatasets(expressions, sampledFunctions, currentXValues);
+
+            chart.data.datasets = xyMode
+                ? createXYDataset(expressions, sampledFunctions)
+                : temporalDatasets;
+
+            chart.options.scales.x.min = xyMode ? undefined : xMin;
+            chart.options.scales.x.max = xyMode ? undefined : xMax;
+
+            chart.options.scales.x.title.text = xyMode ? 'f₁(x)' : 'Eixo X / tempo';
+            chart.options.scales.y.title.text = xyMode ? 'f₂(x)' : 'Amplitude';
+
+            document.getElementById('chartTitle').innerHTML = xyMode
+                ? '<i class="fa-solid fa-infinity text-indigo-600"></i> Modo X-Y / Lissajous'
+                : '<i class="fa-solid fa-chart-line text-indigo-600"></i> Plano Cartesiano';
+
+            document.getElementById('chartSubtitle').innerText = xyMode
+                ? 'O primeiro sinal válido controla o eixo X e o segundo controla o eixo Y.'
+                : 'Modo temporal: x representa a variável independente.';
+
+            if (xyMode && cursorState.enabled) {
+                document.getElementById('cursorMode').checked = false;
+                toggleCursors();
+            }
+
+            if (xyMode && cursorState.horizontalEnabled) {
+                document.getElementById('horizontalCursorMode').checked = false;
+                toggleHorizontalCursors();
+            }
+
+            chart.update();
+            updateMeasurementDatasetOptions();
+            updateCursorMeasurements();
+
+        } catch (error) {
+            const message = error?.message || 'Erro ao processar uma das funções.';
+            showError(message);
+
+            const match = message.match(/f(\d+)/i);
+
+            if (match) {
+                const index = Number(match[1]) - 1;
+                if (inputs[index]) {
+                    inputs[index].classList.add('border-rose-500', 'ring-rose-200');
+                }
+            }
+        }
+    }
+
+    function initChart() {
+        const ctx = document.getElementById('plotChart').getContext('2d');
+
+        chart = new Chart(ctx, {
+            type: 'line',
+
+            data: {
+                datasets: []
+            },
+
+            plugins: [cursorPlugin],
+
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                animation: {
+                    duration: 1100,
+                    easing: 'easeOutQuart'
+                },
+                parsing: false,
+                normalized: true,
+
+                events: ['click'],
+
+                interaction: {
+                    mode: 'nearest',
+                    intersect: true,
+                    axis: 'xy'
+                },
+
+                onClick(event, _activeElements, chartInstance) {
+                    if (cursorState.dragging || cursorWasDragged) return;
+
+                    const clickX = event.x;
+                    const clickY = event.y;
+
+                    if (
+                        hoverMarkerState.visible &&
+                        hoverMarkerState.datasetIndex !== null &&
+                        hoverMarkerState.point
+                    ) {
+                        const markerX = chartInstance.scales.x.getPixelForValue(
+                            hoverMarkerState.point.x
+                        );
+                        const markerY = chartInstance.scales.y.getPixelForValue(
+                            hoverMarkerState.point.y
+                        );
+
+                        const distanceToMarker = Math.hypot(
+                            clickX - markerX,
+                            clickY - markerY
+                        );
+
+                        if (distanceToMarker <= 8) {
+                            const datasetIndex = hoverMarkerState.datasetIndex;
+                            const pointIndex = hoverMarkerState.pointIndex;
+
+                            const sameSelectedPoint =
+                                selectedMarkerState.active &&
+                                selectedMarkerState.datasetIndex === datasetIndex &&
+                                selectedMarkerState.point &&
+                                Math.abs(selectedMarkerState.point.x - hoverMarkerState.point.x) < 1e-12 &&
+                                Math.abs(selectedMarkerState.point.y - hoverMarkerState.point.y) < 1e-12;
+
+                            if (sameSelectedPoint) {
+                                selectedMarkerState.active = false;
+                                selectedMarkerState.datasetIndex = null;
+                                selectedMarkerState.point = null;
+
+                                chartInstance.setActiveElements([]);
+                                chartInstance.tooltip.setActiveElements([], {
+                                    x: markerX,
+                                    y: markerY
+                                });
+
+                                chartInstance.update('none');
+                                return;
+                            }
+
+                            selectedMarkerState.active = true;
+                            selectedMarkerState.datasetIndex = datasetIndex;
+                            selectedMarkerState.point = {
+                                x: hoverMarkerState.point.x,
+                                y: hoverMarkerState.point.y
+                            };
+
+                            chartInstance.setActiveElements([{
+                                datasetIndex,
+                                index: pointIndex
+                            }]);
+
+                            chartInstance.tooltip.setActiveElements([{
+                                datasetIndex,
+                                index: pointIndex
+                            }], {
+                                x: markerX,
+                                y: markerY
+                            });
+
+                            chartInstance.update('none');
+                            return;
+                        }
+                    }
+
+                    selectedMarkerState.active = false;
+                    selectedMarkerState.datasetIndex = null;
+                    selectedMarkerState.point = null;
+
+                    chartInstance.setActiveElements([]);
+                    chartInstance.tooltip.setActiveElements([], {
+                        x: clickX,
+                        y: clickY
+                    });
+                    chartInstance.update('none');
+                },
+
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top',
+                        labels: {
+                            font: {
+                                family: 'Fira Code',
+                                weight: 'bold'
+                            },
+                            boxWidth: 18
+                        }
+                    },
+
+                    tooltip: {
+                        enabled: true,
+                        backgroundColor: 'rgba(15, 23, 42, 0.92)',
+                        titleFont: {
+                            family: 'Inter',
+                            size: 13
+                        },
+                        bodyFont: {
+                            family: 'Fira Code',
+                            size: 12
+                        },
+                        padding: 10,
+
+                        callbacks: {
+                            title(context) {
+                                if (!context.length) return '';
+                                return `x = ${formatNumber(context[0].parsed.x, 5)}`;
+                            },
+
+                            label(context) {
+                                return `${context.dataset.label}: ${formatNumber(context.parsed.y, 5)}`;
+                            }
+                        }
+                    }
+                },
+
+                scales: {
+                    x: {
+                        type: 'linear',
+                        title: {
+                            display: true,
+                            text: 'Eixo X / tempo',
+                            font: {
+                                weight: 'bold'
+                            }
+                        },
+                        grid: {
+                            color: context => context.tick.value === 0 ? '#94a3b8' : '#f1f5f9',
+                            lineWidth: context => context.tick.value === 0 ? 2 : 1
+                        },
+                        ticks: {
+                            font: {
+                                family: 'Fira Code'
+                            },
+                            callback: value => formatNumber(Number(value), 4)
+                        }
+                    },
+
+                    y: {
+                        title: {
+                            display: true,
+                            text: 'Amplitude',
+                            font: {
+                                weight: 'bold'
+                            }
+                        },
+                        grid: {
+                            color: context => context.tick.value === 0 ? '#94a3b8' : '#e2e8f0',
+                            lineWidth: context => context.tick.value === 0 ? 2 : 1
+                        },
+                        ticks: {
+                            font: {
+                                family: 'Fira Code'
+                            },
+                            callback: value => formatNumber(Number(value), 4)
+                        }
+                    }
+                }
+            }
+        });
+
+        bindCursorEvents();
+    }
+
+    const cursorPlugin = {
+        id: 'measurementCursors',
+
+        afterDatasetsDraw(chartInstance) {
+            if (
+                !cursorState.enabled &&
+                !cursorState.horizontalEnabled &&
+                !hoverMarkerState.visible
+            ) return;
+
+            const { ctx, chartArea, scales } = chartInstance;
+            const xScale = scales.x;
+            const yScale = scales.y;
+
+            ctx.save();
+
+            if (cursorState.enabled) {
+                [
+                    { value: cursorState.x1, label: 'C1', color: '#f59e0b' },
+                    { value: cursorState.x2, label: 'C2', color: '#dc2626' }
+                ].forEach(cursor => {
+                    const pixel = xScale.getPixelForValue(cursor.value);
+                    if (pixel < chartArea.left || pixel > chartArea.right) return;
+
+                    ctx.beginPath();
+                    ctx.moveTo(pixel, chartArea.top);
+                    ctx.lineTo(pixel, chartArea.bottom);
+                    ctx.strokeStyle = cursor.color;
+                    ctx.lineWidth = 2;
+                    ctx.setLineDash([7, 5]);
+                    ctx.stroke();
+
+                    ctx.setLineDash([]);
+                    ctx.fillStyle = cursor.color;
+                    ctx.fillRect(pixel - 16, chartArea.top + 4, 32, 20);
+                    ctx.fillStyle = '#fff';
+                    ctx.font = 'bold 11px Inter';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText(cursor.label, pixel, chartArea.top + 14);
+                });
+            }
+
+            if (cursorState.horizontalEnabled) {
+                [
+                    { value: cursorState.y1, label: 'H1', color: '#0891b2' },
+                    { value: cursorState.y2, label: 'H2', color: '#2563eb' }
+                ].forEach(cursor => {
+                    const pixel = yScale.getPixelForValue(cursor.value);
+                    if (pixel < chartArea.top || pixel > chartArea.bottom) return;
+
+                    ctx.beginPath();
+                    ctx.moveTo(chartArea.left, pixel);
+                    ctx.lineTo(chartArea.right, pixel);
+                    ctx.strokeStyle = cursor.color;
+                    ctx.lineWidth = 2;
+                    ctx.setLineDash([7, 5]);
+                    ctx.stroke();
+
+                    ctx.setLineDash([]);
+                    ctx.fillStyle = cursor.color;
+                    ctx.fillRect(chartArea.left + 4, pixel - 10, 34, 20);
+                    ctx.fillStyle = '#fff';
+                    ctx.font = 'bold 11px Inter';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText(cursor.label, chartArea.left + 21, pixel);
+                });
+            }
+
+            if (
+                hoverMarkerState.visible &&
+                hoverMarkerState.datasetIndex !== null &&
+                hoverMarkerState.pointIndex !== null
+            ) {
+                const dataset = chartInstance.data.datasets[hoverMarkerState.datasetIndex];
+                const point = hoverMarkerState.point ||
+                    dataset?.data?.[hoverMarkerState.pointIndex];
+
+                if (point && Number.isFinite(point.x) && Number.isFinite(point.y)) {
+                    const xPixel = scales.x.getPixelForValue(point.x);
+                    const yPixel = scales.y.getPixelForValue(point.y);
+
+                    if (
+                        xPixel >= chartArea.left &&
+                        xPixel <= chartArea.right &&
+                        yPixel >= chartArea.top &&
+                        yPixel <= chartArea.bottom
+                    ) {
+                        ctx.beginPath();
+                        ctx.arc(xPixel, yPixel, 5.5, 0, Math.PI * 2);
+                        ctx.fillStyle = dataset.borderColor || '#4f46e5';
+                        ctx.fill();
+                        ctx.lineWidth = 2;
+                        ctx.strokeStyle = '#ffffff';
+                        ctx.stroke();
+                    }
+                }
+            }
+
+            ctx.restore();
+        }
+    };
+
+    function bindCursorEvents() {
+        const canvas = document.getElementById('plotChart');
+
+        canvas.addEventListener('pointerdown', event => {
+            if (document.getElementById('xyMode').checked) return;
+            if (!cursorState.enabled && !cursorState.horizontalEnabled) return;
+
+            const rect = canvas.getBoundingClientRect();
+            const xPixel = event.clientX - rect.left;
+            const yPixel = event.clientY - rect.top;
+            const candidates = [];
+
+            if (cursorState.enabled) {
+                candidates.push(
+                    { key: 'x1', distance: Math.abs(xPixel - chart.scales.x.getPixelForValue(cursorState.x1)) },
+                    { key: 'x2', distance: Math.abs(xPixel - chart.scales.x.getPixelForValue(cursorState.x2)) }
+                );
+            }
+
+            if (cursorState.horizontalEnabled) {
+                candidates.push(
+                    { key: 'y1', distance: Math.abs(yPixel - chart.scales.y.getPixelForValue(cursorState.y1)) },
+                    { key: 'y2', distance: Math.abs(yPixel - chart.scales.y.getPixelForValue(cursorState.y2)) }
+                );
+            }
+
+            candidates.sort((a, b) => a.distance - b.distance);
+            const closest = candidates[0];
+
+            if (closest && closest.distance <= cursorState.hitTolerance) {
+                cursorState.dragging = closest.key;
+                canvas.setPointerCapture(event.pointerId);
+
+                // Evita que o clique usado para arrastar um cursor abra o tooltip.
+                event.preventDefault();
+                event.stopPropagation();
+            }
+        }, true);
+
+        canvas.addEventListener('pointermove', event => {
+            if (!cursorState.dragging) return;
+
+            cursorWasDragged = true;
+            const rect = canvas.getBoundingClientRect();
+
+            if (cursorState.dragging.startsWith('x')) {
+                const pixel = event.clientX - rect.left;
+                const scale = chart.scales.x;
+                const clamped = Math.max(scale.left, Math.min(scale.right, pixel));
+                cursorState[cursorState.dragging] = scale.getValueForPixel(clamped);
+            } else {
+                const pixel = event.clientY - rect.top;
+                const scale = chart.scales.y;
+                const clamped = Math.max(scale.top, Math.min(scale.bottom, pixel));
+                cursorState[cursorState.dragging] = scale.getValueForPixel(clamped);
+            }
+
+            chart.draw();
+            updateCursorMeasurements();
+        });
+
+        const releaseCursor = event => {
+            if (!cursorState.dragging) return;
+            cursorState.dragging = null;
+
+            try {
+                canvas.releasePointerCapture(event.pointerId);
+            } catch (_) {}
+
+            if (cursorWasDragged) {
+                setTimeout(() => {
+                    cursorWasDragged = false;
+                }, 0);
+            }
+        };
+
+        canvas.addEventListener('pointerup', releaseCursor);
+        canvas.addEventListener('pointercancel', releaseCursor);
+
+        canvas.addEventListener('mousemove', event => {
+            if (cursorState.dragging) {
+                hoverMarkerState.visible = false;
+                return;
+            }
+
+            const rect = canvas.getBoundingClientRect();
+            const mouseX = event.clientX - rect.left;
+            const mouseY = event.clientY - rect.top;
+            const chartArea = chart.chartArea;
+
+            if (
+                mouseX < chartArea.left ||
+                mouseX > chartArea.right ||
+                mouseY < chartArea.top ||
+                mouseY > chartArea.bottom
+            ) {
+                hoverMarkerState.visible = false;
+                chart.draw();
+                return;
+            }
+
+            let nearest = null;
+            const maximumDistance = 10;
+
+            chart.data.datasets.forEach((dataset, datasetIndex) => {
+                const points = dataset.data || [];
+
+                for (let pointIndex = 0; pointIndex < points.length - 1; pointIndex++) {
+                    const start = points[pointIndex];
+                    const end = points[pointIndex + 1];
+
+                    if (
+                        !Number.isFinite(start?.x) ||
+                        !Number.isFinite(start?.y) ||
+                        !Number.isFinite(end?.x) ||
+                        !Number.isFinite(end?.y)
+                    ) continue;
+
+                    const x1 = chart.scales.x.getPixelForValue(start.x);
+                    const y1 = chart.scales.y.getPixelForValue(start.y);
+                    const x2 = chart.scales.x.getPixelForValue(end.x);
+                    const y2 = chart.scales.y.getPixelForValue(end.y);
+
+                    const dx = x2 - x1;
+                    const dy = y2 - y1;
+                    const lengthSquared = dx * dx + dy * dy;
+
+                    let t = 0;
+
+                    if (lengthSquared > 0) {
+                        t = ((mouseX - x1) * dx + (mouseY - y1) * dy) / lengthSquared;
+                        t = Math.max(0, Math.min(1, t));
+                    }
+
+                    const projectedX = x1 + t * dx;
+                    const projectedY = y1 + t * dy;
+                    const distance = Math.hypot(mouseX - projectedX, mouseY - projectedY);
+
+                    if (
+                        distance <= maximumDistance &&
+                        (!nearest || distance < nearest.distance)
+                    ) {
+                        nearest = {
+                            datasetIndex,
+                            pointIndex,
+                            distance,
+                            projectedX,
+                            projectedY,
+                            interpolatedPoint: {
+                                x: start.x + t * (end.x - start.x),
+                                y: start.y + t * (end.y - start.y)
+                            }
+                        };
+                    }
+                }
+            });
+
+            if (nearest) {
+                hoverMarkerState.visible = true;
+                hoverMarkerState.datasetIndex = nearest.datasetIndex;
+                hoverMarkerState.pointIndex = nearest.pointIndex;
+                hoverMarkerState.point = nearest.interpolatedPoint;
+            } else {
+                hoverMarkerState.visible = false;
+                hoverMarkerState.datasetIndex = null;
+                hoverMarkerState.pointIndex = null;
+                hoverMarkerState.point = null;
+            }
+
+            chart.draw();
+        });
+
+        canvas.addEventListener('mouseleave', () => {
+            if (cursorState.dragging) return;
+
+            hoverMarkerState.visible = false;
+            hoverMarkerState.datasetIndex = null;
+            hoverMarkerState.pointIndex = null;
+            hoverMarkerState.point = null;
+            chart.draw();
+        });
+    }
+
+    function toggleCursors() {
+        const checkbox = document.getElementById('cursorMode');
+        const xyMode = document.getElementById('xyMode').checked;
+
+        if (xyMode && checkbox.checked) {
+            checkbox.checked = false;
+            alert('Os cursores estão disponíveis apenas no modo temporal.');
+        }
+
+        cursorState.enabled = checkbox.checked;
+        document.getElementById('cursorPanel').classList.toggle('hidden', !cursorState.enabled);
+
+        if (chart) chart.draw();
+        updateCursorMeasurements();
+    }
+
+    function toggleHorizontalCursors() {
+        const checkbox = document.getElementById('horizontalCursorMode');
+        const xyMode = document.getElementById('xyMode').checked;
+
+        if (xyMode && checkbox.checked) {
+            checkbox.checked = false;
+            alert('Os cursores estão disponíveis apenas no modo temporal.');
+        }
+
+        cursorState.horizontalEnabled = checkbox.checked;
+        document.getElementById('horizontalCursorPanel').classList.toggle(
+            'hidden',
+            !cursorState.horizontalEnabled
+        );
+
+        if (chart) chart.draw();
+        updateCursorMeasurements();
+    }
+
+    function resetZoomAndCursors() {
+        const xMin = Number(document.getElementById('xMin').value);
+        const xMax = Number(document.getElementById('xMax').value);
+        const xInterval = xMax - xMin;
+
+        cursorState.x1 = xMin + xInterval * 0.35;
+        cursorState.x2 = xMin + xInterval * 0.65;
+
+        if (chart?.scales?.y) {
+            const yMin = chart.scales.y.min;
+            const yMax = chart.scales.y.max;
+            const yInterval = yMax - yMin;
+
+            cursorState.y1 = yMin + yInterval * 0.35;
+            cursorState.y2 = yMin + yInterval * 0.65;
+        }
+
+        if (chart) chart.draw();
+        updateCursorMeasurements();
+    }
+
+    function updateMeasurementDatasetOptions() {
+        const select = document.getElementById('measurementDataset');
+        const previousValue = select.value;
+        select.innerHTML = '';
+
+        temporalDatasets.forEach((dataset, index) => {
+            const option = document.createElement('option');
+            option.value = String(index);
+            option.textContent = dataset.label;
+            select.appendChild(option);
+        });
+
+        if ([...select.options].some(option => option.value === previousValue)) {
+            select.value = previousValue;
+        }
+    }
+
+    function interpolateDatasetY(dataset, xValue) {
+        const points = dataset?.data;
+
+        if (!points || points.length < 2) return null;
+        if (xValue < points[0].x || xValue > points[points.length - 1].x) return null;
+
+        let low = 0;
+        let high = points.length - 1;
+
+        while (low <= high) {
+            const middle = Math.floor((low + high) / 2);
+            const current = points[middle];
+
+            if (current.x < xValue) low = middle + 1;
+            else if (current.x > xValue) high = middle - 1;
+            else return current.y;
+        }
+
+        const rightIndex = Math.min(low, points.length - 1);
+        const leftIndex = Math.max(0, rightIndex - 1);
+        const leftPoint = points[leftIndex];
+        const rightPoint = points[rightIndex];
+
+        if (!Number.isFinite(leftPoint.y) || !Number.isFinite(rightPoint.y)) return null;
+        if (rightPoint.x === leftPoint.x) return leftPoint.y;
+
+        const ratio = (xValue - leftPoint.x) / (rightPoint.x - leftPoint.x);
+        return leftPoint.y + ratio * (rightPoint.y - leftPoint.y);
+    }
+
+    function updateCursorMeasurements() {
+        const datasetIndex = Number(document.getElementById('measurementDataset').value || 0);
+        const dataset = temporalDatasets[datasetIndex];
+
+        if (cursorState.enabled) {
+            const curveY1 = interpolateDatasetY(dataset, cursorState.x1);
+            const curveY2 = interpolateDatasetY(dataset, cursorState.x2);
+
+            document.getElementById('cursor1Value').innerText =
+                `x=${formatNumber(cursorState.x1, 6)}, y=${formatNumber(curveY1, 6)}`;
+
+            document.getElementById('cursor2Value').innerText =
+                `x=${formatNumber(cursorState.x2, 6)}, y=${formatNumber(curveY2, 6)}`;
+
+            document.getElementById('deltaXValue').innerText =
+                formatNumber(cursorState.x2 - cursorState.x1, 6);
+
+            const oldDeltaY = document.getElementById('deltaYValue');
+            if (oldDeltaY) {
+                oldDeltaY.innerText =
+                    Number.isFinite(curveY1) && Number.isFinite(curveY2)
+                        ? formatNumber(curveY2 - curveY1, 6)
+                        : '—';
+            }
+        }
+
+        if (cursorState.horizontalEnabled) {
+            document.getElementById('horizontal1Value').innerText =
+                `y=${formatNumber(cursorState.y1, 6)}`;
+
+            document.getElementById('horizontal2Value').innerText =
+                `y=${formatNumber(cursorState.y2, 6)}`;
+
+            document.getElementById('horizontalDeltaYValue').innerText =
+                formatNumber(cursorState.y2 - cursorState.y1, 6);
+        }
+    }
+
+    function generateLatexCode() {
+        const xyMode = document.getElementById('xyMode').checked;
+        const datasets = chart.data.datasets;
+
+        if (!datasets.length) {
+            throw new Error('Não há dados para exportar.');
+        }
+
+        const xLabel = xyMode ? '$f_1(x)$' : '$x$';
+        const yLabel = xyMode ? '$f_2(x)$' : '$y$';
+
+        const lines = [
+            '\\begin{tikzpicture}',
+            '  \\begin{axis}[',
+            '    width=14cm,',
+            '    height=8cm,',
+            `    xlabel={${xLabel}},`,
+            `    ylabel={${yLabel}},`,
+            '    grid=both,',
+            '    axis lines=middle,',
+            '    legend style={at={(0.5,-0.18)},anchor=north},',
+            '    legend columns=2,',
+            '    unbounded coords=jump',
+            '  ]'
+        ];
+
+        datasets.forEach((dataset, datasetIndex) => {
+            const validPoints = dataset.data.filter(point =>
+                Number.isFinite(point.x) && Number.isFinite(point.y)
+            );
+
+            const maximumExportedPoints = 260;
+            const stride = Math.max(1, Math.ceil(validPoints.length / maximumExportedPoints));
+            const reducedPoints = validPoints.filter((_, index) => index % stride === 0);
+
+            lines.push(`    \\addplot+[no marks, thick] coordinates {`);
+
+            reducedPoints.forEach(point => {
+                lines.push(`      (${formatNumber(point.x, 8)},${formatNumber(point.y, 8)})`);
+            });
+
+            lines.push('    };');
+            lines.push(`    \\addlegendentry{${escapeLatex(dataset.label || `Curva ${datasetIndex + 1}`)}}`);
+        });
+
+        lines.push('  \\end{axis}');
+        lines.push('\\end{tikzpicture}');
+
+        return lines.join('\n');
+    }
+
+    function openLatexModal() {
+        try {
+            document.getElementById('latexOutput').value = generateLatexCode();
+
+            const modal = document.getElementById('latexModal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        } catch (error) {
+            alert(error.message);
+        }
+    }
+
+    function closeLatexModal() {
+        const modal = document.getElementById('latexModal');
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+    }
+
+    async function copyLatexCode() {
+        const textarea = document.getElementById('latexOutput');
+
+        try {
+            await navigator.clipboard.writeText(textarea.value);
+        } catch (_) {
+            textarea.select();
+            document.execCommand('copy');
+        }
+
+        const button = event.currentTarget;
+        const original = button.innerHTML;
+
+        button.innerHTML = '<i class="fa-solid fa-check mr-1"></i> Código copiado';
+        button.classList.remove('bg-indigo-600', 'hover:bg-indigo-700');
+        button.classList.add('bg-emerald-600');
+
+        setTimeout(() => {
+            button.innerHTML = original;
+            button.classList.add('bg-indigo-600', 'hover:bg-indigo-700');
+            button.classList.remove('bg-emerald-600');
+        }, 1600);
+    }
+
+    document.addEventListener('keydown', event => {
+        if (event.key === 'Escape') closeLatexModal();
+    });
+
+    window.addEventListener('load', () => {
+        document.querySelectorAll('.func-input').forEach(bindFunctionInput);
+
+        renderVariables();
+        initChart();
+        updateFunctionLabels();
+        resetZoomAndCursors();
+        plotFunction();
+    });
+</script>
+
+</body>
+</html>
