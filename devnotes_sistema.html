@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dev Notes - Lab AC Pro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&family=Fira+Code:wght@400;500&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+        }
+        .code-font {
+            font-family: 'Fira Code', monospace;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
+
+    <header class="bg-emerald-700 text-white shadow-md py-4 px-6 compact relative z-10">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="flex items-center gap-4">
+                <div class="bg-white p-2 rounded shadow-sm text-emerald-700 font-bold text-xl flex items-center justify-center h-12 w-12">
+                    <i class="fa-solid fa-bolt-lightning"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold tracking-wide">INSTITUTO FEDERAL DO RIO GRANDE DO NORTE</h1>
+                    <p class="text-xs text-emerald-100 font-medium">Campus João Câmara | Curso Técnico em Eletrotécnica</p>
+                </div>
+            </div>
+            <div class="text-center md:text-right">
+                <p class="text-sm font-semibold text-emerald-50">Documentação e Histórico do Sistema</p>
+                <p class="text-xs text-emerald-200">Prof. Rafael Cândido Gomes da Silva</p>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-grow w-full max-w-4xl mx-auto p-4 md:p-6 flex flex-col">
+        
+        <div class="mb-6">
+            <a href="index.html" class="inline-flex items-center gap-2 text-slate-600 hover:text-emerald-700 font-semibold transition-colors bg-white hover:bg-emerald-50 px-4 py-2 rounded-lg border border-slate-200 hover:border-emerald-200 shadow-sm">
+                <i class="fa-solid fa-house"></i> Voltar ao Portal Principal
+            </a>
+        </div>
+
+        <div class="mb-10 bg-white p-8 rounded-2xl border border-slate-200 shadow-sm relative overflow-hidden">
+            <div class="absolute top-0 right-0 p-8 opacity-5">
+                <i class="fa-solid fa-code-branch text-9xl"></i>
+            </div>
+            <div class="relative z-10">
+                <div class="inline-block bg-slate-100 text-slate-600 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider mb-3 border border-slate-200">
+                    Changelog Oficial
+                </div>
+                <h2 class="text-3xl md:text-4xl font-black text-slate-900 tracking-tight flex items-center gap-3">
+                    Dev Notes & Atualizações
+                </h2>
+                <p class="text-slate-600 mt-4 text-lg leading-relaxed max-w-2xl">
+                    Histórico de desenvolvimento, integração de módulos e evoluções arquiteturais do ecossistema <strong>Lab AC Pro</strong>.
+                </p>
+            </div>
+        </div>
+
+        <div class="space-y-8 relative before:absolute before:inset-0 before:left-4 md:before:left-6 before:h-full before:w-0.5 before:bg-slate-200 ml-2 md:ml-0">
+
+            <div class="relative pl-12 md:pl-16 group">
+                <div class="absolute left-[-5px] md:left-[3px] top-1.5 w-4 h-4 rounded-full bg-purple-600 border-4 border-slate-50 shadow group-hover:scale-125 transition-transform z-10"></div>
+                <div class="bg-white p-6 md:p-8 rounded-2xl border border-slate-200 shadow-sm space-y-4 hover:border-purple-300 transition-colors">
+                    <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-3">
+                        <div class="flex items-center gap-3">
+                            <span class="bg-purple-100 text-purple-800 text-sm font-black px-3 py-1 rounded-md code-font border border-purple-200">v2.3.0</span>
+                            <span class="text-purple-600 font-bold text-sm uppercase tracking-wider"><i class="fa-solid fa-calculator"></i> Evolução de Ferramenta</span>
+                        </div>
+                        <span class="text-xs font-bold text-slate-400 bg-slate-100 px-3 py-1 rounded-full"><i class="fa-regular fa-calendar-days"></i> Junho de 2026</span>
+                    </div>
+                    <h3 class="text-xl font-black text-slate-800">Histórico Dinâmico e Chave Bidirecional na Calculadora</h3>
+                    <p class="text-slate-600 text-sm leading-relaxed mb-4">Aprimoramento da interface da Math Engine Pro focada na produtividade para resolução de malhas e sistemas complexos.</p>
+                    <ul class="text-sm text-slate-600 space-y-3 list-none">
+                        <li class="flex items-start gap-3 bg-slate-50 p-3 rounded-lg border border-slate-100">
+                            <i class="fa-solid fa-clock-rotate-left text-purple-500 mt-0.5"></i>
+                            <div><strong class="text-slate-800 block mb-1">Painel de Histórico Lateral</strong> Criação de interface rolável para registrar e acessar os últimos 20 cálculos. Inclusão de botões de cópia rápida para reuso da expressão original ou do resultado final.</div>
+                        </li>
+                        <li class="flex items-start gap-3 bg-slate-50 p-3 rounded-lg border border-slate-100">
+                            <i class="fa-solid fa-right-left text-purple-500 mt-0.5"></i>
+                            <div><strong class="text-slate-800 block mb-1">Chave Bidirecional (P ⇄ R)</strong> Evolução do botão de conversão de fase. O motor agora avalia inteligentemente o estado atual da expressão e alterna livremente entre as representações Cartesianas e Polares.</div>
+                        </li>
+                        <li class="flex items-start gap-3 bg-slate-50 p-3 rounded-lg border border-slate-100">
+                            <i class="fa-solid fa-bug-slash text-purple-500 mt-0.5"></i>
+                            <div><strong class="text-slate-800 block mb-1">Correção de Motor de Regex</strong> Solução de erro de sintaxe que ocorria ao mesclar fasores com funções trigonométricas. A proteção de conversão angular (<code>deg</code>) foi realinhada no pré-processador matemático.</div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="relative pl-12 md:pl-16 group">
+                <div class="absolute left-[-5px] md:left-[3px] top-1.5 w-4 h-4 rounded-full bg-emerald-600 border-4 border-slate-50 shadow group-hover:scale-125 transition-transform z-10"></div>
+                <div class="bg-white p-6 md:p-8 rounded-2xl border border-slate-200 shadow-sm space-y-4 hover:border-emerald-300 transition-colors">
+                    <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-3">
+                        <div class="flex items-center gap-3">
+                            <span class="bg-emerald-100 text-emerald-800 text-sm font-black px-3 py-1 rounded-md code-font border border-emerald-200">v2.2.0</span>
+                            <span class="text-emerald-600 font-bold text-sm uppercase tracking-wider"><i class="fa-solid fa-bolt"></i> Evolução de Simulação</span>
+                        </div>
+                        <span class="text-xs font-bold text-slate-400 bg-slate-100 px-3 py-1 rounded-full"><i class="fa-regular fa-calendar-days"></i> Junho de 2026</span>
+                    </div>
+                    <h3 class="text-xl font-black text-slate-800">Interatividade e Base de Tempo no Módulo Multicanal</h3>
+                    <p class="text-slate-600 text-sm leading-relaxed mb-4">Padronização da arquitetura do Módulo 2 com as melhorias interativas introduzidas recentemente no Módulo Básico.</p>
+                    <ul class="text-sm text-slate-600 space-y-3 list-none">
+                        <li class="flex items-start gap-3 bg-slate-50 p-3 rounded-lg border border-slate-100">
+                            <i class="fa-solid fa-magnifying-glass-chart text-emerald-500 mt-0.5"></i>
+                            <div><strong class="text-slate-800 block mb-1">Base de Tempo Dinâmica (Time/Div)</strong> Inclusão do seletor numérico e deslizante para ajustar a janela de visualização do osciloscópio de 0.5 a 1000 ciclos.</div>
+                        </li>
+                        <li class="flex items-start gap-3 bg-slate-50 p-3 rounded-lg border border-slate-100">
+                            <i class="fa-solid fa-hand-pointer text-emerald-500 mt-0.5"></i>
+                            <div><strong class="text-slate-800 block mb-1">Inspeção por Tooltip</strong> Implementação de tooltips dinâmicos com as unidades correspondentes (V, A, W) para inspecionar os valores instantâneos sobrepostos.</div>
+                        </li>
+                        <li class="flex items-start gap-3 bg-slate-50 p-3 rounded-lg border border-slate-100">
+                            <i class="fa-solid fa-stopwatch text-emerald-500 mt-0.5"></i>
+                            <div><strong class="text-slate-800 block mb-1">Correção do Motor de Animação e Anti-Aliasing</strong> Substituição do incremento de tempo absoluto pelo deslocamento de fase atrelado à frequência, além da inserção da proteção de amostragem dinâmica com teto de 5000 pontos.</div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="relative pl-12 md:pl-16 group">
+                <div class="absolute left-[-5px] md:left-[3px] top-1.5 w-4 h-4 rounded-full bg-purple-600 border-4 border-slate-50 shadow group-hover:scale-125 transition-transform z-10"></div>
+                <div class="bg-white p-6 md:p-8 rounded-2xl border border-slate-200 shadow-sm space-y-4 hover:border-purple-300 transition-colors">
+                    <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-3">
+                        <div class="flex items-center gap-3">
+                            <span class="bg-purple-100 text-purple-800 text-sm font-black px-3 py-1 rounded-md code-font border border-purple-200">v2.1.0</span>
+                            <span class="text-purple-600 font-bold text-sm uppercase tracking-wider"><i class="fa-solid fa-calculator"></i> Lançamento de Ferramenta</span>
+                        </div>
+                        <span class="text-xs font-bold text-slate-400 bg-slate-100 px-3 py-1 rounded-full"><i class="fa-regular fa-calendar-days"></i> Junho de 2026</span>
+                    </div>
+                    <h3 class="text-xl font-black text-slate-800">Motor Matemático: Calculadora Científica Avançada</h3>
+                    <p class="text-slate-600 text-sm leading-relaxed mb-4">Integração de uma nova ferramenta de apoio ao portal focada na resolução de contas complexas da Eletrotécnica.</p>
+                    <ul class="text-sm text-slate-600 space-y-3 list-none">
+                        <li class="flex items-start gap-3 bg-slate-50 p-3 rounded-lg border border-slate-100">
+                            <i class="fa-solid fa-microchip text-purple-500 mt-0.5"></i>
+                            <div><strong class="text-slate-800 block mb-1">Integração do Math.js</strong> Implementação do cérebro matemático capaz de resolver operações com números complexos (<code class="code-font text-purple-600">i</code>) nativamente, servindo como base para cálculos fasoriais complexos.</div>
+                        </li>
+                        <li class="flex items-start gap-3 bg-slate-50 p-3 rounded-lg border border-slate-100">
+                            <i class="fa-solid fa-keyboard text-purple-500 mt-0.5"></i>
+                            <div><strong class="text-slate-800 block mb-1">Chassi HP Prime & Regex Fasorial</strong> Desenvolvimento de UI inspirada em calculadoras gráficas e criação de interpretador (Regex) que traduz digitação fasorial direta (<code class="code-font text-emerald-600">20∠30</code>) para coordenadas cartesianas no motor de cálculo.</div>
+                        </li>
+                        <li class="flex items-start gap-3 bg-slate-50 p-3 rounded-lg border border-slate-100">
+                            <i class="fa-solid fa-code-merge text-purple-500 mt-0.5"></i>
+                            <div><strong class="text-slate-800 block mb-1">Operações Complexas Mistas</strong> Otimização do parser para aceitar expressões combinadas misturando formato polar e retangular, com limpeza automática de resíduos de ponto flutuante via <code class="code-font text-slate-500 text-xs">cleanComplexRounding()</code>.</div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="relative pl-12 md:pl-16 group">
+                <div class="absolute left-[-5px] md:left-[3px] top-1.5 w-4 h-4 rounded-full bg-emerald-600 border-4 border-slate-50 shadow group-hover:scale-125 transition-transform z-10"></div>
+                <div class="bg-white p-6 md:p-8 rounded-2xl border border-slate-200 shadow-sm space-y-4 hover:border-emerald-300 transition-colors">
+                    <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-3">
+                        <div class="flex items-center gap-3">
+                            <span class="bg-emerald-100 text-emerald-800 text-sm font-black px-3 py-1 rounded-md code-font border border-emerald-200">v2.0.1</span>
+                            <span class="text-emerald-600 font-bold text-sm uppercase tracking-wider"><i class="fa-solid fa-sliders"></i> Refinamento de Controle</span>
+                        </div>
+                        <span class="text-xs font-bold text-slate-400 bg-slate-100 px-3 py-1 rounded-full"><i class="fa-regular fa-calendar-days"></i> Junho de 2026</span>
+                    </div>
+                    <h3 class="text-xl font-black text-slate-800">Sincronismo de Precisão no Módulo de Potência</h3>
+                    <p class="text-slate-600 text-sm leading-relaxed mb-4">Aprimoramento da interface de usuário do Módulo 2 para permitir a inserção exata de valores para exercícios teóricos.</p>
+                    <ul class="text-sm text-slate-600 space-y-3 list-none">
+                        <li class="flex items-start gap-3 bg-slate-50 p-3 rounded-lg border border-slate-100">
+                            <i class="fa-solid fa-arrows-rotate text-emerald-500 mt-0.5"></i>
+                            <div><strong class="text-slate-800 block mb-1">Sincronização Bidirecional</strong> Implementação de caixas numéricas acopladas aos sliders. O input do usuário pelo teclado ou pelo arraste do mouse atualiza a simulação gráfica simultaneamente.</div>
+                        </li>
+                        <li class="flex items-start gap-3 bg-slate-50 p-3 rounded-lg border border-slate-100">
+                            <i class="fa-solid fa-eye text-emerald-500 mt-0.5"></i>
+                            <div><strong class="text-slate-800 block mb-1">Exibição de Valores Eficazes</strong> Integração de indicadores reativos para a Tensão Eficaz (V<sub>rms</sub>) e Corrente Eficaz (I<sub>rms</sub>) diretamente nos painéis de controle, evidenciando a origem do cálculo das potências.</div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="relative pl-12 md:pl-16 group">
+                <div class="absolute left-[-5px] md:left-[3px] top-1.5 w-4 h-4 rounded-full bg-emerald-500 border-4 border-slate-50 shadow group-hover:scale-125 transition-transform z-10"></div>
+                <div class="bg-white p-6 md:p-8 rounded-2xl border border-slate-200 shadow-sm space-y-4 hover:border-emerald-300 transition-colors">
+                    <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-3">
+                        <div class="flex items-center gap-3">
+                            <span class="bg-emerald-100 text-emerald-800 text-sm font-black px-3 py-1 rounded-md code-font border border-emerald-200">v2.0.0</span>
+                            <span class="text-emerald-600 font-bold text-sm uppercase tracking-wider"><i class="fa-solid fa-layer-group"></i> Expansão do Sistema</span>
+                        </div>
+                    </div>
+                    <h3 class="text-xl font-black text-slate-800">Hub Central e Simulador Multicanal de Potência</h3>
+                    <p class="text-slate-600 text-sm leading-relaxed mb-4">O projeto deixa de ser uma página única e torna-se um portal completo de ensino com a chegada do módulo de defasagem.</p>
+                    <ul class="text-sm text-slate-600 space-y-3 list-none">
+                        <li class="flex items-start gap-3 bg-slate-50 p-3 rounded-lg border border-slate-100">
+                            <i class="fa-solid fa-sitemap text-emerald-500 mt-0.5"></i>
+                            <div><strong class="text-slate-800 block mb-1">Portal de Acesso Unificado (index.html)</strong> Criação da página inicial do laboratório organizando os módulos de simulação e as ferramentas de apoio em um grid responsivo e escalável.</div>
+                        </li>
+                        <li class="flex items-start gap-3 bg-slate-50 p-3 rounded-lg border border-slate-100">
+                            <i class="fa-solid fa-chart-line text-emerald-500 mt-0.5"></i>
+                            <div><strong class="text-slate-800 block mb-1">Lançamento do Módulo 2 (Potência e Defasagem)</strong> Novo ambiente de simulação permitindo a visualização simultânea das formas de onda de Tensão <code class="code-font text-blue-600">v(t)</code> e Corrente <code class="code-font text-emerald-600">i(t)</code>.</div>
+                        </li>
+                        <li class="flex items-start gap-3 bg-slate-50 p-3 rounded-lg border border-slate-100">
+                            <i class="fa-solid fa-bolt text-emerald-500 mt-0.5"></i>
+                            <div><strong class="text-slate-800 block mb-1">Motor de Triângulo de Potências</strong> Implementação de painéis reativos que calculam em tempo real o Fator de Potência (FP), Potência Ativa (W), Reativa (VAr) e Aparente (VA) baseados nos controles de carga.</div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="relative pl-12 md:pl-16 group">
+                <div class="absolute left-[-5px] md:left-[3px] top-1.5 w-4 h-4 rounded-full bg-blue-600 border-4 border-slate-50 shadow group-hover:scale-125 transition-transform z-10"></div>
+                <div class="bg-white p-6 md:p-8 rounded-2xl border border-slate-200 shadow-sm space-y-4 hover:border-blue-300 transition-colors">
+                    <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-3">
+                        <div class="flex items-center gap-3">
+                            <span class="bg-blue-100 text-blue-800 text-sm font-black px-3 py-1 rounded-md code-font border border-blue-200">v1.1.0</span>
+                            <span class="text-blue-600 font-bold text-sm uppercase tracking-wider"><i class="fa-solid fa-sliders"></i> Aprimoramento de Módulo</span>
+                        </div>
+                        <span class="text-xs font-bold text-slate-400 bg-slate-100 px-3 py-1 rounded-full"><i class="fa-regular fa-calendar-days"></i> Junho de 2026</span>
+                    </div>
+                    <h3 class="text-xl font-black text-slate-800">Interatividade e Zoom no Módulo Básico</h3>
+                    <p class="text-slate-600 text-sm leading-relaxed mb-4">Evolução do simulador inicial com recursos de inspeção gráfica e controle avançado da base de tempo.</p>
+                    <ul class="text-sm text-slate-600 space-y-3 list-none">
+                        <li class="flex items-start gap-3 bg-slate-50 p-3 rounded-lg border border-slate-100">
+                            <i class="fa-solid fa-magnifying-glass-chart text-blue-500 mt-0.5"></i>
+                            <div><strong class="text-slate-800 block mb-1">Base de Tempo Dinâmica (Time/Div)</strong> Inclusão de seletor para ajustar a janela de visualização de 0.5 até 1000 ciclos elétricos.</div>
+                        </li>
+                        <li class="flex items-start gap-3 bg-slate-50 p-3 rounded-lg border border-slate-100">
+                            <i class="fa-solid fa-microchip text-blue-500 mt-0.5"></i>
+                            <div><strong class="text-slate-800 block mb-1">Motor Anti-Aliasing</strong> Implementação de cálculo dinâmico de amostragem (<code class="code-font text-xs text-slate-500">samples</code>) com limite de 5000 pontos para impedir subamostragem sem estourar a memória RAM.</div>
+                        </li>
+                        <li class="flex items-start gap-3 bg-slate-50 p-3 rounded-lg border border-slate-100">
+                            <i class="fa-solid fa-hand-pointer text-blue-500 mt-0.5"></i>
+                            <div><strong class="text-slate-800 block mb-1">Inspeção por Tooltip</strong> Ativação do cursor interativo no Chart.js para permitir a leitura exata do valor instantâneo v(t) ao longo do tempo.</div>
+                        </li>
+                        <li class="flex items-start gap-3 bg-slate-50 p-3 rounded-lg border border-slate-100">
+                            <i class="fa-solid fa-check text-blue-500 mt-0.5"></i>
+                            <div><strong class="text-slate-800 block mb-1">Correção Pedagógica RMS</strong> Remoção da linha tracejada negativa (-Vrms) para alinhar fisicamente a representação matemática do valor eficaz.</div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="relative pl-12 md:pl-16 group">
+                <div class="absolute left-[-5px] md:left-[3px] top-1.5 w-4 h-4 rounded-full bg-blue-400 border-4 border-slate-50 shadow group-hover:scale-125 transition-transform z-10"></div>
+                <div class="bg-white p-6 md:p-8 rounded-2xl border border-slate-200 shadow-sm space-y-4 hover:border-blue-300 transition-colors">
+                    <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-3">
+                        <div class="flex items-center gap-3">
+                            <span class="bg-blue-100 text-blue-800 text-sm font-black px-3 py-1 rounded-md code-font border border-blue-200">v1.0.0</span>
+                            <span class="text-blue-600 font-bold text-sm uppercase tracking-wider"><i class="fa-solid fa-rocket"></i> Lançamento do Projeto</span>
+                        </div>
+                    </div>
+                    <h3 class="text-xl font-black text-slate-800">Visualizador Interativo de Corrente Alternada</h3>
+                    <p class="text-slate-600 text-sm leading-relaxed mb-4">A gênese do projeto. Lançamento da primeira ferramenta didática para visualização de oscilograma básico de CA.</p>
+                    <ul class="text-sm text-slate-600 space-y-3 list-none">
+                        <li class="flex items-start gap-3 bg-slate-50 p-3 rounded-lg border border-slate-100">
+                            <i class="fa-brands fa-html5 text-blue-500 mt-0.5"></i>
+                            <div><strong class="text-slate-800 block mb-1">Fundação Arquitetural</strong> Estruturação base em HTML5, estilização via Tailwind CSS e adoção da biblioteca gráfica Chart.js para renderização vetorial no Canvas.</div>
+                        </li>
+                        <li class="flex items-start gap-3 bg-slate-50 p-3 rounded-lg border border-slate-100">
+                            <i class="fa-solid fa-wave-square text-blue-500 mt-0.5"></i>
+                            <div><strong class="text-slate-800 block mb-1">Gráficos e Cálculos Dinâmicos</strong> Plotagem de onda senoidal única com auto-escalonamento para 2 ciclos perfeitos. Cálculo instantâneo de Vp, Vpp, Vrms, Período e Frequência Angular.</div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="relative pl-12 md:pl-16">
+                <div class="absolute left-[-1px] md:left-[7px] top-0 w-2 h-2 rounded-full bg-slate-300 z-10"></div>
+            </div>
+
+        </div>
+
+    </main>
+
+    <footer class="bg-slate-900 text-slate-400 text-center py-5 text-xs border-t border-slate-800 mt-12 w-full">
+        <p class="mb-1 font-bold tracking-wider text-slate-300">LAB AC PRO &copy; 2026</p>
+        <p>Material de Apoio Didático — Desenvolvido para o Curso Técnico em Eletrotécnica IFRN</p>
+    </footer>
+
+</body>
+</html>
