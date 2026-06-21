@@ -64,6 +64,112 @@
 
         <div class="space-y-8 relative before:absolute before:inset-0 before:left-4 md:before:left-6 before:h-full before:w-0.5 before:bg-slate-200 ml-2 md:ml-0">
 
+
+            <div class="relative pl-12 md:pl-16 group">
+                <div class="absolute left-[-5px] md:left-[3px] top-1.5 w-4 h-4 rounded-full bg-indigo-600 border-4 border-slate-50 shadow group-hover:scale-125 transition-transform z-10"></div>
+                <div class="bg-white p-6 md:p-8 rounded-2xl border border-slate-200 shadow-sm space-y-4 hover:border-indigo-300 transition-colors">
+                    <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-3">
+                        <div class="flex items-center gap-3">
+                            <span class="bg-indigo-100 text-indigo-800 text-sm font-black px-3 py-1 rounded-md code-font border border-indigo-200">v2.5.0</span>
+                            <span class="text-indigo-600 font-bold text-sm uppercase tracking-wider"><i class="fa-solid fa-chart-line"></i> Evolução de Ferramenta</span>
+                        </div>
+                        <span class="text-xs font-bold text-slate-400 bg-slate-100 px-3 py-1 rounded-full"><i class="fa-regular fa-calendar-days"></i> Junho de 2026</span>
+                    </div>
+                    <h3 class="text-xl font-black text-slate-800">Plotador Gráfico Avançado e Ambiente de Análise Visual</h3>
+                    <p class="text-slate-600 text-sm leading-relaxed mb-4">
+                        Transformação do plotador básico em uma ferramenta interativa para estudo de funções, sinais elétricos, relações tensão-corrente e análise gráfica em laboratório.
+                    </p>
+                    <ul class="text-sm text-slate-600 space-y-3 list-none">
+                        <li class="flex items-start gap-3 bg-slate-50 p-3 rounded-lg border border-slate-100">
+                            <i class="fa-solid fa-sliders text-indigo-500 mt-0.5"></i>
+                            <div><strong class="text-slate-800 block mb-1">Variáveis Dinâmicas e Sliders Globais</strong> Inclusão de parâmetros ajustáveis como <code class="code-font text-indigo-600">A</code>, <code class="code-font text-indigo-600">w</code> e <code class="code-font text-indigo-600">phi</code>, permitindo alterar amplitude, frequência angular e fase em tempo real.</div>
+                        </li>
+                        <li class="flex items-start gap-3 bg-slate-50 p-3 rounded-lg border border-slate-100">
+                            <i class="fa-solid fa-square-root-variable text-indigo-500 mt-0.5"></i>
+                            <div><strong class="text-slate-800 block mb-1">Derivadas, Integrais e Referências entre Funções</strong> Implementação das sintaxes <code class="code-font">der(f1)</code>, <code class="code-font">int(f1)</code> e referências encadeadas entre funções anteriores, voltadas à análise de indutores, capacitores e defasagens.</div>
+                        </li>
+                        <li class="flex items-start gap-3 bg-slate-50 p-3 rounded-lg border border-slate-100">
+                            <i class="fa-solid fa-infinity text-indigo-500 mt-0.5"></i>
+                            <div><strong class="text-slate-800 block mb-1">Modo X-Y e Figuras de Lissajous</strong> Adição de modo osciloscópio X-Y, utilizando a primeira função como eixo horizontal e a segunda como eixo vertical para análise visual de defasagem.</div>
+                        </li>
+                        <li class="flex items-start gap-3 bg-slate-50 p-3 rounded-lg border border-slate-100">
+                            <i class="fa-solid fa-file-code text-indigo-500 mt-0.5"></i>
+                            <div><strong class="text-slate-800 block mb-1">Exportação para LaTeX / PGFPlots</strong> Geração automática de código <code class="code-font">tikzpicture</code> e <code class="code-font">axis</code> com as coordenadas visíveis do gráfico para uso em listas, provas e artigos técnicos.</div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="relative pl-12 md:pl-16 group">
+                <div class="absolute left-[-5px] md:left-[3px] top-1.5 w-4 h-4 rounded-full bg-cyan-600 border-4 border-slate-50 shadow group-hover:scale-125 transition-transform z-10"></div>
+                <div class="bg-white p-6 md:p-8 rounded-2xl border border-slate-200 shadow-sm space-y-4 hover:border-cyan-300 transition-colors">
+                    <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-3">
+                        <div class="flex items-center gap-3">
+                            <span class="bg-cyan-100 text-cyan-800 text-sm font-black px-3 py-1 rounded-md code-font border border-cyan-200">v2.4.0</span>
+                            <span class="text-cyan-600 font-bold text-sm uppercase tracking-wider"><i class="fa-solid fa-crosshairs"></i> Interação e Medição</span>
+                        </div>
+                        <span class="text-xs font-bold text-slate-400 bg-slate-100 px-3 py-1 rounded-full"><i class="fa-regular fa-calendar-days"></i> Junho de 2026</span>
+                    </div>
+                    <h3 class="text-xl font-black text-slate-800">Cursores de Medição, Inspeção Seletiva e Refinamento de Interface</h3>
+                    <p class="text-slate-600 text-sm leading-relaxed mb-4">
+                        Consolidação da camada de interação do Plotador com recursos de medição inspirados em osciloscópios e melhorias de usabilidade para análise em sala de aula.
+                    </p>
+                    <ul class="text-sm text-slate-600 space-y-3 list-none">
+                        <li class="flex items-start gap-3 bg-slate-50 p-3 rounded-lg border border-slate-100">
+                            <i class="fa-solid fa-arrows-left-right-to-line text-cyan-500 mt-0.5"></i>
+                            <div><strong class="text-slate-800 block mb-1">Cursores Verticais C1 e C2</strong> Inclusão de retas verticais arrastáveis com leitura de coordenadas e cálculo automático de <code class="code-font">ΔX</code>.</div>
+                        </li>
+                        <li class="flex items-start gap-3 bg-slate-50 p-3 rounded-lg border border-slate-100">
+                            <i class="fa-solid fa-arrows-up-down-to-line text-cyan-500 mt-0.5"></i>
+                            <div><strong class="text-slate-800 block mb-1">Cursores Horizontais H1 e H2</strong> Adição de retas horizontais independentes para medição direta de níveis e cálculo de <code class="code-font">ΔY</code>.</div>
+                        </li>
+                        <li class="flex items-start gap-3 bg-slate-50 p-3 rounded-lg border border-slate-100">
+                            <i class="fa-solid fa-circle-dot text-cyan-500 mt-0.5"></i>
+                            <div><strong class="text-slate-800 block mb-1">Marcador de Hover e Tooltip por Clique</strong> O marcador acompanha a curva sem exibir valores. O tooltip aparece somente ao clicar diretamente na bolinha e alterna entre mostrar e ocultar ao clicar novamente.</div>
+                        </li>
+                        <li class="flex items-start gap-3 bg-slate-50 p-3 rounded-lg border border-slate-100">
+                            <i class="fa-solid fa-window-maximize text-cyan-500 mt-0.5"></i>
+                            <div><strong class="text-slate-800 block mb-1">Painel Gráfico Fixo e Proporção Otimizada</strong> Ajuste da altura do plano cartesiano e aplicação de comportamento fixo durante a rolagem em telas maiores, mantendo o gráfico visível enquanto os controles são acessados.</div>
+                        </li>
+                        <li class="flex items-start gap-3 bg-slate-50 p-3 rounded-lg border border-slate-100">
+                            <i class="fa-solid fa-wand-magic-sparkles text-cyan-500 mt-0.5"></i>
+                            <div><strong class="text-slate-800 block mb-1">Retorno da Animação Progressiva</strong> Restauração do efeito de desenho gradual das curvas ao plotar ou atualizar uma função.</div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="relative pl-12 md:pl-16 group">
+                <div class="absolute left-[-5px] md:left-[3px] top-1.5 w-4 h-4 rounded-full bg-slate-700 border-4 border-slate-50 shadow group-hover:scale-125 transition-transform z-10"></div>
+                <div class="bg-white p-6 md:p-8 rounded-2xl border border-slate-200 shadow-sm space-y-4 hover:border-slate-400 transition-colors">
+                    <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-3">
+                        <div class="flex items-center gap-3">
+                            <span class="bg-slate-200 text-slate-800 text-sm font-black px-3 py-1 rounded-md code-font border border-slate-300">v2.3.1</span>
+                            <span class="text-slate-600 font-bold text-sm uppercase tracking-wider"><i class="fa-solid fa-book-open"></i> Documentação Global</span>
+                        </div>
+                        <span class="text-xs font-bold text-slate-400 bg-slate-100 px-3 py-1 rounded-full"><i class="fa-regular fa-calendar-days"></i> Junho de 2026</span>
+                    </div>
+                    <h3 class="text-xl font-black text-slate-800">Dev Notes por Ferramenta e Navegação de Histórico</h3>
+                    <p class="text-slate-600 text-sm leading-relaxed mb-4">
+                        Reorganização da documentação técnica do ecossistema para facilitar o acompanhamento das mudanças específicas e globais.
+                    </p>
+                    <ul class="text-sm text-slate-600 space-y-3 list-none">
+                        <li class="flex items-start gap-3 bg-slate-50 p-3 rounded-lg border border-slate-100">
+                            <i class="fa-solid fa-file-lines text-slate-500 mt-0.5"></i>
+                            <div><strong class="text-slate-800 block mb-1">Dev Notes da Calculadora</strong> Consolidação do histórico próprio da Calculadora Lab AC Pro, separado do changelog geral.</div>
+                        </li>
+                        <li class="flex items-start gap-3 bg-slate-50 p-3 rounded-lg border border-slate-100">
+                            <i class="fa-solid fa-file-waveform text-slate-500 mt-0.5"></i>
+                            <div><strong class="text-slate-800 block mb-1">Dev Notes do Plotador</strong> Criação do arquivo <code class="code-font">devnotes_plotador.html</code> com registro detalhado de cada etapa de evolução da ferramenta.</div>
+                        </li>
+                        <li class="flex items-start gap-3 bg-slate-50 p-3 rounded-lg border border-slate-100">
+                            <i class="fa-solid fa-link text-slate-500 mt-0.5"></i>
+                            <div><strong class="text-slate-800 block mb-1">Acesso Direto aos Históricos</strong> Inclusão de botões nas ferramentas para abrir seus respectivos changelogs, mantendo a identidade visual de cada módulo.</div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
             <div class="relative pl-12 md:pl-16 group">
                 <div class="absolute left-[-5px] md:left-[3px] top-1.5 w-4 h-4 rounded-full bg-purple-600 border-4 border-slate-50 shadow group-hover:scale-125 transition-transform z-10"></div>
                 <div class="bg-white p-6 md:p-8 rounded-2xl border border-slate-200 shadow-sm space-y-4 hover:border-purple-300 transition-colors">
