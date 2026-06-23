@@ -64,6 +64,75 @@
 
         <div class="space-y-8 relative before:absolute before:inset-0 before:left-4 md:before:left-6 before:h-full before:w-0.5 before:bg-slate-200 ml-2 md:ml-0">
 
+            <div class="relative pl-12 md:pl-16 group">
+                <div class="absolute left-[-5px] md:left-[3px] top-1.5 w-4 h-4 rounded-full bg-rose-500 border-4 border-slate-50 shadow group-hover:scale-125 transition-transform z-10"></div>
+                <div class="bg-white p-6 md:p-8 rounded-2xl border border-slate-200 shadow-sm space-y-4 hover:border-rose-300 transition-colors">
+                    <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-3">
+                        <div class="flex items-center gap-3">
+                            <span class="bg-rose-100 text-rose-800 text-sm font-black px-3 py-1 rounded-md code-font border border-rose-200">v2.6.1</span>
+                            <span class="text-rose-600 font-bold text-sm uppercase tracking-wider"><i class="fa-solid fa-shield-halved"></i> Patch de Segurança Múltipla</span>
+                        </div>
+                        <span class="text-xs font-bold text-slate-400 bg-slate-100 px-3 py-1 rounded-full"><i class="fa-regular fa-calendar-days"></i> Junho de 2026</span>
+                    </div>
+                    <h3 class="text-xl font-black text-slate-800">Sistema Global de Autenticação e Gestor de Usuários</h3>
+                    <p class="text-slate-600 text-sm leading-relaxed mb-4">
+                        Atualização estrutural para proteger as ferramentas do professor contra o acesso não autorizado de alunos, eliminando hardcoding de senhas nos arquivos do front-end.
+                    </p>
+                    <ul class="text-sm text-slate-600 space-y-3 list-none">
+                        <li class="flex items-start gap-3 bg-slate-50 p-3 rounded-lg border border-slate-100">
+                            <i class="fa-solid fa-file-code text-rose-500 mt-0.5"></i>
+                            <div><strong class="text-slate-800 block mb-1">Módulo Central (logins.js)</strong> Implementação de uma arquitetura de segurança unificada. Todas as ferramentas restritas agora compartilham uma única fonte de verdade para autorização.</div>
+                        </li>
+                        <li class="flex items-start gap-3 bg-slate-50 p-3 rounded-lg border border-slate-100">
+                            <i class="fa-solid fa-key text-rose-500 mt-0.5"></i>
+                            <div><strong class="text-slate-800 block mb-1">Ofuscação por Hashing Criptográfico</strong> Remoção de texto em claro (Plaintext). Senhas e logins agora são processados em Base64 e invertidos em matriz, prevenindo a leitura através da inspeção de código (Ctrl+U) por parte dos alunos.</div>
+                        </li>
+                        <li class="flex items-start gap-3 bg-slate-50 p-3 rounded-lg border border-slate-100">
+                            <i class="fa-solid fa-user-shield text-rose-500 mt-0.5"></i>
+                            <div><strong class="text-slate-800 block mb-1">Painel "Admin Master" de Cadastros</strong> Lançamento do <code class="code-font text-xs">cadastrar_usuario.html</code>. Um ambiente protegido que permite gerar dinamicamente novos blocos de código autorizados e injetá-los no motor principal de logins com um clique, facilitando a adição de estagiários.</div>
+                        </li>
+                        <li class="flex items-start gap-3 bg-slate-50 p-3 rounded-lg border border-slate-100">
+                            <i class="fa-solid fa-comment-dots text-rose-500 mt-0.5"></i>
+                            <div><strong class="text-slate-800 block mb-1">Tratamento Dinâmico de Erros</strong> Substituição de alertas genéricos por respostas mapeadas: "Usuário não encontrado" e "Senha incorreta", implementadas sem ferir a arquitetura legado.</div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="relative pl-12 md:pl-16 group">
+                <div class="absolute left-[-5px] md:left-[3px] top-1.5 w-4 h-4 rounded-full bg-amber-500 border-4 border-slate-50 shadow group-hover:scale-125 transition-transform z-10"></div>
+                <div class="bg-white p-6 md:p-8 rounded-2xl border border-slate-200 shadow-sm space-y-4 hover:border-amber-300 transition-colors">
+                    <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-3">
+                        <div class="flex items-center gap-3">
+                            <span class="bg-amber-100 text-amber-800 text-sm font-black px-3 py-1 rounded-md code-font border border-amber-200">v2.6.0</span>
+                            <span class="text-amber-600 font-bold text-sm uppercase tracking-wider"><i class="fa-solid fa-chalkboard-user"></i> O Patch do Professor</span>
+                        </div>
+                        <span class="text-xs font-bold text-slate-400 bg-slate-100 px-3 py-1 rounded-full"><i class="fa-regular fa-calendar-days"></i> Junho de 2026</span>
+                    </div>
+                    <h3 class="text-xl font-black text-slate-800">Ferramentas de Gestão de Sala e Área Restrita</h3>
+                    <p class="text-slate-600 text-sm leading-relaxed mb-4">
+                        Implementação de um hub exclusivo protegido por credenciais para auxiliar na gestão de dinâmicas, sorteios e avaliação de problemas teóricos.
+                    </p>
+                    <ul class="text-sm text-slate-600 space-y-3 list-none">
+                        <li class="flex items-start gap-3 bg-slate-50 p-3 rounded-lg border border-slate-100">
+                            <i class="fa-solid fa-dice text-amber-500 mt-0.5"></i>
+                            <div><strong class="text-slate-800 block mb-1">Sorteador Automático Gamificado</strong> Motor físico interativo (<code class="code-font text-xs">HTML5 Canvas</code>) para sorteio de alunos. Possui controle de lista por número ou leitura nativa de nomes via arquivo <code class="code-font text-xs">.txt</code>, atribuição automática de exercícios e registro persistente de histórico para não repetir alunos sorteados.</div>
+                        </li>
+                        <li class="flex items-start gap-3 bg-slate-50 p-3 rounded-lg border border-slate-100">
+                            <i class="fa-solid fa-file-signature text-amber-500 mt-0.5"></i>
+                            <div><strong class="text-slate-800 block mb-1">Gerador de Circuitos CA (v2)</strong> Geração automática de problemas de circuitos Série (RL, RC e RLC) com valores comerciais reais. Incorpora renderização em tempo real do esquema unifilar do circuito em SVG e desenho em escala geométrica do Triângulo de Potências.</div>
+                        </li>
+                        <li class="flex items-start gap-3 bg-slate-50 p-3 rounded-lg border border-slate-100">
+                            <i class="fa-solid fa-bolt text-amber-500 mt-0.5"></i>
+                            <div><strong class="text-slate-800 block mb-1">Módulo de Otimização e Correção de FP</strong> Integrado ao gerador de circuitos. O sistema recebe um FP alvo e fornece o cálculo analítico detalhado (passo a passo de θ e Q_comp), estabelecendo os bancos corretos em Farads (µF) ou Henrys (mH).</div>
+                        </li>
+                        <li class="flex items-start gap-3 bg-slate-50 p-3 rounded-lg border border-slate-100">
+                            <i class="fa-solid fa-users-rectangle text-amber-500 mt-0.5"></i>
+                            <div><strong class="text-slate-800 block mb-1">Divisor Inteligente de Equipes</strong> Automação para separação de alunos em grupos, definindo a meta pelo total de equipes desejado ou limite máximo de participantes por grupo, usando embaralhamento lógico (Fisher-Yates).</div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
 
             <div class="relative pl-12 md:pl-16 group">
                 <div class="absolute left-[-5px] md:left-[3px] top-1.5 w-4 h-4 rounded-full bg-indigo-600 border-4 border-slate-50 shadow group-hover:scale-125 transition-transform z-10"></div>
@@ -228,60 +297,6 @@
                 </div>
             </div>
             
-            <div class="relative pl-12 md:pl-16 group">
-                <div class="absolute left-[-5px] md:left-[3px] top-1.5 w-4 h-4 rounded-full bg-purple-600 border-4 border-slate-50 shadow group-hover:scale-125 transition-transform z-10"></div>
-                <div class="bg-white p-6 md:p-8 rounded-2xl border border-slate-200 shadow-sm space-y-4 hover:border-purple-300 transition-colors">
-                    <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-3">
-                        <div class="flex items-center gap-3">
-                            <span class="bg-purple-100 text-purple-800 text-sm font-black px-3 py-1 rounded-md code-font border border-purple-200">v2.1.0</span>
-                            <span class="text-purple-600 font-bold text-sm uppercase tracking-wider"><i class="fa-solid fa-calculator"></i> Lançamento de Ferramenta</span>
-                        </div>
-                        <span class="text-xs font-bold text-slate-400 bg-slate-100 px-3 py-1 rounded-full"><i class="fa-regular fa-calendar-days"></i> Junho de 2026</span>
-                    </div>
-                    <h3 class="text-xl font-black text-slate-800">Motor Matemático: Calculadora Científica Avançada</h3>
-                    <p class="text-slate-600 text-sm leading-relaxed mb-4">Integração de uma nova ferramenta de apoio ao portal focada na resolução de contas complexas da Eletrotécnica.</p>
-                    <ul class="text-sm text-slate-600 space-y-3 list-none">
-                        <li class="flex items-start gap-3 bg-slate-50 p-3 rounded-lg border border-slate-100">
-                            <i class="fa-solid fa-microchip text-purple-500 mt-0.5"></i>
-                            <div><strong class="text-slate-800 block mb-1">Integração do Math.js</strong> Implementação do cérebro matemático capaz de resolver operações com números complexos (<code class="code-font text-purple-600">i</code>) nativamente, servindo como base para cálculos fasoriais complexos.</div>
-                        </li>
-                        <li class="flex items-start gap-3 bg-slate-50 p-3 rounded-lg border border-slate-100">
-                            <i class="fa-solid fa-keyboard text-purple-500 mt-0.5"></i>
-                            <div><strong class="text-slate-800 block mb-1">Chassi HP Prime & Regex Fasorial</strong> Desenvolvimento de UI inspirada em calculadoras gráficas e criação de interpretador (Regex) que traduz digitação fasorial direta (<code class="code-font text-emerald-600">20∠30</code>) para coordenadas cartesianas no motor de cálculo.</div>
-                        </li>
-                        <li class="flex items-start gap-3 bg-slate-50 p-3 rounded-lg border border-slate-100">
-                            <i class="fa-solid fa-code-merge text-purple-500 mt-0.5"></i>
-                            <div><strong class="text-slate-800 block mb-1">Operações Complexas Mistas</strong> Otimização do parser para aceitar expressões combinadas misturando formato polar e retangular, com limpeza automática de resíduos de ponto flutuante via <code class="code-font text-slate-500 text-xs">cleanComplexRounding()</code>.</div>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-
-            <div class="relative pl-12 md:pl-16 group">
-                <div class="absolute left-[-5px] md:left-[3px] top-1.5 w-4 h-4 rounded-full bg-emerald-600 border-4 border-slate-50 shadow group-hover:scale-125 transition-transform z-10"></div>
-                <div class="bg-white p-6 md:p-8 rounded-2xl border border-slate-200 shadow-sm space-y-4 hover:border-emerald-300 transition-colors">
-                    <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-3">
-                        <div class="flex items-center gap-3">
-                            <span class="bg-emerald-100 text-emerald-800 text-sm font-black px-3 py-1 rounded-md code-font border border-emerald-200">v2.0.1</span>
-                            <span class="text-emerald-600 font-bold text-sm uppercase tracking-wider"><i class="fa-solid fa-sliders"></i> Refinamento de Controle</span>
-                        </div>
-                        <span class="text-xs font-bold text-slate-400 bg-slate-100 px-3 py-1 rounded-full"><i class="fa-regular fa-calendar-days"></i> Junho de 2026</span>
-                    </div>
-                    <h3 class="text-xl font-black text-slate-800">Sincronismo de Precisão no Módulo de Potência</h3>
-                    <p class="text-slate-600 text-sm leading-relaxed mb-4">Aprimoramento da interface de usuário do Módulo 2 para permitir a inserção exata de valores para exercícios teóricos.</p>
-                    <ul class="text-sm text-slate-600 space-y-3 list-none">
-                        <li class="flex items-start gap-3 bg-slate-50 p-3 rounded-lg border border-slate-100">
-                            <i class="fa-solid fa-arrows-rotate text-emerald-500 mt-0.5"></i>
-                            <div><strong class="text-slate-800 block mb-1">Sincronização Bidirecional</strong> Implementação de caixas numéricas acopladas aos sliders. O input do usuário pelo teclado ou pelo arraste do mouse atualiza a simulação gráfica simultaneamente.</div>
-                        </li>
-                        <li class="flex items-start gap-3 bg-slate-50 p-3 rounded-lg border border-slate-100">
-                            <i class="fa-solid fa-eye text-emerald-500 mt-0.5"></i>
-                            <div><strong class="text-slate-800 block mb-1">Exibição de Valores Eficazes</strong> Integração de indicadores reativos para a Tensão Eficaz (V<sub>rms</sub>) e Corrente Eficaz (I<sub>rms</sub>) diretamente nos painéis de controle, evidenciando a origem do cálculo das potências.</div>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-
             <div class="relative pl-12 md:pl-16 group">
                 <div class="absolute left-[-5px] md:left-[3px] top-1.5 w-4 h-4 rounded-full bg-emerald-500 border-4 border-slate-50 shadow group-hover:scale-125 transition-transform z-10"></div>
                 <div class="bg-white p-6 md:p-8 rounded-2xl border border-slate-200 shadow-sm space-y-4 hover:border-emerald-300 transition-colors">
