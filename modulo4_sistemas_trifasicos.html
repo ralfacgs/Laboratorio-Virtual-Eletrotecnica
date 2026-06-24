@@ -3,434 +3,736 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistemas Trifásicos - Lab AC Pro</title>
+    <title>Módulo 4: Cargas Trifásicas - Lab AC Pro</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&family=Fira+Code:wght@400;500&display=swap');
         body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
+        .font-mono { font-family: 'Fira Code', monospace; }
         input[type=number]::-webkit-inner-spin-button, 
         input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
-        input[type=number] { -moz-appearance: textfield; }
-        canvas { cursor: crosshair; }
+        canvas { cursor: grab; touch-action: none; }
+        canvas:active { cursor: grabbing; }
     </style>
+    <script src="js/logins.js"></script>
 </head>
 <body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
 
-    <header class="bg-emerald-700 text-white shadow-md py-4 px-6 relative z-10">
+    <header class="bg-teal-700 text-white shadow-md py-4 px-6 relative z-10">
         <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
             <div class="flex items-center gap-4">
-                <div class="bg-white p-2 rounded shadow-sm text-emerald-700 font-bold text-xl flex items-center justify-center h-12 w-12">
-                    <i class="fa-solid fa-circle-notch"></i>
+                <div class="bg-white text-teal-700 p-2 rounded shadow-sm text-xl flex items-center justify-center h-12 w-12 font-bold">
+                    <i class="fa-solid fa-network-wired"></i>
                 </div>
                 <div>
-                    <h1 class="text-xl font-bold tracking-wide">MÓDULO: SISTEMAS TRIFÁSICOS</h1>
-                    <p class="text-xs text-emerald-100 font-medium">Análise de Redes de Corrente Alternada Polifásicas</p>
+                    <h1 class="text-xl font-bold tracking-wide">MÓDULO 4: SISTEMAS TRIFÁSICOS</h1>
+                    <p class="text-xs text-teal-100 font-medium">Análise de Cargas, Correntes e Correção de Fator de Potência</p>
                 </div>
             </div>
-            <a href="index.html" class="text-sm font-semibold text-emerald-50 hover:text-white bg-emerald-800 hover:bg-emerald-900 px-4 py-2 rounded transition-colors">
+            <a href="index.html" class="text-sm font-semibold text-teal-50 hover:text-white bg-teal-800 hover:bg-teal-900 px-4 py-2 rounded transition-colors">
                 <i class="fa-solid fa-house"></i> Voltar ao Portal
             </a>
         </div>
     </header>
 
-    <main class="flex-grow w-full max-w-7xl mx-auto p-4 md:p-6">
+    <main class="flex-grow w-full max-w-7xl mx-auto p-4 md:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6 relative">
         
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        <div class="lg:col-span-4 flex flex-col gap-6">
             
-            <div class="lg:col-span-4 flex flex-col gap-6 self-start">
-                
-                <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 space-y-5">
-                    <h3 class="font-black text-slate-800 text-sm uppercase tracking-wider border-b border-slate-100 pb-2 flex items-center gap-2">
-                        <i class="fa-solid fa-sliders text-emerald-500"></i> Parâmetros de Entrada
+            <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200">
+                <h3 class="font-black text-slate-900 text-sm uppercase tracking-wider border-b border-slate-100 pb-2 mb-4 flex items-center gap-2">
+                    <i class="fa-solid fa-car-battery text-teal-600"></i> Lado da Fonte (Gerador)
+                </h3>
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="col-span-2">
+                        <label class="block text-xs font-bold text-slate-600 mb-1">Tensão de Linha (V_L):</label>
+                        <div class="relative">
+                            <input type="number" id="vLine" value="380" class="w-full border rounded p-2 pl-3 pr-8 font-mono bg-slate-50 focus:border-teal-500 outline-none">
+                            <span class="absolute right-3 top-2 text-xs font-bold text-slate-400">V</span>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-600 mb-1">Frequência (f):</label>
+                        <div class="relative">
+                            <input type="number" id="freq" value="60" class="w-full border rounded p-2 pl-3 pr-8 font-mono bg-slate-50 focus:border-teal-500 outline-none">
+                            <span class="absolute right-3 top-2 text-xs font-bold text-slate-400">Hz</span>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-600 mb-1">Sequência:</label>
+                        <select id="seqFase" class="w-full border rounded p-2 bg-slate-50 font-bold text-slate-700 focus:border-teal-500 outline-none">
+                            <option value="ABC">Direta (ABC)</option>
+                            <option value="CBA">Inversa (CBA)</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200">
+                <div class="flex justify-between items-center border-b border-slate-100 pb-2 mb-4">
+                    <h3 class="font-black text-slate-900 text-sm uppercase tracking-wider flex items-center gap-2">
+                        <i class="fa-solid fa-microchip text-teal-600"></i> Lado da Carga
                     </h3>
-
-                    <div>
-                        <div class="flex justify-between items-center mb-2">
-                            <label for="vfInput" class="text-xs font-bold text-slate-600">Tensão de Fase (V<sub>f,rms</sub>):</label>
-                            <div class="flex items-center gap-1">
-                                <input type="number" id="vfInput" min="10" max="450" value="220" class="w-16 border rounded p-1 text-center font-bold text-xs bg-slate-50 focus:outline-none focus:border-emerald-500">
-                                <span class="text-xs font-bold text-slate-400">V</span>
-                            </div>
-                        </div>
-                        <input type="range" id="vfSlider" min="10" max="450" value="220" class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-emerald-600">
-                    </div>
-
-                    <div>
-                        <div class="flex justify-between items-center mb-2">
-                            <label for="freqInput" class="text-xs font-bold text-slate-600">Frequência (f):</label>
-                            <div class="flex items-center gap-1">
-                                <input type="number" id="freqInput" min="10" max="120" value="60" class="w-16 border rounded p-1 text-center font-bold text-xs bg-slate-50 focus:outline-none focus:border-emerald-500">
-                                <span class="text-xs font-bold text-slate-400">Hz</span>
-                            </div>
-                        </div>
-                        <input type="range" id="freqSlider" min="10" max="120" value="60" class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-emerald-600">
-                    </div>
-
-                    <div>
-                        <label class="block text-xs font-bold text-slate-600 mb-2">Conexão da Carga Equilibrada:</label>
-                        <div class="grid grid-cols-2 gap-2">
-                            <button id="btnStar" onclick="setConnection('star')" class="py-2.5 px-3 rounded-lg font-bold text-xs uppercase tracking-wide border transition-all flex items-center justify-center gap-2 bg-emerald-50 border-emerald-500 text-emerald-700 shadow-sm">
-                                <i class="fa-solid fa-yin-yang"></i> Estrela (Y)
-                            </button>
-                            <button id="btnDelta" onclick="setConnection('delta')" class="py-2.5 px-3 rounded-lg font-bold text-xs uppercase tracking-wide border transition-all flex items-center justify-center gap-2 bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100">
-                                <i class="fa-solid fa-triangle-exclamation"></i> Triângulo (Δ)
-                            </button>
-                        </div>
-                    </div>
-
-                    <div class="pt-2 border-t border-slate-100">
-                        <label class="relative inline-flex items-center cursor-pointer">
-                            <input type="checkbox" id="checkLineVoltage" class="sr-only peer" onchange="updateSimulationLayout()">
-                            <div class="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-600"></div>
-                            <span class="ml-3 text-xs font-bold text-slate-700">Exibir Tensão de Linha (v<sub>AB</sub>)</span>
-                        </label>
-                    </div>
-
-                    <div class="grid grid-cols-3 gap-2 pt-2">
-                        <button onclick="toggleSimulation()" id="btnSim" class="col-span-2 bg-slate-800 text-white py-3.5 rounded-xl font-black uppercase tracking-wider text-xs hover:bg-black transition-all shadow">
-                            <i id="btnIcon" class="fa-solid fa-play mr-1"></i> <span id="btnText">Iniciar Fluxo</span>
-                        </button>
-                        <button onclick="resetSimulation()" class="col-span-1 bg-slate-200 text-slate-700 py-3.5 rounded-xl font-black uppercase tracking-wider text-xs hover:bg-slate-300 transition-all shadow" title="Resetar tempo">
-                            <i class="fa-solid fa-rotate-left"></i>
-                        </button>
-                    </div>
+                    <span id="badgeMode" class="text-[9px] font-black uppercase bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded">Equilibrado</span>
                 </div>
-
-                <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200">
-                    <h3 class="font-black text-slate-800 text-sm uppercase tracking-wider border-b border-slate-100 pb-2 mb-4 flex items-center gap-2">
-                        <i class="fa-solid fa-calculator text-emerald-500"></i> Relações de Rede
-                    </h3>
-                    
-                    <div class="space-y-3 font-medium text-xs tracking-wide">
-                        <div class="flex justify-between items-center p-2.5 bg-slate-50 rounded-lg border border-slate-200">
-                            <div>
-                                <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Tensão de Fase (RMS)</p>
-                                <p class="font-serif italic font-semibold text-slate-600">V<sub>F</sub></p>
-                            </div>
-                            <p class="text-sm font-black text-slate-800" id="calcVF">220.0 V</p>
-                        </div>
-
-                        <div class="flex justify-between items-center p-2.5 bg-blue-50 rounded-lg border border-blue-200">
-                            <div>
-                                <p class="text-[10px] text-blue-500 font-bold uppercase tracking-wider">Tensão de Linha (RMS)</p>
-                                <p class="font-serif italic font-semibold text-blue-700" id="formulaVL">V<sub>L</sub> = √3 × V<sub>F</sub></p>
-                            </div>
-                            <p class="text-sm font-black text-blue-600" id="calcVL">381.1 V</p>
-                        </div>
-
-                        <div class="flex justify-between items-center p-2.5 bg-emerald-50 rounded-lg border border-emerald-200">
-                            <div>
-                                <p class="text-[10px] text-emerald-700 font-bold uppercase tracking-wider">Relação de Corrente</p>
-                                <p class="font-serif italic font-semibold text-emerald-900" id="formulaCurrent">I<sub>Linha</sub> = I<sub>Fase</sub></p>
-                            </div>
-                            <p class="text-xs font-bold text-emerald-800" id="textCurrentModel">Rede Equilibrada</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="lg:col-span-8 flex flex-col gap-6">
                 
-                <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 flex flex-col">
+                <div class="space-y-4">
                     <div>
-                        <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
-                            <i class="fa-solid fa-chart-line text-blue-600"></i> Osciloscópio Trifásico
-                        </h2>
-                        <p class="text-xs text-slate-500 mb-4">Comportamento instantâneo das tensões ao longo de um período completo.</p>
-                    </div>
-                    <div class="relative min-h-[300px] flex items-center justify-center">
-                        <canvas id="oscilloChart"></canvas>
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-12 gap-6">
-                    <div class="md:col-span-5 bg-white p-5 rounded-xl shadow-sm border border-slate-200 flex flex-col items-center">
-                        <h3 class="w-full text-left text-xs font-bold text-slate-700 uppercase tracking-wider mb-3">
-                            <i class="fa-solid fa-compass text-amber-500"></i> Plano Complexo
-                        </h3>
-                        <canvas id="phasorCanvas" width="240" height="240" class="bg-slate-50 border border-slate-100 rounded-lg shadow-inner"></canvas>
+                        <label class="block text-xs font-bold text-slate-600 mb-1">Fechamento (Conexão):</label>
+                        <select id="connType" class="w-full border rounded p-2 bg-slate-50 font-bold text-slate-700 focus:border-teal-500 outline-none">
+                            <option value="Y">Estrela (Y) com Neutro</option>
+                            <option value="D">Triângulo (Δ)</option>
+                        </select>
                     </div>
 
-                    <div class="md:col-span-7 bg-white p-5 rounded-xl shadow-sm border border-slate-200 flex flex-col justify-between">
-                        <h3 class="text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
-                            <i class="fa-solid fa-graduation-cap text-emerald-600"></i> Observação Pedagógica
-                        </h3>
-                        <div class="text-xs text-slate-600 space-y-2 leading-relaxed flex-grow">
-                            <p>As formas de onda das fases <span class="font-bold text-emerald-600">A</span>, <span class="font-bold text-amber-600">B</span> e <span class="font-bold text-pink-600">C</span> mantêm um atraso natural e rigoroso de exatamente 120° elétricos entre si.</p>
-                            <p>Ao ativar a exibição da <span class="font-bold text-blue-600">Tensão de Linha</span>, perceba matematicamente como a diferença vetorial instantânea $v_{AB}(t) = v_A(t) - v_B(t)$ cria uma nova senoide amplificada pelo fator $\sqrt{3} \approx 1,732$ e adiantada em 30° em relação à fase de referência (A).</p>
+                    <div class="flex gap-2 bg-slate-100 p-1 rounded-lg">
+                        <button id="btnModeEq" onclick="setMode(false)" class="flex-1 bg-white text-teal-700 shadow-sm rounded py-1.5 text-xs font-bold transition-all">Sist. Equilibrado</button>
+                        <button id="btnModeDes" onclick="openUnbModal()" class="flex-1 text-slate-500 hover:text-slate-800 rounded py-1.5 text-xs font-bold transition-all">Sist. Desequilibrado</button>
+                    </div>
+
+                    <div id="balancedInputs" class="space-y-4 pt-2">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-600 mb-1">Natureza da Impedância:</label>
+                            <select id="loadType" class="w-full border rounded p-2 bg-slate-50 font-bold text-slate-700 focus:border-teal-500 outline-none">
+                                <option value="R">Puramente Resistiva (R)</option>
+                                <option value="RL" selected>Indutiva (RL)</option>
+                                <option value="RC">Capacitiva (RC)</option>
+                            </select>
                         </div>
-                        <div class="mt-4 p-2.5 bg-amber-50 rounded-lg border border-amber-200 text-[11px] text-amber-800 flex gap-2">
-                            <i class="fa-solid fa-circle-info mt-0.5 text-amber-600 flex-shrink-0"></i>
-                            <span>Experimente alterar o fechamento para <strong>Triângulo (Δ)</strong> no menu lateral e verifique as atualizações de fórmulas instantâneas.</span>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div id="groupR">
+                                <label class="block text-xs font-bold text-slate-600 mb-1">Resistência (R):</label>
+                                <div class="relative">
+                                    <input type="number" id="valR" value="20" step="any" class="w-full border rounded p-2 pr-8 font-mono bg-slate-50 outline-none">
+                                    <span class="absolute right-3 top-2 text-xs font-bold text-slate-400">Ω</span>
+                                </div>
+                            </div>
+                            <div id="groupL">
+                                <label class="block text-xs font-bold text-slate-600 mb-1">Indutância (L):</label>
+                                <div class="relative">
+                                    <input type="number" id="valL" value="40" step="any" class="w-full border rounded p-2 pr-8 font-mono bg-slate-50 outline-none">
+                                    <span class="absolute right-3 top-2 text-xs font-bold text-slate-400">mH</span>
+                                </div>
+                            </div>
+                            <div id="groupC" class="hidden">
+                                <label class="block text-xs font-bold text-slate-600 mb-1">Capacitância (C):</label>
+                                <div class="relative">
+                                    <input type="number" id="valC" value="100" step="any" class="w-full border rounded p-2 pr-8 font-mono bg-slate-50 outline-none">
+                                    <span class="absolute right-3 top-2 text-xs font-bold text-slate-400">μF</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                </div>
 
-            </div>
-            
-        </div> <div class="mt-8 bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col sm:flex-row justify-between items-center gap-4">
-            <div class="flex items-center gap-3">
-                <div class="bg-emerald-50 p-2 rounded-lg flex-shrink-0">
-                    <i class="fa-solid fa-book text-emerald-600 text-lg"></i>
-                </div>
-                <div>
-                    <h4 class="text-sm font-bold text-slate-800">Memorial Técnico do Módulo</h4>
-                    <p class="text-xs text-slate-500">Consulte as notas de engenharia e os modelos matemáticos deste simulador de sistemas polifásicos.</p>
+                    <div id="unbalancedNotice" class="hidden bg-amber-50 border border-amber-200 text-amber-800 p-3 rounded-lg text-xs font-medium text-center">
+                        <i class="fa-solid fa-triangle-exclamation mb-1 text-lg"></i><br>
+                        Os parâmetros individuais (R e L) das três fases estão sendo controlados pelo painel avançado.
+                        <button onclick="openUnbModal()" class="block w-full mt-2 bg-amber-200 hover:bg-amber-300 text-amber-900 py-1.5 rounded font-bold transition-colors">Editar Cargas</button>
+                    </div>
+
                 </div>
             </div>
-            <a href="devnotes_modulo4.html" class="whitespace-nowrap inline-flex items-center gap-2 text-xs text-emerald-700 hover:text-white font-bold transition-colors py-2.5 px-4 bg-emerald-50 hover:bg-emerald-600 rounded-lg border border-emerald-200 hover:border-emerald-600">
-                Acessar Dev Notes <i class="fa-solid fa-arrow-right"></i>
-            </a>
+
+            <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200">
+                <h3 class="font-black text-slate-900 text-sm uppercase tracking-wider border-b border-slate-100 pb-2 mb-3 flex items-center gap-2">
+                    <i class="fa-solid fa-chart-pie text-teal-600"></i> Otimização (Correção de FP)
+                </h3>
+                <label class="block text-xs font-bold text-slate-600 mb-1">Fator de Potência Desejado:</label>
+                <input type="range" id="targetFP" min="0.80" max="1.00" step="0.01" value="0.92" class="w-full accent-teal-600">
+                <div class="flex justify-between text-xs font-bold mt-1 text-teal-700">
+                    <span>0.80</span>
+                    <span id="targetFPDisplay" class="bg-teal-100 px-2 py-0.5 rounded">Alvo: 0.92</span>
+                    <span>1.00</span>
+                </div>
+            </div>
+
         </div>
 
+        <div class="lg:col-span-8 flex flex-col gap-6">
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-center">
+                    <p class="text-[10px] uppercase font-bold text-slate-400 tracking-wider mb-1">Impedância por Fase (Z)</p>
+                    <div id="resZBox">
+                        <p id="resZ" class="text-xl font-black text-slate-800 font-mono">0.00 Ω</p>
+                        <p id="resAngle" class="text-xs text-slate-500 mt-0.5 font-mono">∠ 0.00°</p>
+                    </div>
+                </div>
+                <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-center">
+                    <p class="text-[10px] uppercase font-bold text-slate-400 tracking-wider mb-1">Corrente de Fase (I_f)</p>
+                    <div id="resIfBox">
+                        <p id="resIf" class="text-xl font-black text-blue-600 font-mono">0.00 A</p>
+                        <p id="resVf" class="text-xs text-slate-500 mt-0.5 font-mono">V_fase: 0.00 V</p>
+                    </div>
+                </div>
+                <div class="bg-teal-50 p-4 rounded-xl border border-teal-200 shadow-sm relative overflow-hidden flex flex-col justify-center">
+                    <i class="fa-solid fa-wave-square absolute -right-2 -bottom-2 text-5xl text-teal-100 opacity-50"></i>
+                    <p class="text-[10px] uppercase font-bold text-teal-600 tracking-wider mb-1 relative z-10">Corrente de Linha (I_L)</p>
+                    <div id="resILBox">
+                        <p id="resIL" class="text-2xl font-black text-teal-800 font-mono relative z-10">0.00 A</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 flex-grow flex flex-col">
+                <div class="flex justify-between items-center border-b border-slate-100 pb-2 mb-4">
+                    <h2 class="text-sm font-black text-slate-900 uppercase tracking-wider flex items-center gap-2">
+                        <i class="fa-solid fa-play text-teal-500"></i> Triângulo de Potências Global (3Φ)
+                    </h2>
+                    <div class="flex items-center gap-3">
+                        <span class="hidden sm:flex text-[10px] bg-slate-100 border text-slate-500 font-bold px-2 py-0.5 rounded items-center gap-1">
+                            <i class="fa-solid fa-magnifying-glass"></i> scroll p/ zoom | arraste p/ mover
+                        </span>
+                        <div id="badgeFP" class="text-xs font-bold px-3 py-1 rounded-full bg-slate-100 text-slate-600 border border-slate-200">
+                            FP Atual: 1.00
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-12 gap-6 flex-grow">
+                    <div class="md:col-span-5 flex flex-col justify-center space-y-4">
+                        <div class="flex justify-between items-end border-b border-slate-50 pb-2">
+                            <div>
+                                <p class="text-[11px] font-bold text-slate-500 uppercase">Potência Ativa Total (P)</p>
+                                <p id="resP" class="text-lg font-black text-emerald-600 font-mono">0.00 kW</p>
+                            </div>
+                        </div>
+                        <div class="flex justify-between items-end border-b border-slate-50 pb-2">
+                            <div>
+                                <p class="text-[11px] font-bold text-slate-500 uppercase">Pot. Reativa Total (Q)</p>
+                                <p id="resQ" class="text-lg font-black text-rose-500 font-mono">0.00 kVAr</p>
+                            </div>
+                        </div>
+                        <div class="flex justify-between items-end border-b border-slate-50 pb-2">
+                            <div>
+                                <p class="text-[11px] font-bold text-slate-500 uppercase">Pot. Aparente Total (S)</p>
+                                <p id="resS" class="text-lg font-black text-indigo-600 font-mono">0.00 kVA</p>
+                            </div>
+                        </div>
+
+                        <div id="correctionPanel" class="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-lg hidden">
+                            <p class="text-[10px] font-black uppercase tracking-wide text-amber-800 mb-2 flex items-center gap-1">
+                                <i class="fa-solid fa-wrench"></i> Banco de Capacitores Necessário
+                            </p>
+                            <p id="resQc" class="text-sm font-bold text-amber-900 font-mono mb-1">Qc: 0.00 kVAr</p>
+                            <p id="resCapacitance" class="text-xs text-amber-700 font-mono">C/fase (Y): 0.00 μF</p>
+                        </div>
+                    </div>
+
+                    <div class="md:col-span-7 bg-white rounded-xl border border-slate-200 relative overflow-hidden flex items-center justify-center min-h-[250px] shadow-inner">
+                        <canvas id="triangleCanvas" width="450" height="300" class="w-full bg-slate-50"></canvas>
+                    </div>
+                </div>
+
+                <div class="mt-6 pt-4 border-t border-slate-100 flex flex-col sm:flex-row gap-3">
+                    <button onclick="requireAuth(exportTriangleTikz)" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 py-2.5 rounded-lg font-bold text-[11px] uppercase tracking-wider transition-all border border-slate-300 flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-code"></i> Exportar Gráfico (TikZ)
+                    </button>
+                    <button onclick="requireAuth(exportResultsLatex)" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 py-2.5 rounded-lg font-bold text-[11px] uppercase tracking-wider transition-all border border-slate-300 flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-table"></i> Exportar Gabarito (LaTeX)
+                    </button>
+                </div>
+
+            </div>
+        </div>
+        
     </main>
 
-    <footer class="bg-slate-900 text-slate-400 text-center py-4 text-xs border-t border-slate-800 mt-auto w-full">
-        Material de Apoio Didático — Desenvolvido para o Curso Técnico em Eletrotécnica IFRN
-    </footer>
+    <div id="unbModal" class="fixed inset-0 bg-slate-900/60 hidden flex items-center justify-center z-50 backdrop-blur-sm">
+        <div class="bg-white p-6 rounded-2xl w-[90%] max-w-lg shadow-2xl border border-slate-200">
+            <h3 class="font-black text-xl mb-1 text-slate-800 flex items-center gap-2">
+                <i class="fa-solid fa-scale-unbalanced text-amber-500"></i> Matriz de Cargas Desequilibradas
+            </h3>
+            <p class="text-xs text-slate-500 mb-5">Insira os parâmetros individuais para cada fase. Assumindo modelo Série (RL).</p>
+            
+            <div class="space-y-4">
+                <div class="bg-slate-50 p-3 rounded-xl border border-slate-200">
+                    <p class="font-bold text-xs text-slate-700 mb-2 uppercase tracking-wide">Impedância Fase A (ou Z_AB)</p>
+                    <div class="flex gap-3">
+                        <div class="flex-1 relative">
+                            <label class="text-[10px] font-bold text-slate-400 absolute -top-2 left-2 bg-slate-50 px-1">Resistência</label>
+                            <input type="number" id="unbRa" value="20" class="w-full border rounded p-2 text-sm font-mono focus:border-amber-500 outline-none">
+                            <span class="absolute right-3 top-2 text-xs font-bold text-slate-400">Ω</span>
+                        </div>
+                        <div class="flex-1 relative">
+                            <label class="text-[10px] font-bold text-slate-400 absolute -top-2 left-2 bg-slate-50 px-1">Indutância</label>
+                            <input type="number" id="unbLa" value="40" class="w-full border rounded p-2 text-sm font-mono focus:border-amber-500 outline-none">
+                            <span class="absolute right-3 top-2 text-xs font-bold text-slate-400">mH</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-slate-50 p-3 rounded-xl border border-slate-200">
+                    <p class="font-bold text-xs text-slate-700 mb-2 uppercase tracking-wide">Impedância Fase B (ou Z_BC)</p>
+                    <div class="flex gap-3">
+                        <div class="flex-1 relative">
+                            <label class="text-[10px] font-bold text-slate-400 absolute -top-2 left-2 bg-slate-50 px-1">Resistência</label>
+                            <input type="number" id="unbRb" value="15" class="w-full border rounded p-2 text-sm font-mono focus:border-amber-500 outline-none">
+                            <span class="absolute right-3 top-2 text-xs font-bold text-slate-400">Ω</span>
+                        </div>
+                        <div class="flex-1 relative">
+                            <label class="text-[10px] font-bold text-slate-400 absolute -top-2 left-2 bg-slate-50 px-1">Indutância</label>
+                            <input type="number" id="unbLb" value="20" class="w-full border rounded p-2 text-sm font-mono focus:border-amber-500 outline-none">
+                            <span class="absolute right-3 top-2 text-xs font-bold text-slate-400">mH</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-slate-50 p-3 rounded-xl border border-slate-200">
+                    <p class="font-bold text-xs text-slate-700 mb-2 uppercase tracking-wide">Impedância Fase C (ou Z_CA)</p>
+                    <div class="flex gap-3">
+                        <div class="flex-1 relative">
+                            <label class="text-[10px] font-bold text-slate-400 absolute -top-2 left-2 bg-slate-50 px-1">Resistência</label>
+                            <input type="number" id="unbRc" value="30" class="w-full border rounded p-2 text-sm font-mono focus:border-amber-500 outline-none">
+                            <span class="absolute right-3 top-2 text-xs font-bold text-slate-400">Ω</span>
+                        </div>
+                        <div class="flex-1 relative">
+                            <label class="text-[10px] font-bold text-slate-400 absolute -top-2 left-2 bg-slate-50 px-1">Indutância</label>
+                            <input type="number" id="unbLc" value="60" class="w-full border rounded p-2 text-sm font-mono focus:border-amber-500 outline-none">
+                            <span class="absolute right-3 top-2 text-xs font-bold text-slate-400">mH</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex justify-end gap-3 mt-6">
+                <button onclick="closeUnbModal()" class="px-5 py-2 rounded-lg font-bold text-sm text-slate-500 hover:bg-slate-100 transition-colors">Cancelar</button>
+                <button onclick="applyUnbalanced()" class="px-5 py-2 rounded-lg font-bold text-sm bg-teal-600 hover:bg-teal-700 text-white shadow transition-colors">Aplicar Cargas</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="authModal" class="fixed inset-0 bg-slate-900/80 hidden flex items-center justify-center z-[60] backdrop-blur-sm">
+        <div class="bg-white p-6 rounded-2xl w-[90%] max-w-sm shadow-2xl border border-slate-200 text-center">
+            <div class="mx-auto bg-rose-100 text-rose-600 w-12 h-12 flex items-center justify-center rounded-full mb-4 text-xl">
+                <i class="fa-solid fa-user-shield"></i>
+            </div>
+            <h3 class="font-black text-lg text-slate-800 mb-1">Área Restrita</h3>
+            <p class="text-xs text-slate-500 mb-4">Insira as credenciais de docente para liberar a exportação.</p>
+            
+            <div class="space-y-3 mb-5">
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <i class="fa-solid fa-user text-slate-400"></i>
+                    </div>
+                    <input type="text" id="profUser" placeholder="Usuário" class="w-full border rounded-lg py-2.5 pl-10 pr-3 text-sm focus:border-rose-500 outline-none">
+                </div>
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <i class="fa-solid fa-lock text-slate-400"></i>
+                    </div>
+                    <input type="password" id="profPassword" placeholder="Senha" class="w-full border rounded-lg py-2.5 pl-10 pr-3 text-sm tracking-widest focus:border-rose-500 outline-none">
+                </div>
+            </div>
+
+            <div class="flex gap-2">
+                <button onclick="closeAuthModal()" class="flex-1 py-2 rounded-lg font-bold text-sm text-slate-500 hover:bg-slate-100 transition-colors">Cancelar</button>
+                <button onclick="verifyAuth()" class="flex-1 py-2 rounded-lg font-bold text-sm bg-rose-600 hover:bg-rose-700 text-white shadow transition-colors">Autenticar</button>
+            </div>
+        </div>
+    </div>
 
     <script>
-        // Elementos da Interface
-        const vfSlider = document.getElementById('vfSlider');
-        const vfInput = document.getElementById('vfInput');
-        const freqSlider = document.getElementById('freqSlider');
-        const freqInput = document.getElementById('freqInput');
-        const checkLineVoltage = document.getElementById('checkLineVoltage');
-        
-        const calcVF = document.getElementById('calcVF');
-        const calcVL = document.getElementById('calcVL');
-        const formulaVL = document.getElementById('formulaVL');
-        const formulaCurrent = document.getElementById('formulaCurrent');
-        
-        const btnSim = document.getElementById('btnSim');
-        const btnIcon = document.getElementById('btnIcon');
-        const btnText = document.getElementById('btnText');
-        
-        const pCanvas = document.getElementById('phasorCanvas');
-        const pCtx = pCanvas.getContext('2d');
+        // -------------------------------------------------------------------------
+        // SISTEMA GLOBAL DE AUTENTICAÇÃO
+        // -------------------------------------------------------------------------
+        let pendingAction = null;
+        let sessionUnlocked = false; 
 
-        // Variáveis de Estado
-        let chart;
-        let isAnimating = false;
-        let connectionMode = 'star'; // star ou delta
-        let timeGlobal = 0;
-        let animationFrameId;
+        function requireAuth(actionFunction) {
+            if (sessionUnlocked) {
+                actionFunction();
+                return;
+            }
+            pendingAction = actionFunction;
+            document.getElementById('authModal').classList.remove('hidden');
+            
+            // Limpa ambos os campos ao abrir o modal
+            document.getElementById('profUser').value = '';
+            document.getElementById('profPassword').value = '';
+            
+            // Foca automaticamente no campo de usuário
+            setTimeout(() => document.getElementById('profUser').focus(), 100);
+        }
 
-        // Configuração Inicial do Gráfico Chart.js
-        function initChart() {
-            const ctx = document.getElementById('oscilloChart').getContext('2d');
-            chart = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: [],
-                    datasets: [
-                        { label: 'vA (Fase A)', data: [], borderColor: '#059669', borderWidth: 2.5, pointRadius: 0, tension: 0.1 },
-                        { label: 'vB (Fase B)', data: [], borderColor: '#d97706', borderWidth: 2.5, pointRadius: 0, tension: 0.1 },
-                        { label: 'vC (Fase C)', data: [], borderColor: '#be185d', borderWidth: 2.5, pointRadius: 0, tension: 0.1 },
-                        { label: 'vAB (Linha AB)', data: [], borderColor: '#2563eb', borderWidth: 2, borderDash: [5, 5], pointRadius: 0, tension: 0.1, hidden: true }
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    interaction: { mode: 'index', intersect: false },
-                    plugins: {
-                        legend: { position: 'top', labels: { font: { weight: 'bold', size: 11 } } }
-                    },
-                    scales: {
-                        x: { title: { display: true, text: 'Tempo (ms)', font: { weight: 'bold', size: 11 } }, grid: { color: '#f1f5f9' } },
-                        y: { title: { display: true, text: 'Tensão Instantânea (V)', font: { weight: 'bold', size: 11 } }, grid: { color: '#e2e8f0' } }
-                    },
-                    animation: false
+        function closeAuthModal() {
+            document.getElementById('authModal').classList.add('hidden');
+            pendingAction = null;
+        }
+
+        function verifyAuth() {
+            const user = document.getElementById('profUser').value.trim();
+            const pass = document.getElementById('profPassword').value;
+
+            try {
+                // Tenta validar pela função oficial do seu logins.js
+                if (typeof AuthProfessor !== "undefined") {
+                    const auth = AuthProfessor.validarDetalhado(user, pass);
+                    
+                    if (auth.sucesso) {
+                        grantAccess();
+                    } else {
+                        alert(auth.erro); // Usa o texto de erro gerado pelo logins.js
+                    }
+                } 
+                // Fallback interno caso o arquivo logins.js falhe ao carregar
+                else if (btoa(user) === "cmFmYWVsLnNpbHZh" && btoa(pass) === "aWZybmpj") {
+                    grantAccess();
+                } else {
+                    alert("Credenciais inválidas. Acesso negado.");
                 }
-            });
-        }
-
-        // Atualização Geral dos Cálculos e Gráficos
-        function updateSimulationLayout() {
-            const Vf_rms = parseFloat(vfInput.value) || 0;
-            const f = parseFloat(freqInput.value) || 60;
-            const showLine = checkLineVoltage.checked;
-            
-            const Vp_fase = Vf_rms * Math.sqrt(2);
-            const T_ms = (1 / f) * 1000;
-            
-            // Atualizar valores do painel matemático
-            calcVF.innerText = `${Vf_rms.toFixed(1)} V`;
-            
-            if (connectionMode === 'star') {
-                const Vl_rms = Vf_rms * Math.sqrt(3);
-                calcVL.innerText = `${Vl_rms.toFixed(1)} V`;
-                formulaVL.innerHTML = "V<sub>L</sub> = √3 × V<sub>F</sub>";
-                formulaCurrent.innerHTML = "I<sub>Linha</sub> = I<sub>Fase</sub>";
-            } else {
-                calcVL.innerText = `${Vf_rms.toFixed(1)} V`;
-                formulaVL.innerHTML = "V<sub>L</sub> = V<sub>F</sub>";
-                formulaCurrent.innerHTML = "I<sub>Linha</sub> = √3 × I<sub>Fase</sub>";
-            }
-
-            // Geração de dados para o Osciloscópio (Exibir exatamente 1 período elétrico completo)
-            const samples = 120;
-            const labels = [];
-            const vA_data = [];
-            const vB_data = [];
-            const vC_data = [];
-            const vAB_data = [];
-
-            chart.setDatasetVisibility(3, showLine);
-
-            const omega = 2 * Math.PI * f;
-
-            for (let i = 0; i <= samples; i++) {
-                const tMs = (T_ms / samples) * i;
-                const tSec = tMs / 1000;
-                
-                // Equações fundamentais defasadas em 120 graus (2*PI/3)
-                const phaseA = omega * tSec - timeGlobal;
-                const phaseB = omega * tSec - (2 * Math.PI / 3) - timeGlobal;
-                const phaseC = omega * tSec + (2 * Math.PI / 3) - timeGlobal;
-                
-                const va = Vp_fase * Math.sin(phaseA);
-                const vb = Vp_fase * Math.sin(phaseB);
-                const vc = Vp_fase * Math.sin(phaseC);
-                
-                labels.push(tMs.toFixed(2));
-                vA_data.push(va);
-                vB_data.push(vb);
-                vC_data.push(vc);
-                vAB_data.push(va - vb); // vAB = vA - vB
-            }
-
-            chart.data.labels = labels;
-            chart.data.datasets[0].data = vA_data;
-            chart.data.datasets[1].data = vB_data;
-            chart.data.datasets[2].data = vC_data;
-            chart.data.datasets[3].data = vAB_data;
-
-            // Escalonamento inteligente do eixo Y do osciloscópio
-            const maxVal = showLine ? Vp_fase * Math.sqrt(3) : Vp_fase;
-            chart.options.scales.y.max = Math.ceil(maxVal * 1.15);
-            chart.options.scales.y.min = Math.floor(-maxVal * 1.15);
-
-            chart.update();
-            drawPhasors(Vp_fase, showLine);
-        }
-
-        // Desenhar Vetores Trifásicos Dinâmicos no Canvas
-        function drawPhasors(Vp, showLine) {
-            pCtx.clearRect(0, 0, pCanvas.width, pCanvas.height);
-            
-            const cx = pCanvas.width / 2;
-            const cy = pCanvas.height / 2;
-            
-            // Fator de escala adaptativo para manter as setas dentro do Canvas circular
-            const scaleMax = showLine ? Vp * Math.sqrt(3) : Vp;
-            const rScale = 95 / Math.max(scaleMax, 1);
-            
-            // Desenho do círculo e linhas guia do plano complexo
-            pCtx.strokeStyle = '#e2e8f0';
-            pCtx.lineWidth = 1;
-            pCtx.beginPath(); pCtx.arc(cx, cy, 95, 0, 2*Math.PI); pCtx.stroke();
-            pCtx.beginPath(); pCtx.moveTo(cx-105, cy); pCtx.lineTo(cx+105, cy); pCtx.moveTo(cx, cy-105); pCtx.lineTo(cx, cy+105); pCtx.stroke();
-
-            // Ângulos com a evolução temporal global da simulação
-            const angA = -timeGlobal;
-            const angB = -timeGlobal + (2 * Math.PI / 3);
-            const angC = -timeGlobal - (2 * Math.PI / 3);
-
-            // Coordenadas das pontas dos fasores de fase
-            const xA = cx + Vp * rScale * Math.cos(angA); const yA = cy + Vp * rScale * Math.sin(angA);
-            const xB = cx + Vp * rScale * Math.cos(angB); const yB = cy + Vp * rScale * Math.sin(angB);
-            const xC = cx + Vp * rScale * Math.cos(angC); const yC = cy + Vp * rScale * Math.sin(angC);
-
-            // Traçar os três vetores fundamentais
-            drawArrow(cx, cy, xA, yA, '#059669', 3); // Fase A
-            drawArrow(cx, cy, xB, yB, '#d97706', 3); // Fase B
-            drawArrow(cx, cy, xC, yC, '#be185d', 3); // Fase C
-
-            // Se solicitado, plota o fasor resultante da Tensão de Linha vAB
-            if (showLine) {
-                const xAB = xA - (xB - cx);
-                const yAB = yA - (yB - cy);
-                drawArrow(cx, cy, xAB, yAB, '#2563eb', 2.5);
-                
-                // Linha de acoplamento tracejada opcional para visualização da subtração vetorial
-                pCtx.strokeStyle = '#cbd5e1'; pCtx.setLineDash([3, 3]); pCtx.lineWidth = 1.5;
-                pCtx.beginPath(); pCtx.moveTo(xB, yB); pCtx.lineTo(xA, yA); pCtx.stroke(); pCtx.setLineDash([]);
+            } catch(e) {
+                alert("Erro na validação das credenciais.");
             }
         }
 
-        // Função utilitária para desenhar pontas de flecha elétricas uniformes
-        function drawArrow(fx, fy, tx, ty, color, width) {
-            const headlen = 8;
-            const angle = Math.atan2(ty - fy, tx - fx);
-            pCtx.strokeStyle = color; pCtx.fillStyle = color; pCtx.lineWidth = width;
-            pCtx.beginPath(); pCtx.moveTo(fx, fy); pCtx.lineTo(tx, ty); pCtx.stroke();
-            pCtx.beginPath(); pCtx.moveTo(tx, ty);
-            pCtx.lineTo(tx - headlen * Math.cos(angle - Math.PI/6), ty - headlen * Math.sin(angle - Math.PI/6));
-            pCtx.lineTo(tx - headlen * Math.cos(angle + Math.PI/6), ty - headlen * Math.sin(angle + Math.PI/6));
-            pCtx.fill();
+        function grantAccess() {
+            sessionUnlocked = true;
+            closeAuthModal();
+            if (pendingAction) pendingAction();
         }
 
-        // Gerenciamento da chave seletora Estrela / Triângulo
-        function setConnection(mode) {
-            connectionMode = mode;
-            const btnStar = document.getElementById('btnStar');
-            const btnDelta = document.getElementById('btnDelta');
+        // Permite apertar Enter estando no campo de senha
+        document.getElementById('profPassword')?.addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') verifyAuth();
+        });
 
-            if (mode === 'star') {
-                btnStar.className = "py-2.5 px-3 rounded-lg font-bold text-xs uppercase tracking-wide border transition-all flex items-center justify-center gap-2 bg-emerald-50 border-emerald-500 text-emerald-700 shadow-sm";
-                btnDelta.className = "py-2.5 px-3 rounded-lg font-bold text-xs uppercase tracking-wide border transition-all flex items-center justify-center gap-2 bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100";
-            } else {
-                btnDelta.className = "py-2.5 px-3 rounded-lg font-bold text-xs uppercase tracking-wide border transition-all flex items-center justify-center gap-2 bg-emerald-50 border-emerald-500 text-emerald-700 shadow-sm";
-                btnStar.className = "py-2.5 px-3 rounded-lg font-bold text-xs uppercase tracking-wide border transition-all flex items-center justify-center gap-2 bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100";
-            }
-            updateSimulationLayout();
-        }
 
-        // Sincronização mútua dos Sliders e Inputs numéricos
-        function setupSync(sliderId, inputId) {
-            const slider = document.getElementById(sliderId);
-            const input = document.getElementById(inputId);
-            slider.addEventListener('input', (e) => { input.value = e.target.value; updateSimulationLayout(); });
-            input.addEventListener('input', (e) => { slider.value = e.target.value; updateSimulationLayout(); });
-        }
-
-        // Laço de Animação em Malha Aberta Temporal
-        function animationLoop() {
-            if (!isAnimating) return;
-            const f = parseFloat(freqInput.value) || 60;
-            timeGlobal += 0.04 * (f / 60); // Ajuste de velocidade escalar com base na frequência
-            updateSimulationLayout();
-            animationFrameId = requestAnimationFrame(animationLoop);
-        }
-
-        function toggleSimulation() {
-            isAnimating = !isAnimating;
-            if (isAnimating) {
-                btnIcon.className = "fa-solid fa-pause mr-1"; btnText.innerText = "Pausar Fluxo";
-                btnSim.classList.replace('bg-slate-800', 'bg-amber-500'); btnSim.classList.replace('hover:bg-black', 'hover:bg-amber-600');
-                animationLoop();
-            } else {
-                btnIcon.className = "fa-solid fa-play mr-1"; btnText.innerText = "Iniciar Fluxo";
-                btnSim.classList.replace('bg-amber-500', 'bg-slate-800'); btnSim.classList.replace('hover:bg-amber-600', 'hover:bg-black');
-                cancelAnimationFrame(animationFrameId);
-            }
-        }
-
-        function resetSimulation() {
-            timeGlobal = 0;
-            updateSimulationLayout();
-        }
-
-        window.onload = () => {
-            initChart();
-            setupSync('vfSlider', 'vfInput');
-            setupSync('freqSlider', 'freqInput');
-            updateSimulationLayout();
+        // -------------------------------------------------------------------------
+        // BIBLIOTECAS, ESTADOS E MOTOR MATEMÁTICO
+        // -------------------------------------------------------------------------
+        const Cx = {
+            add: (a, b) => ({ r: a.r + b.r, i: a.i + b.i }),
+            sub: (a, b) => ({ r: a.r - b.r, i: a.i - b.i }),
+            mul: (a, b) => ({ r: a.r * b.r - a.i * b.i, i: a.r * b.i + a.i * b.r }),
+            div: (a, b) => { 
+                const den = b.r * b.r + b.i * b.i; 
+                return { r: (a.r * b.r + a.i * b.i) / den, i: (a.i * b.r - a.r * b.i) / den }; 
+            },
+            polar: (mag, angDeg) => { 
+                const rad = angDeg * Math.PI / 180; 
+                return { r: mag * Math.cos(rad), i: mag * Math.sin(rad) }; 
+            },
+            mag: (a) => Math.hypot(a.r, a.i),
+            ang: (a) => Math.atan2(a.i, a.r) * 180 / Math.PI,
+            conj: (a) => ({ r: a.r, i: -a.i })
         };
+
+        let isUnbalanced = false;
+        let lastResults = {};
+        
+        // Câmera do Canvas
+        let scale = 1;
+        let offsetX = 80;
+        let offsetY = 150;
+        let isPanning = false;
+        let startPanX = 0; let startPanY = 0;
+
+        const inputs = ['vLine', 'freq', 'seqFase', 'connType', 'loadType', 'valR', 'valL', 'valC', 'targetFP'].reduce((acc, id) => {
+            if (document.getElementById(id)) acc[id] = document.getElementById(id); return acc;
+        }, {});
+        
+        const canvas = document.getElementById('triangleCanvas');
+        const ctx = canvas.getContext('2d');
+
+        canvas.addEventListener('wheel', (e) => {
+            e.preventDefault();
+            const rect = canvas.getBoundingClientRect();
+            const mouseX = (e.clientX - rect.left) * (canvas.width / rect.width);
+            const mouseY = (e.clientY - rect.top) * (canvas.height / rect.height);
+            const worldX = (mouseX - offsetX) / scale;
+            const worldY = (mouseY - offsetY) / scale;
+            const zoomDirection = e.deltaY > 0 ? -1 : 1;
+            let newScale = scale * (zoomDirection > 0 ? 1.1 : 1 / 1.1);
+            newScale = Math.max(0.2, Math.min(newScale, 5));
+            offsetX = mouseX - worldX * newScale;
+            offsetY = mouseY - worldY * newScale;
+            scale = newScale;
+            renderTriangle(lastResults);
+        }, { passive: false });
+
+        canvas.addEventListener('mousedown', (e) => {
+            isPanning = true;
+            const rect = canvas.getBoundingClientRect();
+            startPanX = (e.clientX - rect.left) * (canvas.width / rect.width) - offsetX;
+            startPanY = (e.clientY - rect.top) * (canvas.height / rect.height) - offsetY;
+            canvas.style.cursor = 'grabbing';
+        });
+
+        canvas.addEventListener('mousemove', (e) => {
+            if (!isPanning) return;
+            const rect = canvas.getBoundingClientRect();
+            offsetX = (e.clientX - rect.left) * (canvas.width / rect.width) - startPanX;
+            offsetY = (e.clientY - rect.top) * (canvas.height / rect.height) - startPanY;
+            renderTriangle(lastResults);
+        });
+
+        window.addEventListener('mouseup', () => { isPanning = false; canvas.style.cursor = 'grab'; });
+
+        inputs.loadType.addEventListener('change', () => {
+            const t = inputs.loadType.value;
+            document.getElementById('groupL').style.display = (t === 'RL') ? 'block' : 'none';
+            document.getElementById('groupC').style.display = (t === 'RC') ? 'block' : 'none';
+            calculateSystem();
+        });
+
+        Object.values(inputs).forEach(input => input.addEventListener('input', calculateSystem));
+
+        function setMode(unbalanced) {
+            isUnbalanced = unbalanced;
+            const btnEq = document.getElementById('btnModeEq');
+            const btnDes = document.getElementById('btnModeDes');
+            const balancedInputs = document.getElementById('balancedInputs');
+            const unbNotice = document.getElementById('unbalancedNotice');
+            const badge = document.getElementById('badgeMode');
+
+            if (unbalanced) {
+                btnEq.className = "flex-1 text-slate-500 hover:text-slate-800 rounded py-1.5 text-xs font-bold transition-all";
+                btnDes.className = "flex-1 bg-white text-amber-700 shadow-sm rounded py-1.5 text-xs font-bold transition-all";
+                balancedInputs.classList.add('hidden');
+                unbNotice.classList.remove('hidden');
+                badge.className = "text-[9px] font-black uppercase bg-amber-100 text-amber-700 px-2 py-0.5 rounded";
+                badge.innerText = "Desequilibrado";
+            } else {
+                btnEq.className = "flex-1 bg-white text-teal-700 shadow-sm rounded py-1.5 text-xs font-bold transition-all";
+                btnDes.className = "flex-1 text-slate-500 hover:text-slate-800 rounded py-1.5 text-xs font-bold transition-all";
+                balancedInputs.classList.remove('hidden');
+                unbNotice.classList.add('hidden');
+                badge.className = "text-[9px] font-black uppercase bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded";
+                badge.innerText = "Equilibrado";
+                calculateSystem();
+            }
+        }
+
+        function openUnbModal() { document.getElementById('unbModal').classList.remove('hidden'); }
+        function closeUnbModal() { document.getElementById('unbModal').classList.add('hidden'); }
+        
+        function applyUnbalanced() {
+            setMode(true);
+            closeUnbModal();
+            calculateSystem();
+        }
+
+        function drawArrow(ctx, fromx, fromy, tox, toy, color, lineWidth, dashed = false) {
+            const headlen = 10 / scale; 
+            const dx = tox - fromx; const dy = toy - fromy;
+            const angle = Math.atan2(dy, dx);
+            ctx.beginPath(); ctx.strokeStyle = color; ctx.lineWidth = lineWidth / scale;
+            ctx.setLineDash(dashed ? [5/scale, 5/scale] : []);
+            ctx.moveTo(fromx, fromy); ctx.lineTo(tox, toy); ctx.stroke();
+            ctx.beginPath(); ctx.setLineDash([]); ctx.fillStyle = color;
+            ctx.moveTo(tox, toy);
+            ctx.lineTo(tox - headlen * Math.cos(angle - Math.PI / 6), toy - headlen * Math.sin(angle - Math.PI / 6));
+            ctx.lineTo(tox - headlen * Math.cos(angle + Math.PI / 6), toy - headlen * Math.sin(angle + Math.PI / 6));
+            ctx.fill();
+        }
+
+        function calculateSystem() {
+            const V_L = parseFloat(inputs.vLine.value) || 0;
+            const f = parseFloat(inputs.freq.value) || 60;
+            const isStar = inputs.connType.value === 'Y';
+            const isDirectSeq = inputs.seqFase.value === 'ABC';
+            const targetFP = parseFloat(inputs.targetFP.value);
+            document.getElementById('targetFPDisplay').innerText = `Alvo: ${targetFP.toFixed(2)}`;
+
+            let P_total=0, Q_total=0, S_total=0, currentFP=0;
+            let Z_arr=[], I_phase=[], I_line=[];
+            const V_f = V_L / Math.sqrt(3);
+            const w = 2 * Math.PI * f;
+
+            if (!isUnbalanced) {
+                const R = Math.max(parseFloat(inputs.valR.value) || 0.01, 0.01);
+                let X = 0;
+                if (inputs.loadType.value === 'RL') X = w * ((parseFloat(inputs.valL.value)||0) / 1000);
+                else if (inputs.loadType.value === 'RC') X = -1 / (w * ((parseFloat(inputs.valC.value)||0) / 1000000));
+                
+                const Z_mag = Math.sqrt(R*R + X*X);
+                const Z_ang_rad = Math.atan2(X, R);
+                
+                const If_mag = (isStar ? V_f : V_L) / Z_mag;
+                const Il_mag = isStar ? If_mag : (If_mag * Math.sqrt(3));
+
+                P_total = 3 * (isStar ? V_f : V_L) * If_mag * Math.cos(Z_ang_rad);
+                Q_total = 3 * (isStar ? V_f : V_L) * If_mag * Math.sin(Z_ang_rad);
+                S_total = Math.sqrt(P_total*P_total + Q_total*Q_total);
+                currentFP = P_total / S_total;
+
+                document.getElementById('resZBox').innerHTML = `<p class="text-xl font-black text-slate-800 font-mono">${Z_mag.toFixed(2)} Ω</p><p class="text-xs text-slate-500 mt-0.5 font-mono">∠ ${(Z_ang_rad*180/Math.PI).toFixed(2)}°</p>`;
+                document.getElementById('resIfBox').innerHTML = `<p class="text-xl font-black text-blue-600 font-mono">${If_mag.toFixed(2)} A</p><p class="text-xs text-slate-500 mt-0.5 font-mono">V_fase: ${(isStar?V_f:V_L).toFixed(1)} V</p>`;
+                document.getElementById('resILBox').innerHTML = `<p class="text-2xl font-black text-teal-800 font-mono relative z-10">${Il_mag.toFixed(2)} A</p>`;
+                
+                lastResults = { P: P_total, Q: Q_total, S: S_total, Z: [Z_mag], ang: [Z_ang_rad*180/Math.PI], IL: [Il_mag], If: [If_mag], isUnbalanced: false };
+                
+            } else {
+                const data = [
+                    { R: parseFloat(document.getElementById('unbRa').value)||0.01, L: parseFloat(document.getElementById('unbLa').value)||0 },
+                    { R: parseFloat(document.getElementById('unbRb').value)||0.01, L: parseFloat(document.getElementById('unbLb').value)||0 },
+                    { R: parseFloat(document.getElementById('unbRc').value)||0.01, L: parseFloat(document.getElementById('unbLc').value)||0 }
+                ];
+
+                const Zc = data.map(d => ({ r: d.R, i: w * (d.L/1000) }));
+                Z_arr = Zc.map(z => Cx.mag(z));
+                const Z_ang = Zc.map(z => Cx.ang(z));
+
+                if (isStar) {
+                    const angA = 0; const angB = isDirectSeq ? -120 : 120; const angC = isDirectSeq ? 120 : -120;
+                    const Va = Cx.polar(V_f, angA); const Vb = Cx.polar(V_f, angB); const Vc = Cx.polar(V_f, angC);
+                    
+                    const Ia = Cx.div(Va, Zc[0]); const Ib = Cx.div(Vb, Zc[1]); const Ic = Cx.div(Vc, Zc[2]);
+                    
+                    I_phase = [Cx.mag(Ia), Cx.mag(Ib), Cx.mag(Ic)];
+                    I_line = [...I_phase];
+
+                    const Sa = Cx.mul(Va, Cx.conj(Ia)); const Sb = Cx.mul(Vb, Cx.conj(Ib)); const Sc = Cx.mul(Vc, Cx.conj(Ic));
+                    P_total = Sa.r + Sb.r + Sc.r;
+                    Q_total = Sa.i + Sb.i + Sc.i;
+                    
+                } else {
+                    const angAB = isDirectSeq ? 30 : -30; const angBC = isDirectSeq ? -90 : 90; const angCA = isDirectSeq ? 150 : -150;
+                    const Vab = Cx.polar(V_L, angAB); const Vbc = Cx.polar(V_L, angBC); const Vca = Cx.polar(V_L, angCA);
+
+                    const Iab = Cx.div(Vab, Zc[0]); const Ibc = Cx.div(Vbc, Zc[1]); const Ica = Cx.div(Vca, Zc[2]);
+                    I_phase = [Cx.mag(Iab), Cx.mag(Ibc), Cx.mag(Ica)];
+
+                    const Ia = Cx.sub(Iab, Ica); const Ib = Cx.sub(Ibc, Iab); const Ic = Cx.sub(Ica, Ibc);
+                    I_line = [Cx.mag(Ia), Cx.mag(Ib), Cx.mag(Ic)];
+
+                    const Sab = Cx.mul(Vab, Cx.conj(Iab)); const Sbc = Cx.mul(Vbc, Cx.conj(Ibc)); const Sca = Cx.mul(Vca, Cx.conj(Ica));
+                    P_total = Sab.r + Sbc.r + Sca.r;
+                    Q_total = Sab.i + Sbc.i + Sca.i;
+                }
+                
+                S_total = Math.sqrt(P_total*P_total + Q_total*Q_total);
+                currentFP = P_total / S_total;
+
+                document.getElementById('resZBox').innerHTML = `<p class="text-[11px] font-mono text-slate-600 mt-1">A: ${Z_arr[0].toFixed(1)}Ω | B: ${Z_arr[1].toFixed(1)}Ω | C: ${Z_arr[2].toFixed(1)}Ω</p>`;
+                document.getElementById('resIfBox').innerHTML = `<p class="text-[11px] font-mono text-blue-600 mt-1 font-bold">A: ${I_phase[0].toFixed(1)}A | B: ${I_phase[1].toFixed(1)}A | C: ${I_phase[2].toFixed(1)}A</p>`;
+                document.getElementById('resILBox').innerHTML = `<p class="text-sm font-mono text-teal-800 relative z-10 font-black">A: ${I_line[0].toFixed(1)}A<br>B: ${I_line[1].toFixed(1)}A<br>C: ${I_line[2].toFixed(1)}A</p>`;
+                
+                lastResults = { P: P_total, Q: Q_total, S: S_total, Z: Z_arr, ang: Z_ang, IL: I_line, If: I_phase, isUnbalanced: true };
+            }
+
+            document.getElementById('resP').innerText = `${(P_total/1000).toFixed(2)} kW`;
+            document.getElementById('resQ').innerText = `${(Math.abs(Q_total)/1000).toFixed(2)} kVAr ${Q_total < 0 ? '(C)' : '(L)'}`;
+            document.getElementById('resS').innerText = `${(S_total/1000).toFixed(2)} kVA`;
+            
+            const badge = document.getElementById('badgeFP');
+            badge.innerText = `FP Atual: ${currentFP.toFixed(3)}`;
+            badge.className = currentFP >= targetFP 
+                ? "text-xs font-bold px-3 py-1 rounded-full bg-emerald-100 text-emerald-700 border border-emerald-200"
+                : "text-xs font-bold px-3 py-1 rounded-full bg-rose-100 text-rose-700 border border-rose-200";
+
+            const panel = document.getElementById('correctionPanel');
+            let Q_new = Q_total; let Q_c = 0; let C_bank_Y = 0;
+
+            if (Q_total > 0 && currentFP < targetFP) {
+                const targetAngRad = Math.acos(targetFP);
+                Q_new = P_total * Math.tan(targetAngRad); 
+                Q_c = Q_total - Q_new; 
+                C_bank_Y = Q_c / (3 * w * V_f * V_f); 
+                
+                document.getElementById('resQc').innerText = `Qc (Banco): ${(Q_c/1000).toFixed(2)} kVAr`;
+                document.getElementById('resCapacitance').innerText = `C/fase (Y): ${(C_bank_Y * 1000000).toFixed(2)} μF`;
+                panel.classList.remove('hidden');
+            } else {
+                panel.classList.add('hidden');
+            }
+
+            lastResults.Q_new = Q_new; lastResults.Qc = Q_c; lastResults.C_Y = C_bank_Y;
+            renderTriangle(lastResults);
+        }
+
+        function renderTriangle(res) {
+            const { P, Q, Q_new } = res;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.save(); ctx.translate(offsetX, offsetY); ctx.scale(scale, scale);
+
+            ctx.beginPath(); ctx.strokeStyle = '#e2e8f0'; ctx.lineWidth = 1/scale;
+            ctx.moveTo(-2000, 0); ctx.lineTo(2000, 0); ctx.moveTo(0, -2000); ctx.lineTo(0, 2000); ctx.stroke();
+
+            const maxVal = Math.max(P, Math.abs(Q));
+            if(maxVal === 0) { ctx.restore(); return; }
+            const drawScale = 180 / maxVal; 
+
+            const pPx = P * drawScale; const qPx = Math.abs(Q) * drawScale; const qNewPx = Math.abs(Q_new) * drawScale;
+            const dirY = Q >= 0 ? -1 : 1; 
+
+            drawArrow(ctx, 0, 0, pPx, 0, '#059669', 3);
+            ctx.fillStyle = '#059669'; ctx.font = `bold ${14/scale}px Inter`; ctx.textAlign = 'center';
+            ctx.fillText('P', pPx/2, (dirY > 0 ? -10/scale : 20/scale));
+
+            drawArrow(ctx, pPx, 0, pPx, qPx * dirY, '#e11d48', 3);
+            ctx.fillStyle = '#e11d48'; ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+            ctx.fillText('Q', pPx + 10/scale, (qPx * dirY)/2);
+
+            drawArrow(ctx, 0, 0, pPx, qPx * dirY, '#4f46e5', 2);
+            ctx.fillStyle = '#4f46e5'; ctx.textAlign = 'right';
+            ctx.fillText('S', pPx/2 - 10/scale, (qPx * dirY)/2);
+
+            if (Q !== Q_new) {
+                drawArrow(ctx, pPx, 0, pPx, qNewPx * dirY, '#f59e0b', 3, true);
+                drawArrow(ctx, 0, 0, pPx, qNewPx * dirY, '#10b981', 2, true);
+                drawArrow(ctx, pPx + 5/scale, qPx * dirY, pPx + 5/scale, qNewPx * dirY, '#f59e0b', 2);
+                ctx.fillStyle = '#f59e0b'; ctx.textAlign = 'left';
+                ctx.fillText('Qc', pPx + 15/scale, ((qPx + qNewPx) * dirY)/2);
+            }
+            ctx.restore();
+        }
+
+        function exportTriangleTikz() {
+            const { P, Q, S, Q_new } = lastResults;
+            if(P === 0) return;
+            const tikzScale = 5 / Math.max(P, Math.abs(Q));
+            let pX = (P * tikzScale).toFixed(2);
+            let qY = (Math.abs(Q) * tikzScale * (Q >= 0 ? 1 : -1)).toFixed(2);
+            let qNewY = (Math.abs(Q_new) * tikzScale * (Q >= 0 ? 1 : -1)).toFixed(2);
+
+            let latex = "% Requer: \\usepackage{tikz}\n\\begin{figure}[htbp]\n\\centering\n\\begin{tikzpicture}[>=stealth, thick]\n\n";
+            latex += `    \\draw[->, color=black!60!green] (0,0) -- (${pX}, 0) node[midway, below] {P};\n`;
+            latex += `    \\draw[->, color=red] (${pX},0) -- (${pX}, ${qY}) node[midway, right] {Q};\n`;
+            latex += `    \\draw[->, color=blue] (0,0) -- (${pX}, ${qY}) node[midway, above left] {S};\n`;
+
+            if (Q !== Q_new) {
+                latex += `    \\draw[->, dashed, color=orange] (${pX},0) -- (${pX}, ${qNewY});\n`;
+                latex += `    \\draw[->, dashed, color=green] (0,0) -- (${pX}, ${qNewY}) node[midway, below right] {S$_{novo}$};\n`;
+                latex += `    \\draw[->, color=orange] ([xshift=3pt]${pX}, ${qY}) -- ([xshift=3pt]${pX}, ${qNewY}) node[midway, right] {Q$_c$};\n`;
+            }
+            latex += "\n\\end{tikzpicture}\n\\caption{Triângulo de Potências Global (3$\\Phi$)}\n\\end{figure}";
+            navigator.clipboard.writeText(latex).then(() => alert("Código TikZ copiado!"));
+        }
+
+        function exportResultsLatex() {
+            const r = lastResults;
+            let latex = "\\begin{table}[htbp]\n\\centering\n\\renewcommand{\\arraystretch}{1.3}\n\\begin{tabular}{|l|c|c|}\n\\hline\n";
+            latex += "\\textbf{Grandeza} & \\textbf{Símbolo} & \\textbf{Valor Calculado} \\\\\n\\hline\n";
+            
+            if(!r.isUnbalanced){
+                latex += `Impedância por Fase & $Z$ & $${r.Z[0].toFixed(2)}\\,\\Omega \\angle ${r.ang[0].toFixed(2)}^\\circ$ \\\\\n\\hline\n`;
+                latex += `Corrente de Fase & $I_f$ & $${r.If[0].toFixed(2)}\\,\\mathrm{A}$ \\\\\n\\hline\n`;
+                latex += `Corrente de Linha & $I_L$ & $${r.IL[0].toFixed(2)}\\,\\mathrm{A}$ \\\\\n\\hline\n`;
+            } else {
+                latex += `Imp. Fase A & $Z_A$ & $${r.Z[0].toFixed(2)}\\,\\Omega \\angle ${r.ang[0].toFixed(2)}^\\circ$ \\\\\n`;
+                latex += `Imp. Fase B & $Z_B$ & $${r.Z[1].toFixed(2)}\\,\\Omega \\angle ${r.ang[1].toFixed(2)}^\\circ$ \\\\\n`;
+                latex += `Imp. Fase C & $Z_C$ & $${r.Z[2].toFixed(2)}\\,\\Omega \\angle ${r.ang[2].toFixed(2)}^\\circ$ \\\\\n\\hline\n`;
+                latex += `Corr. Linha A & $I_A$ & $${r.IL[0].toFixed(2)}\\,\\mathrm{A}$ \\\\\n`;
+                latex += `Corr. Linha B & $I_B$ & $${r.IL[1].toFixed(2)}\\,\\mathrm{A}$ \\\\\n`;
+                latex += `Corr. Linha C & $I_C$ & $${r.IL[2].toFixed(2)}\\,\\mathrm{A}$ \\\\\n\\hline\n`;
+            }
+            
+            latex += `Potência Ativa (3$\\Phi$) & $P$ & $${(r.P/1000).toFixed(2)}\\,\\mathrm{kW}$ \\\\\n\\hline\n`;
+            latex += `Potência Reativa (3$\\Phi$) & $Q$ & $${(Math.abs(r.Q)/1000).toFixed(2)}\\,\\mathrm{kVAr}$ \\\\\n\\hline\n`;
+            latex += `Potência Aparente (3$\\Phi$) & $S$ & $${(r.S/1000).toFixed(2)}\\,\\mathrm{kVA}$ \\\\\n\\hline\n`;
+            
+            if (r.Q !== r.Q_new) {
+                latex += `Banco Capacitivo (3$\\Phi$) & $Q_c$ & $${(r.Qc/1000).toFixed(2)}\\,\\mathrm{kVAr}$ \\\\\n\\hline\n`;
+                latex += `Cap. por Fase ($Y$) & $C_Y$ & $${(r.C_Y * 1000000).toFixed(2)}\\,\\mu\\mathrm{F}$ \\\\\n\\hline\n`;
+            }
+
+            latex += "\\end{tabular}\n\\caption{Gabarito: Parâmetros do Sistema Trifásico}\n\\end{table}";
+            navigator.clipboard.writeText(latex).then(() => alert("Gabarito LaTeX copiado!"));
+        }
+
+        // Init
+        calculateSystem();
     </script>
 </body>
 </html>
