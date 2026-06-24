@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Soma de Fasores - Lab AC Pro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script src="logins.js"></script>
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&family=Fira+Code:wght@500&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
+        .timer-font { font-family: 'Fira Code', monospace; }
+    </style>
+</head>
+<body class="text-slate-800 min-h-screen flex flex-col">
+
+    <header class="bg-emerald-700 text-white shadow-md py-4 px-6 relative z-10">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="flex items-center gap-4">
+                <div class="bg-white p-2 rounded shadow-sm text-emerald-700 font-bold text-xl flex items-center justify-center h-12 w-12">
+                    <i class="fa-solid fa-vector-square"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold tracking-wide">MÓDULO: SOMA DE FASORES</h1>
+                    <p class="text-xs text-emerald-100 font-medium">Laboratório de Adição Vetorial (Regra do Paralelogramo)</p>
+                </div>
+            </div>
+            <a href="diagramas_fasoriais.html" class="text-sm font-semibold text-emerald-50 hover:text-white bg-emerald-800 hover:bg-emerald-900 px-4 py-2 rounded transition-colors">
+                <i class="fa-solid fa-arrow-left"></i> Voltar aos Diagramas
+            </a>
+        </div>
+    </header>
+
+    <main class="flex-grow w-full max-w-7xl mx-auto p-4 md:p-6 grid grid-cols-1 lg:grid-cols-12 gap-8">
+        
+        <div class="lg:col-span-4 space-y-6">
+            
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-blue-200">
+                <h3 class="font-black text-blue-700 text-sm uppercase tracking-wider border-b border-blue-100 pb-2 mb-4 flex items-center gap-2">
+                    <span class="w-3 h-3 bg-blue-500 rounded-full"></span> Fasor 1 (V₁)
+                </h3>
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-600 mb-1">Módulo / Amplitude:</label>
+                        <div class="flex gap-2">
+                            <input type="range" id="rangeAmp1" min="0" max="400" value="100" class="flex-grow accent-blue-600" oninput="sync('Amp1', 'range')">
+                            <input type="number" id="numAmp1" value="100" min="0" max="400" class="w-20 border rounded p-1 text-center font-bold text-sm" oninput="sync('Amp1', 'num')">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-600 mb-1">Ângulo de Fase (θ°):</label>
+                        <div class="flex gap-2">
+                            <input type="range" id="rangePhase1" min="-180" max="180" value="0" class="flex-grow accent-blue-600" oninput="sync('Phase1', 'range')">
+                            <input type="number" id="numPhase1" value="0" min="-180" max="180" class="w-20 border rounded p-1 text-center font-bold text-sm" oninput="sync('Phase1', 'num')">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-orange-200">
+                <h3 class="font-black text-orange-700 text-sm uppercase tracking-wider border-b border-orange-100 pb-2 mb-4 flex items-center gap-2">
+                    <span class="w-3 h-3 bg-orange-500 rounded-full"></span> Fasor 2 (V₂)
+                </h3>
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-600 mb-1">Módulo / Amplitude:</label>
+                        <div class="flex gap-2">
+                            <input type="range" id="rangeAmp2" min="0" max="400" value="80" class="flex-grow accent-orange-600" oninput="sync('Amp2', 'range')">
+                            <input type="number" id="numAmp2" value="80" min="0" max="400" class="w-20 border rounded p-1 text-center font-bold text-sm" oninput="sync('Amp2', 'num')">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-600 mb-1">Ângulo de Fase (θ°):</label>
+                        <div class="flex gap-2">
+                            <input type="range" id="rangePhase2" min="-180" max="180" value="90" class="flex-grow accent-orange-600" oninput="sync('Phase2', 'range')">
+                            <input type="number" id="numPhase2" value="90" min="-180" max="180" class="w-20 border rounded p-1 text-center font-bold text-sm" oninput="sync('Phase2', 'num')">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-emerald-50 p-6 rounded-2xl shadow-sm border border-emerald-200 space-y-4">
+                <h3 class="font-black text-emerald-800 text-sm uppercase tracking-wider border-b border-emerald-200 pb-2 flex items-center gap-2">
+                    <span class="w-3 h-3 bg-emerald-600 rounded-full"></span> Resultante (V<sub>R</sub>)
+                </h3>
+                
+                <div class="grid grid-cols-2 gap-4 text-center">
+                    <div class="bg-white p-3 rounded-xl border border-emerald-100 shadow-sm">
+                        <p class="text-[10px] uppercase font-bold text-slate-400 mb-1">Módulo (|V<sub>R</sub>|)</p>
+                        <p id="resAmp" class="text-2xl font-black text-emerald-700">0.0</p>
+                    </div>
+                    <div class="bg-white p-3 rounded-xl border border-emerald-100 shadow-sm">
+                        <p class="text-[10px] uppercase font-bold text-slate-400 mb-1">Fase (θ<sub>R</sub>)</p>
+                        <p id="resPhase" class="text-2xl font-black text-emerald-700">0.0°</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-4 gap-2 mt-2">
+                    <button onclick="toggleRotation()" id="btnRotate" class="col-span-3 bg-slate-800 text-white py-3 rounded-xl font-black uppercase tracking-wider hover:bg-black transition-all shadow-md flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-play"></i> Animar Rotação
+                    </button>
+                    <button onclick="resetRotation()" class="col-span-1 bg-slate-200 text-slate-700 py-3 rounded-xl font-black uppercase tracking-wider hover:bg-slate-300 transition-all shadow-md flex items-center justify-center" title="Voltar ao início (t=0)">
+                        <i class="fa-solid fa-rotate-left"></i>
+                    </button>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="lg:col-span-8 space-y-6">
+            
+            <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 flex justify-center items-center relative overflow-hidden">
+                <button id="btnLockHidden" onclick="handleLockClick()" class="absolute top-4 right-5 text-slate-200 hover:text-amber-400 transition-colors text-xl z-20" title="Área do Professor">
+                    <i class="fa-solid fa-lock"></i>
+                </button>
+                
+                <canvas id="canvas" width="600" height="600" class="max-w-full h-auto"></canvas>
+            </div>
+
+            <div id="mathUnlockedState" class="hidden bg-white p-6 rounded-2xl shadow-sm border border-slate-200 transition-all duration-500">
+                <div class="flex justify-between items-center border-b border-slate-100 pb-2 mb-4">
+                    <h3 class="font-black text-slate-800 text-sm uppercase tracking-wider">
+                        <i class="fa-solid fa-calculator text-slate-400"></i> Passo a Passo da Soma <span class="text-[10px] text-slate-400 font-normal lowercase tracking-normal ml-2">(Valores para t=0)</span>
+                    </h3>
+                    <button onclick="lockMath()" class="text-emerald-500 hover:text-slate-400 transition-colors text-lg" title="Ocultar Resolução">
+                        <i class="fa-solid fa-lock-open"></i>
+                    </button>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 font-mono text-sm">
+                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-100">
+                        <p class="text-xs font-bold text-slate-400 uppercase mb-3 tracking-wider">1. Para Retangular</p>
+                        <div class="space-y-3 text-slate-700">
+                            <p><span class="text-blue-600 font-bold">V₁</span> = <span id="mathV1p"></span><br>
+                               <span class="opacity-0">V₁</span> = <span id="mathV1r" class="font-bold"></span></p>
+                            <p><span class="text-orange-600 font-bold">V₂</span> = <span id="mathV2p"></span><br>
+                               <span class="opacity-0">V₂</span> = <span id="mathV2r" class="font-bold"></span></p>
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-100">
+                        <p class="text-xs font-bold text-slate-400 uppercase mb-3 tracking-wider">2. Soma das Componentes</p>
+                        <div class="space-y-2 text-slate-700">
+                            <p>Real = Re(V₁) + Re(V₂)<br>
+                               Real = <span id="mathRealSum"></span></p>
+                            <p class="mt-2">Imag = Im(V₁) + Im(V₂)<br>
+                               Imag = <span id="mathImagSum"></span></p>
+                            <p class="mt-3 border-t border-slate-200 pt-2 text-emerald-700 font-bold">
+                                V<sub>R</sub> = <span id="mathVRr"></span>
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-100">
+                        <p class="text-xs font-bold text-slate-400 uppercase mb-3 tracking-wider">3. Para Polar</p>
+                        <div class="space-y-2 text-slate-700">
+                            <p>|V<sub>R</sub>| = √(Re² + Im²)<br>
+                               |V<sub>R</sub>| = <span id="mathVRamp"></span></p>
+                            <p class="mt-2">θ<sub>R</sub> = atan(Im / Re)<br>
+                               θ<sub>R</sub> = <span id="mathVRphase"></span>°</p>
+                            <p class="mt-3 border-t border-slate-200 pt-2 text-emerald-700 font-black text-base">
+                                V<sub>R</sub> = <span id="mathVRfinal"></span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <div id="loginModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
+        <div class="bg-white w-full max-w-md rounded-2xl shadow-2xl overflow-hidden transform transition-all">
+            <div class="bg-amber-500 p-4 flex justify-between items-center text-white">
+                <h3 class="font-black flex items-center gap-2"><i class="fa-solid fa-shield-halved"></i> Autenticação Requerida</h3>
+                <button onclick="closeLoginModal()" class="text-amber-100 hover:text-white transition-colors"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <div class="p-6 space-y-4">
+                <p class="text-sm text-slate-500 mb-4">Insira suas credenciais de professor para visualizar a resolução passo a passo.</p>
+                <div>
+                    <label class="block text-xs font-bold text-slate-600 mb-1">Usuário</label>
+                    <input type="text" id="adminUser" class="w-full border border-slate-300 px-4 py-2 rounded-lg focus:outline-none focus:border-amber-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-600 mb-1">Senha</label>
+                    <input type="password" id="adminPass" class="w-full border border-slate-300 px-4 py-2 rounded-lg focus:outline-none focus:border-amber-500" onkeypress="if(event.key === 'Enter') unlockMath()">
+                </div>
+                <div id="modalError" class="hidden text-xs text-rose-500 font-bold text-center bg-rose-50 p-2 rounded border border-rose-200"></div>
+                <button onclick="unlockMath()" class="w-full bg-slate-800 hover:bg-black text-white font-bold py-3 rounded-lg shadow transition-colors mt-2">Autenticar</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- LÓGICA DE LOGIN E CADEADO SECRETO ---
+        function handleLockClick() {
+            document.getElementById('loginModal').classList.remove('hidden');
+            document.getElementById('adminUser').focus();
+        }
+
+        function closeLoginModal() {
+            document.getElementById('loginModal').classList.add('hidden');
+            document.getElementById('modalError').classList.add('hidden');
+            document.getElementById('adminPass').value = '';
+        }
+
+        function unlockMath() {
+            const u = document.getElementById('adminUser').value;
+            const p = document.getElementById('adminPass').value;
+            
+            const auth = AuthProfessor.validarDetalhado(u, p);
+            
+            if(auth.sucesso) {
+                closeLoginModal();
+                // Oculta o cadeado do gráfico e revela o painel de matemática
+                document.getElementById('btnLockHidden').classList.add('hidden');
+                document.getElementById('mathUnlockedState').classList.remove('hidden');
+            } else {
+                const err = document.getElementById('modalError');
+                err.innerText = auth.erro;
+                err.classList.remove('hidden');
+            }
+        }
+
+        function lockMath() {
+            // Esconde o painel de matemática e mostra o cadeado no gráfico novamente
+            document.getElementById('mathUnlockedState').classList.add('hidden');
+            document.getElementById('btnLockHidden').classList.remove('hidden');
+        }
+
+
+        // --- LÓGICA DA ROTAÇÃO E DESENHO DOS VETORES ---
+        let isRotating = false;
+        let globalAngleOffset = 0;
+
+        function toggleRotation() {
+            isRotating = !isRotating;
+            const btn = document.getElementById('btnRotate');
+            if (isRotating) {
+                btn.innerHTML = '<i class="fa-solid fa-pause"></i> Parar Rotação';
+                btn.classList.replace('bg-slate-800', 'bg-rose-600');
+                btn.classList.replace('hover:bg-black', 'hover:bg-rose-700');
+                animateRotation();
+            } else {
+                btn.innerHTML = '<i class="fa-solid fa-play"></i> Animar Rotação';
+                btn.classList.replace('bg-rose-600', 'bg-slate-800');
+                btn.classList.replace('hover:bg-rose-700', 'hover:bg-black');
+            }
+        }
+
+        function resetRotation() {
+            globalAngleOffset = 0;
+            calculateAndDraw();
+        }
+
+        function animateRotation() {
+            if (!isRotating) return;
+            globalAngleOffset += 1.5;
+            if (globalAngleOffset >= 360) globalAngleOffset -= 360;
+            calculateAndDraw();
+            requestAnimationFrame(animateRotation);
+        }
+
+        function sync(id, source) {
+            const range = document.getElementById('range' + id);
+            const num = document.getElementById('num' + id);
+            if (source === 'range') num.value = range.value;
+            else range.value = num.value;
+            calculateAndDraw();
+        }
+
+        function formatRect(real, imag) {
+            const sign = imag >= 0 ? '+' : '-';
+            return `${real.toFixed(2)} ${sign} j${Math.abs(imag).toFixed(2)}`;
+        }
+
+        function formatPolar(amp, phase) {
+            return `${amp.toFixed(2)} ∠ ${phase.toFixed(2)}°`;
+        }
+
+        function drawArrow(ctx, fromx, fromy, tox, toy, color, isDashed = false) {
+            const headlen = 12;
+            const angle = Math.atan2(toy - fromy, tox - fromx);
+            
+            ctx.strokeStyle = color;
+            ctx.fillStyle = color;
+            ctx.lineWidth = 3;
+            
+            if (isDashed) {
+                ctx.setLineDash([5, 5]);
+                ctx.lineWidth = 2;
+                ctx.globalAlpha = 0.6;
+            } else {
+                ctx.setLineDash([]);
+                ctx.globalAlpha = 1.0;
+            }
+
+            ctx.beginPath();
+            ctx.moveTo(fromx, fromy);
+            ctx.lineTo(tox, toy);
+            ctx.stroke();
+            
+            if (!isDashed) {
+                ctx.beginPath();
+                ctx.moveTo(tox, toy);
+                ctx.lineTo(tox - headlen * Math.cos(angle - Math.PI/6), toy - headlen * Math.sin(angle - Math.PI/6));
+                ctx.lineTo(tox - headlen * Math.cos(angle + Math.PI/6), toy - headlen * Math.sin(angle + Math.PI/6));
+                ctx.lineTo(tox, toy);
+                ctx.fill();
+            }
+            ctx.globalAlpha = 1.0;
+            ctx.setLineDash([]);
+        }
+
+        function drawLabel(ctx, text, x, y, cx, cy, color) {
+            const dx = x - cx;
+            const dy = y - cy;
+            const d = Math.sqrt(dx*dx + dy*dy);
+            
+            let ox = 0, oy = -15; 
+            if (d > 0) {
+                ox = (dx/d) * 25;
+                oy = (dy/d) * 25;
+            }
+
+            ctx.font = 'bold 16px Inter';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            
+            ctx.lineWidth = 4;
+            ctx.strokeStyle = '#ffffff';
+            ctx.strokeText(text, x + ox, y + oy);
+            
+            ctx.fillStyle = color;
+            ctx.fillText(text, x + ox, y + oy);
+        }
+
+        function calculateAndDraw() {
+            const a1 = parseFloat(document.getElementById('numAmp1').value) || 0;
+            const p1 = parseFloat(document.getElementById('numPhase1').value) || 0;
+            const a2 = parseFloat(document.getElementById('numAmp2').value) || 0;
+            const p2 = parseFloat(document.getElementById('numPhase2').value) || 0;
+
+            const r1 = p1 * Math.PI / 180;
+            const r2 = p2 * Math.PI / 180;
+
+            const re1 = a1 * Math.cos(r1);
+            const im1 = a1 * Math.sin(r1);
+            const re2 = a2 * Math.cos(r2);
+            const im2 = a2 * Math.sin(r2);
+
+            const reR = re1 + re2;
+            const imR = im1 + im2;
+
+            const aR = Math.sqrt(reR*reR + imR*imR);
+            let pR = Math.atan2(imR, reR) * 180 / Math.PI;
+
+            // Atualiza UI Resumo e Matemática (Apenas os valores de t=0)
+            document.getElementById('resAmp').innerText = aR.toFixed(1);
+            document.getElementById('resPhase').innerText = pR.toFixed(1) + '°';
+
+            document.getElementById('mathV1p').innerText = formatPolar(a1, p1);
+            document.getElementById('mathV1r').innerText = formatRect(re1, im1);
+            document.getElementById('mathV2p').innerText = formatPolar(a2, p2);
+            document.getElementById('mathV2r').innerText = formatRect(re2, im2);
+            
+            document.getElementById('mathRealSum').innerText = `${re1.toFixed(2)} + (${re2.toFixed(2)}) = ${reR.toFixed(2)}`;
+            document.getElementById('mathImagSum').innerText = `${im1.toFixed(2)} + (${im2.toFixed(2)}) = ${imR.toFixed(2)}`;
+            document.getElementById('mathVRr').innerText = formatRect(reR, imR);
+            
+            document.getElementById('mathVRamp').innerText = aR.toFixed(2);
+            document.getElementById('mathVRphase').innerText = pR.toFixed(2);
+            document.getElementById('mathVRfinal').innerText = formatPolar(aR, pR);
+
+            // ================= Desenho no Canvas (Considera a Rotação) =================
+            const canvas = document.getElementById('canvas');
+            const ctx = canvas.getContext('2d');
+            const cx = canvas.width / 2;
+            const cy = canvas.height / 2;
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Eixos do Plano Cartesiano
+            ctx.strokeStyle = '#e2e8f0'; ctx.lineWidth = 1;
+            ctx.beginPath(); ctx.moveTo(0, cy); ctx.lineTo(canvas.width, cy); ctx.stroke(); 
+            ctx.beginPath(); ctx.moveTo(cx, 0); ctx.lineTo(cx, canvas.height); ctx.stroke(); 
+            
+            ctx.fillStyle = '#94a3b8'; ctx.font = '12px Inter';
+            ctx.fillText('+ Real', canvas.width - 40, cy - 10);
+            ctx.fillText('+ Imag (j)', cx + 10, 20);
+
+            const r1_draw = (p1 + globalAngleOffset) * Math.PI / 180;
+            const r2_draw = (p2 + globalAngleOffset) * Math.PI / 180;
+
+            const re1_draw = a1 * Math.cos(r1_draw);
+            const im1_draw = a1 * Math.sin(r1_draw);
+            const re2_draw = a2 * Math.cos(r2_draw);
+            const im2_draw = a2 * Math.sin(r2_draw);
+
+            const reR_draw = re1_draw + re2_draw;
+            const imR_draw = im1_draw + im2_draw;
+
+            const maxVal = Math.max(a1, a2, aR);
+            const scale = maxVal === 0 ? 1 : (canvas.width / 2 - 60) / maxVal;
+
+            const x1 = cx + re1_draw * scale;
+            const y1 = cy - im1_draw * scale; 
+            
+            const x2 = cx + re2_draw * scale;
+            const y2 = cy - im2_draw * scale;
+            
+            const xR = cx + reR_draw * scale;
+            const yR = cy - imR_draw * scale;
+
+            // Regra do Paralelogramo
+            drawArrow(ctx, x1, y1, xR, yR, '#f97316', true); 
+            drawArrow(ctx, x2, y2, xR, yR, '#3b82f6', true); 
+
+            // Vetores Principais
+            drawArrow(ctx, cx, cy, x1, y1, '#3b82f6'); 
+            drawArrow(ctx, cx, cy, x2, y2, '#f97316'); 
+            drawArrow(ctx, cx, cy, xR, yR, '#059669'); 
+
+            // Etiquetas
+            if (a1 > 0) drawLabel(ctx, 'V₁', x1, y1, cx, cy, '#2563eb');
+            if (a2 > 0) drawLabel(ctx, 'V₂', x2, y2, cx, cy, '#ea580c');
+            if (aR > 0) drawLabel(ctx, 'VR', xR, yR, cx, cy, '#047857');
+
+            // Origem
+            ctx.fillStyle = '#334155';
+            ctx.beginPath(); ctx.arc(cx, cy, 4, 0, Math.PI*2); ctx.fill();
+        }
+
+        window.onload = calculateAndDraw;
+    </script>
+</body>
+</html>
