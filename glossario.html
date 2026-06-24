@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Glossário Técnico - Lab AC Pro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
+    </style>
+</head>
+<body class="text-slate-800 min-h-screen flex flex-col">
+
+    <!-- CABEÇALHO PADRÃO -->
+    <header class="bg-emerald-700 text-white shadow-md py-4 px-6 relative z-10">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="flex items-center gap-4">
+                <div class="bg-white p-2 rounded shadow-sm text-emerald-700 font-bold text-xl flex items-center justify-center h-12 w-12">
+                    <i class="fa-solid fa-list-ul"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold tracking-wide">GLOSSÁRIO TÉCNICO</h1>
+                    <p class="text-xs text-emerald-100 font-medium">Terminologia de Eletrotécnica</p>
+                </div>
+            </div>
+            <a href="index.html" class="text-sm font-semibold text-emerald-50 hover:text-white bg-emerald-800 hover:bg-emerald-900 px-4 py-2 rounded transition-colors">
+                <i class="fa-solid fa-arrow-left"></i> Voltar ao Portal
+            </a>
+        </div>
+    </header>
+
+    <main class="flex-grow w-full max-w-5xl mx-auto p-4 md:p-6 flex flex-col items-center">
+
+        <!-- PAINEL DO GLOSSÁRIO (Aberto e visível) -->
+        <div id="main-panel" class="w-full space-y-6 mt-6">
+            
+            <!-- BUSCA -->
+            <div class="relative">
+                <i class="fa-solid fa-magnifying-glass absolute left-4 top-4 text-slate-400"></i>
+                <input type="text" id="searchInput" oninput="filterTerms()" placeholder="Pesquisar termo elétrico (Ex: Impedância, RMS, Fasor...)" 
+                       class="w-full pl-12 pr-4 py-4 rounded-2xl border border-slate-200 shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 text-lg font-medium">
+            </div>
+
+            <!-- LISTA DE TERMOS -->
+            <div id="termList" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- Termos injetados pelo JS -->
+            </div>
+        </div>
+    </main>
+
+    <script>
+        /* --- DADOS DO GLOSSÁRIO --- */
+        const termos = [
+            { t: "Impedância", d: "Oposição total que um circuito oferece à passagem da corrente alternada, combinando resistência e reatância (Z)." },
+            { t: "Valor RMS", d: "Valor eficaz de uma onda senoidal; corresponde ao valor de uma corrente contínua que produziria a mesma potência dissipada." },
+            { t: "Fasor", d: "Representação complexa de uma grandeza senoidal (amplitude e fase) facilitando cálculos em circuitos CA." },
+            { t: "Reatância Indutiva", d: "Oposição oferecida por indutores à corrente alternada (XL = 2πfL)." },
+            { t: "Reatância Capacitiva", d: "Oposição oferecida por capacitores à corrente alternada (XC = 1 / 2πfC)." },
+            { t: "Fator de Potência", d: "Relação entre a potência ativa (W) e a potência aparente (VA) no circuito (cos φ)." },
+            { t: "Potência Ativa", d: "Potência real consumida pela carga, medida em Watts (W)." },
+            { t: "Potência Reativa", d: "Potência que oscila entre a fonte e a carga, medida em Volts-Ampere Reativos (VAr)." }
+        ];
+
+        /* --- INICIALIZAÇÃO --- */
+        window.onload = function() {
+            renderTerms(termos);
+        };
+
+        /* --- RENDERIZAÇÃO --- */
+        function renderTerms(lista) {
+            const container = document.getElementById('termList');
+            container.innerHTML = lista.map(item => `
+                <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm hover:border-emerald-300 transition-colors">
+                    <h4 class="font-black text-emerald-700 text-lg mb-1">${item.t}</h4>
+                    <p class="text-sm text-slate-600 leading-relaxed">${item.d}</p>
+                </div>
+            `).join('');
+        }
+
+        function filterTerms() {
+            const query = document.getElementById('searchInput').value.toLowerCase();
+            const filtered = termos.filter(item => 
+                item.t.toLowerCase().includes(query) || item.d.toLowerCase().includes(query)
+            );
+            renderTerms(filtered);
+        }
+    </script>
+</body>
+</html>
