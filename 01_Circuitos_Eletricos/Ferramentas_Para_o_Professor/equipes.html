@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Divisor de Equipes - Área do Professor</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script src="../../logins.js"></script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+    </style>
+</head>
+<body class="text-slate-800 min-h-screen flex flex-col">
+
+    <header class="bg-amber-600 text-white shadow-md py-4 px-6 relative z-10">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="flex items-center gap-4">
+                <div class="bg-white p-2 rounded shadow-sm text-amber-600 font-bold text-xl flex items-center justify-center h-12 w-12">
+                    <i class="fa-solid fa-users-rectangle"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold tracking-wide">ÁREA DO PROFESSOR</h1>
+                    <p class="text-xs text-amber-100 font-medium">Divisor Automático de Equipes de Trabalho</p>
+                </div>
+            </div>
+            <a href="../dic_circuitos_eletricos.html" class="text-sm font-semibold text-amber-50 hover:text-white bg-amber-700 hover:bg-amber-800 px-4 py-2 rounded transition-colors">
+                <i class="fa-solid fa-arrow-left"></i> Voltar ao Portal
+            </a>
+        </div>
+    </header>
+
+    <main class="flex-grow w-full max-w-7xl mx-auto p-4 md:p-6 flex flex-col items-center justify-center">
+
+        <div id="screen-login" class="w-full max-w-md bg-white p-8 rounded-2xl shadow-lg border border-slate-200">
+            <div class="text-center mb-6">
+                <i class="fa-solid fa-lock text-4xl text-slate-300 mb-3"></i>
+                <h2 class="text-2xl font-black text-slate-800">Acesso Restrito</h2>
+                <p class="text-sm text-slate-500">Insira suas credenciais para gerir os grupos.</p>
+            </div>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-600 mb-1">Usuário</label>
+                    <input type="text" id="username" class="w-full border border-slate-300 px-4 py-2 rounded-lg focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-600 mb-1">Senha</label>
+                    <input type="password" id="password" class="w-full border border-slate-300 px-4 py-2 rounded-lg focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500" onkeypress="if(event.key === 'Enter') checkLogin()">
+                </div>
+                
+                <div id="login-error" class="hidden text-xs text-rose-500 font-bold text-center bg-rose-50 p-2 rounded border border-rose-200"></div>
+                
+                <button onclick="checkLogin()" class="w-full bg-amber-500 hover:bg-amber-600 text-white font-bold py-3 rounded-lg shadow transition-colors mt-2">Entrar</button>
+            </div>
+        </div>
+
+        <div id="main-panel" class="hidden w-full grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+            
+            <div class="lg:col-span-4 bg-white p-5 rounded-2xl shadow border border-slate-200 flex flex-col gap-5">
+                <div>
+                    <h3 class="font-black text-slate-800 text-sm uppercase tracking-wider border-b border-slate-100 pb-2 mb-3">
+                        <i class="fa-solid fa-cog text-amber-500"></i> Entrada de Dados
+                    </h3>
+                    <div class="flex gap-2 mb-4">
+                        <button onclick="setInputMode('NUM')" id="btnModeNum" class="flex-1 text-xs py-2 bg-amber-500 text-white font-bold rounded shadow transition-colors">Numérico</button>
+                        <button onclick="setInputMode('TXT')" id="btnModeTxt" class="flex-1 text-xs py-2 bg-slate-100 text-slate-600 font-bold rounded border hover:bg-slate-200 transition-colors">Lista (.txt)</button>
+                    </div>
+
+                    <div id="boxNum" class="block mb-3">
+                        <label class="block text-xs font-bold text-slate-600 mb-1">Quantidade de Alunos:</label>
+                        <input type="number" id="numStudents" value="40" min="2" class="w-full border-2 p-2 rounded-lg text-sm focus:border-amber-500 text-center">
+                    </div>
+
+                    <div id="boxTxt" class="hidden mb-3">
+                        <label class="block text-xs font-bold text-slate-600 mb-1">Carregar Arquivo (.txt):</label>
+                        <input type="file" id="fileInput" accept=".txt" onchange="loadFicheiro(event)" 
+                               class="w-full text-xs text-slate-500 file:mr-2 file:py-1.5 file:px-3 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-amber-100 file:text-amber-700 hover:file:bg-amber-200 border-2 border-slate-200 rounded-lg p-1">
+                        <p id="txtCount" class="text-[10px] text-amber-600 font-bold mt-2 text-center">0 nomes carregados</p>
+                    </div>
+                </div>
+
+                <div>
+                    <h3 class="font-black text-slate-800 text-sm uppercase tracking-wider border-b border-slate-100 pb-2 mb-3">
+                        <i class="fa-solid fa-sliders text-amber-500"></i> Lógica de Divisão
+                    </h3>
+                    <div class="flex gap-2 mb-4">
+                        <button onclick="setSplitStrategy('COUNT')" id="btnStratCount" class="flex-1 text-xs py-2 bg-slate-800 text-white font-bold rounded shadow transition-colors">Nº de Equipes</button>
+                        <button onclick="setSplitStrategy('SIZE')" id="btnStratSize" class="flex-1 text-xs py-2 bg-slate-100 text-slate-600 font-bold rounded border hover:bg-slate-200 transition-colors">Membros/Equipe</button>
+                    </div>
+                    <label id="stratLabel" class="block text-xs font-bold text-slate-600 mb-1">Quantidade de Grupos Alvo:</label>
+                    <input type="number" id="stratValue" value="5" min="1" class="w-full border-2 p-2 rounded-lg text-sm focus:border-amber-500 text-center">
+                </div>
+
+                <button onclick="generateTeams()" class="w-full bg-amber-500 hover:bg-amber-600 text-white font-black py-3.5 rounded-xl shadow-md transition-all flex items-center justify-center gap-2 transform active:scale-95">
+                    <i class="fa-solid fa-people-arrows"></i> Dividir Turma
+                </button>
+            </div>
+
+            <div class="lg:col-span-8 bg-white p-5 rounded-2xl shadow border border-slate-200 min-h-[500px] flex flex-col">
+                <h3 class="font-black text-slate-800 text-sm uppercase tracking-wider border-b border-slate-100 pb-2 mb-4">
+                    <i class="fa-solid fa-rectangle-list text-amber-500"></i> Grupos Formados
+                </h3>
+                <div id="output-groups" class="grid grid-cols-1 md:grid-cols-2 gap-4 flex-grow overflow-y-auto max-h-[480px] pr-1">
+                    <p class="text-slate-400 text-sm text-center col-span-2 mt-12">Configure os parâmetros e clique em Dividir Turma.</p>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <footer class="bg-slate-900 text-slate-400 text-center py-4 text-xs border-t border-slate-800 mt-auto w-full">
+        Material de Apoio Didático — Desenvolvido para o Curso Técnico em Eletrotécnica IFRN
+    </footer>
+
+    <script>
+        /* --- LÓGICA DE LOGIN DETALHADA --- */
+        function checkLogin() {
+            const u = document.getElementById('username').value;
+            const p = document.getElementById('password').value;
+            const errorDiv = document.getElementById('login-error');
+
+            const auth = AuthProfessor.validarDetalhado(u, p);
+
+            if(auth.sucesso) {
+                document.getElementById('screen-login').classList.add('hidden');
+                document.getElementById('main-panel').classList.remove('hidden');
+                errorDiv.classList.add('hidden');
+            } else {
+                errorDiv.innerText = auth.erro;
+                errorDiv.classList.remove('hidden');
+            }
+        }
+
+        let inputMode = 'NUM';
+        let splitStrategy = 'COUNT';
+        let namesList = [];
+
+        function setInputMode(m) {
+            inputMode = m;
+            document.getElementById('boxNum').style.display = m === 'NUM' ? 'block' : 'none';
+            document.getElementById('boxTxt').style.display = m === 'TXT' ? 'block' : 'none';
+            document.getElementById('btnModeNum').className = m === 'NUM' ? "flex-1 text-xs py-2 bg-amber-500 text-white font-bold rounded shadow transition-colors" : "flex-1 text-xs py-2 bg-slate-100 text-slate-600 font-bold rounded border hover:bg-slate-200 transition-colors";
+            document.getElementById('btnModeTxt').className = m === 'TXT' ? "flex-1 text-xs py-2 bg-amber-500 text-white font-bold rounded shadow transition-colors" : "flex-1 text-xs py-2 bg-slate-100 text-slate-600 font-bold rounded border hover:bg-slate-200 transition-colors";
+        }
+
+        function setSplitStrategy(s) {
+            splitStrategy = s;
+            document.getElementById('stratLabel').innerText = s === 'COUNT' ? 'Quantidade de Grupos Alvo:' : 'Nº Máximo de Membros por Grupo:';
+            document.getElementById('btnStratCount').className = s === 'COUNT' ? "flex-1 text-xs py-2 bg-slate-800 text-white font-bold rounded shadow transition-colors" : "flex-1 text-xs py-2 bg-slate-100 text-slate-600 font-bold rounded border hover:bg-slate-200 transition-colors";
+            document.getElementById('btnStratSize').className = s === 'SIZE' ? "flex-1 text-xs py-2 bg-slate-800 text-white font-bold rounded shadow transition-colors" : "flex-1 text-xs py-2 bg-slate-100 text-slate-600 font-bold rounded border hover:bg-slate-200 transition-colors";
+        }
+
+        function loadFicheiro(e) {
+            const f = e.target.files[0];
+            if (!f) return;
+            const r = new FileReader();
+            r.onload = function(evt) {
+                namesList = evt.target.result.split('\n').map(n => n.trim()).filter(n => n.length > 0);
+                document.getElementById('txtCount').innerText = `${namesList.length} nomes carregados`;
+            };
+            r.readAsText(f);
+        }
+
+        function generateTeams() {
+            let pool = [];
+            if(inputMode === 'NUM') {
+                const total = parseInt(document.getElementById('numStudents').value) || 0;
+                for(let i = 1; i <= total; i++) pool.push(`Aluno ${i}`);
+            } else {
+                pool = [...namesList];
+                if(pool.length === 0) { alert('Carregue um arquivo válido primeiro!'); return; }
+            }
+
+            // Embaralhamento seguro
+            for (let i = pool.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [pool[i], pool[j]] = [pool[j], pool[i]];
+            }
+
+            const val = parseInt(document.getElementById('stratValue').value) || 1;
+            let targetGroupCount = 1;
+
+            if(splitStrategy === 'COUNT') {
+                targetGroupCount = Math.min(val, pool.length);
+            } else {
+                targetGroupCount = Math.ceil(pool.length / val);
+            }
+
+            let groups = Array.from({ length: targetGroupCount }, () => []);
+            
+            pool.forEach((member, idx) => {
+                groups[idx % targetGroupCount].push(member);
+            });
+
+            const out = document.getElementById('output-groups');
+            out.innerHTML = groups.map((g, i) => `
+                <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 shadow-sm border-l-4 border-l-amber-500">
+                    <h4 class="font-black text-amber-700 text-xs uppercase tracking-wider mb-2 border-b border-slate-200 pb-1 flex justify-between">
+                        <span>Equipe #${i+1}</span>
+                        <span class="text-slate-500 font-bold lowercase bg-white px-2 rounded-full border shadow-sm">${g.length} membros</span>
+                    </h4>
+                    <ul class="text-xs space-y-1.5 text-slate-700 font-medium mt-3">
+                        ${g.map(m => `<li class="flex items-center gap-2"><i class="fa-solid fa-user-check text-[10px] text-amber-400"></i> ${m}</li>`).join('')}
+                    </ul>
+                </div>
+            `).join('');
+        }
+    </script>
+</body>
+</html>

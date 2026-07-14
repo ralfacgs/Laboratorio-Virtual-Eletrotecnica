@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Glossário Técnico - Lab AC Pro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
+    </style>
+</head>
+<body class="text-slate-800 min-h-screen flex flex-col">
+
+    <header class="bg-emerald-700 text-white shadow-md py-4 px-6 relative z-10">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="flex items-center gap-4">
+                <div class="bg-white p-2 rounded shadow-sm text-emerald-700 font-bold text-xl flex items-center justify-center h-12 w-12">
+                    <i class="fa-solid fa-list-ul"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold tracking-wide">GLOSSÁRIO TÉCNICO</h1>
+                    <p class="text-xs text-emerald-100 font-medium">Terminologia Completa de Eletrotécnica</p>
+                </div>
+            </div>
+            <a href="../dic_circuitos_eletricos.html" class="text-sm font-semibold text-emerald-50 hover:text-white bg-emerald-800 hover:bg-emerald-900 px-4 py-2 rounded transition-colors">
+                <i class="fa-solid fa-arrow-left"></i> Voltar ao Portal
+            </a>
+        </div>
+    </header>
+
+    <main class="flex-grow w-full max-w-5xl mx-auto p-4 md:p-6 flex flex-col items-center">
+
+        <div id="main-panel" class="w-full space-y-6 mt-6">
+            
+            <div class="relative">
+                <i class="fa-solid fa-magnifying-glass absolute left-4 top-4 text-slate-400"></i>
+                <input type="text" id="searchInput" oninput="filterTerms()" placeholder="Pesquisar termo elétrico (Ex: Impedância, DR, Relé, Harmônicas...)" 
+                       class="w-full pl-12 pr-4 py-4 rounded-2xl border border-slate-200 shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 text-lg font-medium transition-all">
+                
+                <div class="absolute right-4 top-4 text-xs font-bold text-slate-400 bg-slate-100 px-2 py-1 rounded">
+                    <span id="termCount">0</span> Termos
+                </div>
+            </div>
+
+            <div id="termList" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                </div>
+            
+            <div id="noResults" class="hidden text-center py-10">
+                <i class="fa-solid fa-folder-open text-4xl text-slate-300 mb-3"></i>
+                <h3 class="text-lg font-bold text-slate-700">Nenhum termo encontrado</h3>
+                <p class="text-sm text-slate-500">Tente buscar por outra palavra-chave ou abreviação.</p>
+            </div>
+        </div>
+    </main>
+
+    <footer class="bg-slate-900 text-slate-400 text-center py-4 text-xs border-t border-slate-800 mt-auto w-full">
+        Material de Apoio Didático — Desenvolvido para o Curso Técnico em Eletrotécnica IFRN
+    </footer>
+
+    <script>
+        /* --- MEGA BANCO DE DADOS DO GLOSSÁRIO (Ordem Alfabética) --- */
+        const termos = [
+            { t: "Admitância", d: "Inverso da impedância (Y = 1/Z). Mede a facilidade com que um circuito permite a passagem da corrente alternada. Medida em Siemens (S)." },
+            { t: "Alicate Amperimétrico", d: "Instrumento de medição que permite medir a corrente elétrica que flui por um condutor sem a necessidade de seccioná-lo (cortá-lo), utilizando indução magnética." },
+            { t: "Arco Elétrico", d: "Descarga elétrica luminosa e de altíssima temperatura que ocorre através de um gás (geralmente o ar) devido ao rompimento da sua rigidez dielétrica." },
+            { t: "Aterramento Elétrico", d: "Ligação intencional de carcaças metálicas e equipamentos à terra para escoar correntes de falha, garantindo segurança contra choques e proteção contra raios." },
+            { t: "Autotransformador", d: "Transformador com apenas um enrolamento contínuo atuando como primário e secundário simultaneamente. É menor e mais barato, mas não possui isolação galvânica." },
+            { t: "Banco de Capacitores", d: "Conjunto de capacitores interligados utilizado em subestações e painéis industriais para corrigir o baixo Fator de Potência causado por cargas indutivas." },
+            { t: "Bobina (Indutor)", d: "Componente passivo formado por fio condutor enrolado em espiras que armazena energia em forma de campo magnético e se opõe a variações na corrente." },
+            { t: "Capacitor", d: "Componente elétrico que armazena energia em um campo elétrico interno. Muito usado em filtros, correção de fator de potência e partida de motores monofásicos." },
+            { t: "Carga Não Linear", d: "Equipamentos (como inversores, fontes chaveadas, retificadores) cuja corrente absorvida não possui a mesma forma de onda senoidal da tensão aplicada, gerando harmônicas." },
+            { t: "Choque Elétrico", d: "Perturbação de natureza e efeitos diversos que se manifesta no organismo humano ou animal quando percorrido por uma corrente elétrica." },
+            { t: "Condutância", d: "Inverso da resistência elétrica (G = 1/R). Representa a capacidade de um material de conduzir corrente, medida em Siemens (S)." },
+            { t: "Conexão Estrela (Y)", d: "Configuração trifásica onde um terminal de cada bobina se une num ponto comum (Neutro). Permite duas tensões diferentes (Linha e Fase)." },
+            { t: "Conexão Triângulo (Δ)", d: "Configuração trifásica onde as cargas/bobinas são ligadas em série fechada (fim com início), não possuindo Neutro. A tensão de linha é igual à de fase." },
+            { t: "Contator", d: "Dispositivo eletromecânico de manobra capaz de estabelecer, conduzir e interromper correntes elétricas industriais remotamente através do acionamento de uma bobina." },
+            { t: "Corrente Alternada (CA)", d: "Corrente elétrica cuja magnitude e direção variam ciclicamente ao longo do tempo, geralmente em forma de onda senoidal (ex: 60Hz na rede)." },
+            { t: "Corrente Contínua (CC)", d: "Corrente elétrica em que o fluxo de elétrons ocorre sempre em uma única direção, fornecida por baterias, pilhas e painéis solares." },
+            { t: "Corrente de Curto-circuito", d: "Corrente de altíssima intensidade que surge quando há falha na isolação de condutores com diferença de potencial, ignorando a carga do circuito." },
+            { t: "Corrente de Fuga", d: "Pequena corrente que flui indesejavelmente de um condutor energizado para a terra (ou carcaça) através do isolamento. O DR é usado para detectá-la." },
+            { t: "Corrente de Inrush (Partida)", d: "Pico de corrente transitória (muitas vezes superior à corrente nominal) que ocorre no exato instante da energização de transformadores, motores e capacitores." },
+            { t: "Dielétrico", d: "Material isolante elétrico (ar, vidro, óleo mineral, borracha) que pode ser polarizado por um campo elétrico, usado dentro de capacitores ou cabos." },
+            { t: "Diodo", d: "Componente semicondutor que atua como uma válvula, permitindo a passagem de corrente em apenas um sentido. Muito usado na retificação de CA para CC." },
+            { t: "Disjuntor Termomagnético", d: "Dispositivo de manobra e proteção que desarma automaticamente o circuito. O térmico atua em sobrecargas lentas e o magnético atua rapidamente em curtos-circuitos." },
+            { t: "Distorção Harmônica Total (THD)", d: "Métrica percentual que quantifica a deformação de uma onda senoidal pura devido à presença de frequências múltiplas (harmônicas) injetadas por cargas não lineares." },
+            { t: "DPS (Protetor de Surto)", d: "Dispositivo de Proteção contra Surtos. Desvia para a terra picos repentinos de tensão causados por descargas atmosféricas (raios) ou manobras da rede." },
+            { t: "DR (Diferencial Residual)", d: "Dispositivo de proteção à vida que monitora a diferença de corrente entre Fase e Neutro. Desarma se detectar correntes de fuga maiores que sua sensibilidade (ex: 30mA)." },
+            { t: "Efeito Corona", d: "Ionização do ar ao redor de condutores de alta tensão, gerando brilho, ruído e perdas de energia quando o gradiente de potencial ultrapassa a rigidez do ar." },
+            { t: "Efeito Joule", d: "Fenômeno em que a passagem de corrente elétrica por um condutor gera calor devido ao atrito dos elétrons na estrutura atômica (P = R · I²)." },
+            { t: "Efeito Skin (Pelicular)", d: "Tendência da corrente alternada de alta frequência de viajar apenas pela periferia (pele) do condutor, aumentando sua resistência elétrica aparente." },
+            { t: "Estator", d: "Parte fixa e estática de um motor ou gerador elétrico que abriga as bobinas por onde passa a corrente principal para criar ou receber campo magnético." },
+            { t: "Fasor", d: "Vetor rotativo que representa de forma complexa (amplitude e ângulo) uma grandeza senoidal. Facilita muito a matemática em circuitos CA." },
+            { t: "Fator de Demanda", d: "Relação percentual entre a demanda máxima (pico de uso) solicitada por uma instalação e a sua potência total instalada (soma das potências de todas as cargas)." },
+            { t: "Fator de Potência (cos φ)", d: "Relação entre a Potência Ativa (W) e a Potência Aparente (VA). Um valor abaixo de 0,92 (no Brasil) indica excesso de energia reativa e gera multas na conta de luz industrial." },
+            { t: "Fluxo Magnético", d: "Medida da quantidade total de campo magnético (linhas de força) que atravessa uma determinada área. Sua unidade é o Weber (Wb)." },
+            { t: "Frequência (Hz)", d: "Número de ciclos completos que uma onda senoidal de corrente alternada realiza por segundo. O padrão na rede elétrica do Brasil é 60 Hertz." },
+            { t: "Fusível", d: "Dispositivo de proteção descartável que contém um filamento interno que derrete (funde) ao ser atravessado por sobrecorrentes ou curto-circuito, interrompendo a energia." },
+            { t: "Grau de Proteção (IP)", d: "Padrão internacional (ex: IP65, IP20) que classifica a eficácia do invólucro de um equipamento contra a entrada de objetos sólidos (poeira) e líquidos (água)." },
+            { t: "Harmônicas", d: "Tensões ou correntes cujas frequências são múltiplos inteiros da frequência fundamental (ex: 3ª harmônica de 60Hz = 180Hz). Causam aquecimento e vibração em motores." },
+            { t: "Impedância (Z)", d: "Oposição total oferecida à passagem da corrente alternada. É a soma vetorial da Resistência (parte real) e Reatância (parte imaginária). Unidade em Ohms (Ω)." },
+            { t: "Inversor de Frequência", d: "Equipamento eletrônico que converte energia da rede (CA) para CC e novamente para CA, permitindo controlar a velocidade, partida e torque de motores de indução." },
+            { t: "Lei de Faraday", d: "Princípio fundamental do eletromagnetismo que diz que uma variação de fluxo magnético no tempo induz uma força eletromotriz (tensão) em um circuito fechado." },
+            { t: "Lei de Ohm", d: "Relação fundamental onde a tensão aplicada em um condutor é diretamente proporcional à corrente que o atravessa, mediada por sua resistência (V = R · I)." },
+            { t: "Leis de Kirchhoff (LKC e LKT)", d: "LKC: A soma das correntes num nó é zero. LKT: A soma algébrica das tensões numa malha fechada é nula. Base para análise de qualquer circuito elétrico." },
+            { t: "Malha de Aterramento", d: "Conjunto de condutores nus e hastes enterrados no solo, interligados formando uma rede, garantindo que o potencial da terra seja uniforme em toda a área." },
+            { t: "Megômetro", d: "Instrumento (muitas vezes chamado pelo nome popular Megger) que injeta alta tensão contínua para testar a qualidade e integridade do isolamento elétrico de cabos e motores." },
+            { t: "Motor de Indução Trifásico", d: "Tipo de motor mais comum da indústria. Opera sob o princípio do campo magnético girante gerado pelo estator, induzindo correntes no rotor gaiola de esquilo." },
+            { t: "Multímetro", d: "Instrumento portátil multifunções essencial que combina voltímetro, amperímetro, ohmímetro, teste de continuidade e de diodos." },
+            { t: "Neutro", d: "Condutor do sistema trifásico em estrela cujo potencial de referência é teoricamente igual ao da terra (zero volts). É por onde retorna a corrente de desequilíbrio." },
+            { t: "Osciloscópio", d: "Equipamento de laboratório utilizado para visualizar e analisar graficamente o comportamento temporal e as formas de onda de sinais elétricos complexos." },
+            { t: "Potência Aparente (S)", d: "Potência total injetada pela fonte num circuito CA, calculada pelo produto direto Tensão x Corrente (sem considerar defasagem). Unidade: Volt-Ampere (VA)." },
+            { t: "Potência Ativa (P)", d: "Parcela da energia que realmente realiza trabalho mecânico, gera calor ou luz em um sistema. É faturada em kWh. Unidade: Watt (W)." },
+            { t: "Potência Reativa (Q)", d: "Potência que oscila continuamente entre a fonte e a carga, necessária apenas para formar campos magnéticos em motores e transformadores. Unidade: Volt-Ampere Reativo (VAr)." },
+            { t: "Queda de Tensão", d: "Diferença entre a tensão na saída da fonte e a tensão que chega na carga, causada pela perda nas resistências e reatâncias dos fios ao longo da distância." },
+            { t: "Reatância Capacitiva (Xc)", d: "Oposição gerada pelos capacitores à passagem de CA. É inversamente proporcional à frequência e faz a corrente ficar adiantada em relação à tensão." },
+            { t: "Reatância Indutiva (Xl)", d: "Oposição gerada pelos indutores à passagem de CA. É diretamente proporcional à frequência e faz a corrente ficar atrasada em relação à tensão." },
+            { t: "Relé de Estado Sólido (SSR)", d: "Dispositivo eletrônico de chaveamento equivalente ao contator, mas sem peças móveis (mecânicas). Usa semicondutores como Tiristores ou Transistores." },
+            { t: "Relé Térmico", d: "Dispositivo de proteção geralmente acoplado a contatores que atua por bimetalismo para desligar o circuito caso detecte uma sobrecarga prolongada (aquecimento) no motor." },
+            { t: "Ressonância Elétrica", d: "Estado crítico de um circuito CA onde as reatâncias indutiva e capacitiva se igualam perfeitamente (Xl = Xc), cancelando-se e deixando o circuito puramente resistivo." },
+            { t: "Rigidez Dielétrica", d: "O limite de tensão que 1 milímetro de material isolante consegue suportar antes de ser perfurado pelo elétron (virando condutor de forma catastrófica)." },
+            { t: "Rotor", d: "Parte móvel e giratória interna de motores elétricos e geradores, responsável por transformar a energia magnética em torque no eixo." },
+            { t: "Sequência de Fases", d: "A ordem no tempo em que as tensões trifásicas (R, S, T ou A, B, C) atingem seu valor máximo positivo. Alterar a sequência inverte a rotação de motores trifásicos." },
+            { t: "Sistema Trifásico", d: "Sistema de geração, transmissão e distribuição constituído por três tensões senoidais da mesma frequência, defasadas simetricamente em 120 graus." },
+            { t: "Sobrecarga", d: "Condição onde a corrente que passa em um equipamento/condutor supera sua corrente nominal de projeto, gerando aquecimento e degradação isolante em médio prazo." },
+            { t: "Swell / Sag (Afundamento)", d: "Sag (ou DIP) é a redução momentânea da tensão da rede (afundamento). Swell é a elevação abrupta e momentânea da tensão. Ambos causam desligamentos em inversores." },
+            { t: "Tensão de Passo", d: "Diferença de potencial que surge no solo (entre os dois pés de uma pessoa caminhando) durante a queda de um raio ou fio energizado na terra próxima, podendo causar choque." },
+            { t: "Tensão de Toque", d: "Diferença de potencial perigosa entre a carcaça energizada de um equipamento defeituoso e a terra onde o operador está pisando ao tocá-lo." },
+            { t: "Terrômetro", d: "Instrumento específico para medir a resistência ôhmica do solo e aferir se a malha de aterramento está dentro dos padrões seguros (geralmente abaixo de 10 Ohms)." },
+            { t: "Transformador", d: "Máquina estática baseada em indução eletromagnética capaz de rebaixar ou elevar tensões em CA, garantindo isolação entre os enrolamentos Primário e Secundário." },
+            { t: "Transistor", d: "Componente base da eletrônica, que pode atuar como amplificador de sinais ou como chave eletrônica de alta velocidade (como IGBTs e MOSFETs)." },
+            { t: "Valor de Pico (Vp)", d: "O valor instantâneo máximo (amplitude total) atingido por uma onda senoidal de tensão ou corrente. Na rede de 220V RMS, o valor de pico é aproximadamente 311V." },
+            { t: "Valor RMS (Eficaz)", d: "É o valor que os multímetros mostram. Matematicamente, corresponde ao valor contínuo que causaria a mesma emissão de calor num resistor que a respectiva onda alternada." },
+            { t: "Wattímetro", d: "Instrumento dotado de bobina de tensão e de corrente que afere simultaneamente ambas para medir e indicar a Potência Ativa real consumida (em Watts)." }
+        ];
+
+        /* --- INICIALIZAÇÃO --- */
+        window.onload = function() {
+            renderTerms(termos);
+            document.getElementById('termCount').innerText = termos.length;
+        };
+
+        /* --- RENDERIZAÇÃO --- */
+        function renderTerms(lista) {
+            const container = document.getElementById('termList');
+            const noResults = document.getElementById('noResults');
+            
+            // Atualizar contagem
+            document.getElementById('termCount').innerText = lista.length;
+
+            if(lista.length === 0) {
+                container.innerHTML = '';
+                noResults.classList.remove('hidden');
+                return;
+            }
+
+            noResults.classList.add('hidden');
+            container.innerHTML = lista.map(item => `
+                <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm hover:border-emerald-400 hover:shadow-md transition-all group">
+                    <div class="flex items-start gap-3">
+                        <div class="mt-1 text-emerald-500 group-hover:text-emerald-600 transition-colors">
+                            <i class="fa-solid fa-bolt text-sm"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-slate-800 text-lg mb-1 group-hover:text-emerald-700 transition-colors">${item.t}</h4>
+                            <p class="text-sm text-slate-500 leading-relaxed">${item.d}</p>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        /* --- LÓGICA DE FILTRAGEM --- */
+        function filterTerms() {
+            const query = document.getElementById('searchInput').value.toLowerCase().trim();
+            
+            const filtered = termos.filter(item => 
+                item.t.toLowerCase().includes(query) || 
+                item.d.toLowerCase().includes(query)
+            );
+            
+            renderTerms(filtered);
+        }
+    </script>
+</body>
+</html>

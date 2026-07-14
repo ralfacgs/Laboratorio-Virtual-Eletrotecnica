@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Módulo 5: Simulador Multifilar - Lab AC Pro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script src="js/logins.js"></script>
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&family=Fira+Code:wght@400;500&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
+        canvas { border-radius: 0.75rem; cursor: grab; touch-action: none; }
+        canvas:active { cursor: grabbing; }
+        .glowing-text { text-shadow: 0 0 10px rgba(234, 179, 8, 0.8); }
+        
+        /* Animação suave para o popup */
+        .popup-anim { animation: popIn 0.15s ease-out forwards; }
+        @keyframes popIn {
+            from { opacity: 0; transform: scale(0.95) translateY(5px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col relative">
+
+    <header class="bg-indigo-700 text-white shadow-md py-4 px-6 relative z-10">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="flex items-center gap-4">
+                <div class="bg-white text-indigo-700 p-2 rounded shadow-sm text-xl flex items-center justify-center h-12 w-12 font-bold">
+                    <i class="fa-solid fa-bolt"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold tracking-wide">SIMULADOR DE INSTALAÇÕES ELÉTRICAS</h1>
+                    <p class="text-xs text-indigo-100 font-medium">Lógica de Diagrama Multifilar</p>
+                </div>
+            </div>
+            <a href="index.html" class="text-sm font-semibold text-indigo-50 hover:text-white bg-indigo-800 hover:bg-indigo-900 px-4 py-2 rounded transition-colors">
+                <i class="fa-solid fa-house"></i> Voltar ao Portal
+            </a>
+        </div>
+    </header>
+
+    <main class="flex-grow w-full max-w-7xl mx-auto p-4 md:p-6">
+        
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            
+            <div class="lg:col-span-4 flex flex-col gap-6">
+                
+                <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200">
+                    <div class="flex justify-between items-center border-b border-slate-100 pb-2 mb-3">
+                        <h3 class="font-black text-slate-900 text-sm uppercase tracking-wider flex items-center gap-2">
+                            <i class="fa-solid fa-globe text-indigo-600"></i> Nós e Emendas
+                        </h3>
+                    </div>
+                    
+                    <button onclick="addNewNode()" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 py-2 rounded-lg font-bold text-xs uppercase tracking-wider transition-all shadow-sm flex items-center justify-center gap-2 mb-3 border border-slate-300">
+                        <i class="fa-solid fa-plus"></i> + Criar Nó de Emenda
+                    </button>
+                    
+                    <div id="nodesListContainer" class="flex flex-wrap gap-2 pt-2 border-t border-slate-100 max-h-[120px] overflow-y-auto">
+                    </div>
+                </div>
+                
+                <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200">
+                    <h3 class="font-black text-slate-900 text-sm uppercase tracking-wider border-b border-slate-100 pb-2 mb-4 flex items-center gap-2">
+                        <i class="fa-solid fa-plug text-indigo-600"></i> Inserir Elemento
+                    </h3>
+                    
+                    <div class="grid grid-cols-1 gap-4 text-xs font-bold text-slate-600">
+                        <div>
+                            <label class="block mb-1">Tipo de Equipamento:</label>
+                            <select id="compType" class="w-full border rounded p-2 bg-slate-50 font-medium focus:border-indigo-500 focus:outline-none">
+                                <optgroup label="Fontes (Barramentos)">
+                                    <option value="BUS_F">Barramento de Fase (F)</option>
+                                    <option value="BUS_N">Barramento de Neutro (N)</option>
+                                </optgroup>
+                                <optgroup label="Cargas e Manobra">
+                                    <option value="LAMP">Lâmpada</option>
+                                    <option value="SW1">Interruptor Simples</option>
+                                    <option value="SW3">Interruptor Three-way (Paralelo)</option>
+                                    <option value="SW4">Interruptor Four-way (Intermediário)</option>
+                                </optgroup>
+                                <optgroup label="Conexões">
+                                    <option value="W">Fio Condutor</option>
+                                </optgroup>
+                            </select>
+                        </div>
+                        
+                        <div id="wireControls" class="grid grid-cols-2 gap-2" style="display: none;">
+                            <div>
+                                <label class="block mb-1">Origem:</label>
+                                <select id="nodeFrom" class="w-full border rounded p-2 bg-slate-50 font-mono focus:border-indigo-500 focus:outline-none"></select>
+                            </div>
+                            <div>
+                                <label class="block mb-1">Destino:</label>
+                                <select id="nodeTo" class="w-full border rounded p-2 bg-slate-50 font-mono focus:border-indigo-500 focus:outline-none"></select>
+                            </div>
+                        </div>
+
+                        <div id="autoNodeHelp" class="text-[10px] text-slate-400 font-normal italic">
+                            * Os terminais (nós) do equipamento serão criados automaticamente na tela.
+                        </div>
+                    </div>
+                    
+                    <button onclick="addComponent()" class="w-full mt-4 bg-indigo-600 hover:bg-indigo-700 text-white py-2.5 rounded-lg font-black text-xs uppercase tracking-wider transition-all shadow-sm flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-circle-plus"></i> Adicionar à Planta
+                    </button>
+                </div>
+
+                <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 flex-grow">
+                    <h3 class="font-black text-slate-900 text-sm uppercase tracking-wider border-b border-slate-100 pb-2 mb-3 flex items-center gap-2">
+                        <i class="fa-solid fa-clipboard-list text-slate-400"></i> Inventário
+                    </h3>
+                    <div class="overflow-x-auto max-h-[150px] overflow-y-auto">
+                        <table class="w-full text-left text-xs">
+                            <tbody id="componentTableBody" class="font-medium text-slate-700 divide-y divide-slate-100">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="lg:col-span-8 flex flex-col gap-6">
+                
+                <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 flex flex-col">
+                    <div class="flex justify-between items-center border-b border-slate-100 pb-2 mb-3">
+                        <h2 class="text-sm font-black text-slate-900 flex items-center gap-2 uppercase">
+                            <i class="fa-solid fa-diagram-project text-indigo-600"></i> Diagrama Multifilar
+                        </h2>
+                        <div class="flex items-center gap-3">
+                            <span class="text-[10px] bg-indigo-50 text-indigo-600 font-bold px-2 py-1 rounded border border-indigo-100">
+                                <i class="fa-solid fa-hand-pointer"></i> Clique nos itens para opções
+                            </span>
+                            <button onclick="clearCircuit()" class="text-[10px] bg-rose-50 text-rose-600 hover:bg-rose-100 px-2 py-1 rounded font-bold uppercase transition-all border border-rose-200">
+                                Limpar Tudo
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="relative bg-slate-100 p-2 rounded-xl shadow-inner flex justify-center items-center overflow-hidden">
+                        
+                        <button id="lockBtn" onclick="toggleCanvasLock()" class="absolute top-4 right-4 z-10 bg-white p-2.5 rounded-lg shadow-sm text-slate-400 hover:text-rose-500 border border-slate-200 transition-colors" title="Travar/Destravar Tela">
+                            <i id="lockIcon" class="fa-solid fa-lock-open text-lg"></i>
+                        </button>
+                        
+                        <canvas id="schematicCanvas" width="700" height="400" class="w-full bg-white shadow-sm border border-slate-300 rounded-lg"></canvas>
+                    </div>
+                </div>
+
+                <div id="errorAlert" class="hidden p-4 bg-rose-50 border border-rose-200 rounded-xl text-xs text-rose-800 gap-3 items-start shadow-sm">
+                    <i class="fa-solid fa-triangle-exclamation text-rose-500 text-lg flex-shrink-0 mt-0.5"></i>
+                    <div>
+                        <span class="font-bold text-sm uppercase">Curto-Circuito Detectado!</span>
+                        <p id="errorText" class="mt-1 text-slate-600">Fontes de potencias diferentes (Fase-Neutro ou Fase-Fase) foram interligadas diretamente.</p>
+                    </div>
+                </div>
+
+                <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200">
+                    <div class="flex justify-between items-center border-b border-slate-100 pb-2 mb-4">
+                        <h2 class="text-sm font-bold text-slate-900 flex items-center gap-2 uppercase">
+                            <i class="fa-solid fa-bolt text-amber-500"></i> Status Lógico
+                        </h2>
+                        <button onclick="solveCircuit()" class="text-[10px] bg-slate-800 text-white hover:bg-black px-3 py-1.5 rounded font-bold uppercase transition-all shadow">
+                            <i class="fa-solid fa-arrows-rotate"></i> Forçar Atualização
+                        </button>
+                    </div>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-3" id="logicResultsGrid"></div>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <div id="componentPopup" class="hidden fixed bg-white p-2 rounded-lg shadow-xl border border-slate-200 z-50 text-xs w-40 popup-anim">
+        </div>
+
+    <script>
+        // -------------------------------------------------------------------------
+        // SIMULADOR MULTIFILAR DE INSTALAÇÕES (BUSCA LÓGICA E BARRAMENTOS)
+        // -------------------------------------------------------------------------
+        
+        let nodes = [];
+        let circuit = [];
+        let compCounter = 1;
+
+        const sCanvas = document.getElementById('schematicCanvas');
+        const sCtx = sCanvas.getContext('2d');
+        let scale = 1; let offsetX = 0; let offsetY = 0;
+        let isPanning = false; let startPanX = 0; let startPanY = 0;
+        let draggedNode = null; let draggedComponent = null;
+
+        // UI de Elementos
+        document.getElementById('compType').addEventListener('change', (e) => {
+            const val = e.target.value;
+            const isWire = val === 'W';
+            const isBus = val.startsWith('BUS_');
+            
+            document.getElementById('wireControls').style.display = isWire ? 'grid' : 'none';
+            document.getElementById('autoNodeHelp').style.display = isWire ? 'none' : 'block';
+            
+            if (isBus) document.getElementById('autoNodeHelp').innerText = "* Será gerada uma linha contínua para representar a fonte.";
+            else if (!isWire) document.getElementById('autoNodeHelp').innerText = "* Os terminais serão criados automaticamente na tela.";
+        });
+
+        function updateNodeDropdowns() {
+            const fromSelect = document.getElementById('nodeFrom'); 
+            const toSelect = document.getElementById('nodeTo');
+            const prevFrom = fromSelect.value; const prevTo = toSelect.value;
+            fromSelect.innerHTML = ""; toSelect.innerHTML = "";
+            nodes.forEach(n => {
+                let label = n.type === 'BUS_F' ? `Fase (${n.id})` : n.type === 'BUS_N' ? `Neutro (${n.id})` : `Nó ${n.id}`;
+                fromSelect.innerHTML += `<option value="${n.id}">${label}</option>`;
+                toSelect.innerHTML += `<option value="${n.id}">${label}</option>`;
+            });
+            if (prevFrom && [...fromSelect.options].some(o => o.value === prevFrom)) fromSelect.value = prevFrom;
+            if (prevTo && [...toSelect.options].some(o => o.value === prevTo)) toSelect.value = prevTo;
+        }
+
+        function renderNodesList() {
+            const container = document.getElementById('nodesListContainer');
+            container.innerHTML = "";
+            nodes.forEach(n => {
+                if (n.type === "BUS_F") container.innerHTML += `<span class="inline-flex items-center text-[10px] bg-rose-50 text-rose-700 font-bold px-2 py-1 rounded shadow-sm border border-rose-200">${n.id}</span>`;
+                else if (n.type === "BUS_N") container.innerHTML += `<span class="inline-flex items-center text-[10px] bg-sky-50 text-sky-700 font-bold px-2 py-1 rounded shadow-sm border border-sky-200">${n.id}</span>`;
+                else {
+                    container.innerHTML += `
+                        <span class="inline-flex items-center gap-1 bg-white border border-slate-300 text-slate-700 text-[10px] font-bold px-2 py-1 rounded shadow-sm">
+                            Nó ${n.id}
+                            <button onclick="removeNode('${n.id}')" class="text-slate-400 hover:text-rose-600 ml-1"><i class="fa-solid fa-xmark"></i></button>
+                        </span>`;
+                }
+            });
+        }
+
+        function addNewNode() {
+            let idCandidate = 1;
+            while (nodes.some(n => n.id === String(idCandidate))) idCandidate++;
+            const spawnX = (sCanvas.width/2 - offsetX) / scale; 
+            const spawnY = (sCanvas.height/2 - offsetY) / scale;
+            nodes.push({ id: String(idCandidate), x: spawnX, y: spawnY, type: "junction" });
+            updateNodeDropdowns(); renderNodesList(); drawSchematic();
+        }
+
+        function removeNode(id) {
+            circuit = circuit.filter(c => !(c.type === 'W' && (c.nodes[0] === id || c.nodes[1] === id)));
+            nodes = nodes.filter(n => n.id !== id);
+            updateNodeDropdowns(); renderCircuitTable(); renderNodesList(); solveCircuit(); drawSchematic();
+        }
+
+        function addComponent() {
+            const type = document.getElementById('compType').value;
+            const spawnX = (sCanvas.width/2 - offsetX) / scale + (Math.random()*40 - 20);
+            const spawnY = (sCanvas.height/2 - offsetY) / scale + (Math.random()*40 - 20);
+
+            if (type === 'W') {
+                const from = document.getElementById('nodeFrom').value;
+                const to = document.getElementById('nodeTo').value;
+                if (from === to) return alert("Origem e destino iguais!");
+                circuit.push({ id: `W_${compCounter++}`, type: 'W', nodes: [from, to] });
+            } 
+            else if (type.startsWith('BUS_')) {
+                let nId = `${type}_${compCounter}`;
+                nodes.push({ id: nId, x: spawnX, y: spawnY, type: type });
+                circuit.push({ id: `${type}_${compCounter++}`, type: type, nodes: [nId], x: spawnX, y: spawnY });
+            }
+            else {
+                let pCount = type === 'LAMP' ? 2 : type === 'SW1' ? 2 : type === 'SW3' ? 3 : 4;
+                let newNodes = [];
+                for(let i=0; i<pCount; i++) {
+                    let nId = `${type}${compCounter}_T${i+1}`;
+                    let nx = spawnX + (i*40) - ((pCount-1)*20);
+                    nodes.push({ id: nId, x: nx, y: spawnY + 40, type: "terminal" });
+                    newNodes.push(nId);
+                }
+                
+                let initialState = type === 'SW3' ? 0 : false;
+                circuit.push({ 
+                    id: `${type}_${compCounter++}`, type: type, nodes: newNodes, 
+                    state: initialState, x: spawnX, y: spawnY, rotation: 0, isLit: false 
+                });
+            }
+            updateNodeDropdowns(); renderNodesList(); renderCircuitTable(); solveCircuit(); drawSchematic();
+        }
+
+        function removeComponent(id) {
+            let comp = circuit.find(c => c.id === id);
+            if(comp && comp.type !== 'W') {
+                nodes = nodes.filter(n => !comp.nodes.includes(n.id));
+                circuit = circuit.filter(c => !(c.type === 'W' && (comp.nodes.includes(c.nodes[0]) || comp.nodes.includes(c.nodes[1]))));
+            }
+            circuit = circuit.filter(c => c.id !== id);
+            updateNodeDropdowns(); renderNodesList(); renderCircuitTable(); solveCircuit(); drawSchematic();
+        }
+
+        function clearCircuit() {
+            circuit = []; nodes = []; compCounter = 1; scale = 1; offsetX = 0; offsetY = 0;
+            document.getElementById('errorAlert').classList.add('hidden');
+            closePopup();
+            updateNodeDropdowns(); renderCircuitTable(); renderNodesList(); solveCircuit(); drawSchematic();
+        }
+
+        function renderCircuitTable() {
+            const tbody = document.getElementById('componentTableBody');
+            tbody.innerHTML = "";
+            circuit.forEach(c => {
+                let name = c.type==='LAMP'?'Lâmpada':c.type==='SW1'?'Simples':c.type==='SW3'?'Three-way':c.type==='SW4'?'Four-way':c.type==='BUS_F'?'Fase':c.type==='BUS_N'?'Neutro':'Fio';
+                let action = `<button onclick="removeComponent('${c.id}')" class="text-rose-500 hover:text-rose-700"><i class="fa-solid fa-trash"></i></button>`;
+                tbody.innerHTML += `<tr class="border-b border-slate-50"><td class="py-2 font-bold text-indigo-600">${c.id}</td><td class="text-slate-500">${name}</td><td class="text-right">${action}</td></tr>`;
+            });
+        }
+
+        // --- SOLVER DE GRAFOS ---
+        function solveCircuit() {
+            document.getElementById('errorAlert').classList.add('hidden');
+            let adj = {}; nodes.forEach(n => adj[n.id] = []);
+            
+            circuit.forEach(c => {
+                if (c.type === 'W') {
+                    adj[c.nodes[0]].push(c.nodes[1]); adj[c.nodes[1]].push(c.nodes[0]);
+                } else if (c.type === 'SW1' && c.state === true) {
+                    adj[c.nodes[0]].push(c.nodes[1]); adj[c.nodes[1]].push(c.nodes[0]);
+                } else if (c.type === 'SW3') {
+                    let ligacao = c.state === 0 ? c.nodes[1] : c.nodes[2];
+                    adj[c.nodes[0]].push(ligacao); adj[ligacao].push(c.nodes[0]);
+                } else if (c.type === 'SW4') {
+                    if (!c.state) {
+                        adj[c.nodes[0]].push(c.nodes[2]); adj[c.nodes[2]].push(c.nodes[0]);
+                        adj[c.nodes[1]].push(c.nodes[3]); adj[c.nodes[3]].push(c.nodes[1]);
+                    } else {
+                        adj[c.nodes[0]].push(c.nodes[3]); adj[c.nodes[3]].push(c.nodes[0]);
+                        adj[c.nodes[1]].push(c.nodes[2]); adj[c.nodes[2]].push(c.nodes[1]);
+                    }
+                }
+            });
+
+            function getReachableNodes(startNode) {
+                let visited = new Set([startNode]); let queue = [startNode];
+                while(queue.length > 0) {
+                    let curr = queue.shift();
+                    adj[curr].forEach(neighbor => { if(!visited.has(neighbor)) { visited.add(neighbor); queue.push(neighbor); } });
+                }
+                return visited;
+            }
+
+            let phaseSources = circuit.filter(c => c.type === 'BUS_F').map(c => c.nodes[0]);
+            let neutralSources = circuit.filter(c => c.type === 'BUS_N').map(c => c.nodes[0]);
+            
+            let reachable = {};
+            [...phaseSources, ...neutralSources].forEach(src => reachable[src] = getReachableNodes(src));
+
+            let shortCircuit = false;
+            for (let p of phaseSources) {
+                for (let n of neutralSources) {
+                    if (reachable[p].has(n) || [...reachable[p]].some(x => reachable[n].has(x))) shortCircuit = true;
+                }
+            }
+            for (let i = 0; i < phaseSources.length; i++) {
+                for (let j = i + 1; j < phaseSources.length; j++) {
+                    if ([...reachable[phaseSources[i]]].some(x => reachable[phaseSources[j]].has(x))) shortCircuit = true;
+                }
+            }
+
+            if (shortCircuit) {
+                document.getElementById('errorAlert').classList.remove('hidden');
+                circuit.forEach(c => { if(c.type === 'LAMP') c.isLit = false; });
+            } else {
+                circuit.forEach(c => {
+                    if (c.type === 'LAMP') {
+                        let t1 = c.nodes[0], t2 = c.nodes[1];
+                        let connectedSources = new Set();
+                        [...phaseSources, ...neutralSources].forEach(src => {
+                            if (reachable[src].has(t1) || reachable[src].has(t2)) connectedSources.add(src);
+                        });
+                        let connectedPhases = [...connectedSources].filter(p => phaseSources.includes(p));
+                        let connectedNeutrals = [...connectedSources].filter(n => neutralSources.includes(n));
+                        
+                        if (connectedPhases.length === 1 && connectedNeutrals.length >= 1) c.isLit = true;
+                        else if (connectedPhases.length >= 2) c.isLit = true;
+                        else c.isLit = false;
+                    }
+                });
+            }
+            renderLogicResults(shortCircuit);
+        }
+
+        function renderLogicResults(hasShort) {
+            const grid = document.getElementById('logicResultsGrid');
+            grid.innerHTML = "";
+            circuit.forEach(c => {
+                if(c.type === 'W' || c.type.startsWith('BUS_')) return;
+                let status = "", color = "";
+                if (hasShort) { status = "BLOQUEADO"; color = "text-slate-400 bg-slate-100"; }
+                else if (c.type === 'LAMP') {
+                    status = c.isLit ? "💡 ACESA" : "APAGADA";
+                    color = c.isLit ? "text-amber-700 bg-amber-50 border-amber-300 shadow glowing-text" : "text-slate-500 bg-slate-50";
+                } else {
+                    status = (c.type === 'SW1' && c.state) || (c.type!=='SW1' && c.state) ? "FECHADO / ALT" : "ABERTO / RETO";
+                    color = "text-indigo-700 bg-indigo-50 border-indigo-200";
+                }
+                grid.innerHTML += `<div class="text-center p-2 rounded-lg border font-mono text-[10px] ${color}"><p class="font-bold uppercase">${c.id}</p><p class="font-black mt-1">${status}</p></div>`;
+            });
+        }
+
+        // --- SISTEMA DE POPUP (NOVO) ---
+        let selectedForPopup = null;
+
+        function showPopup(comp, mouseX, mouseY) {
+            selectedForPopup = comp;
+            const popup = document.getElementById('componentPopup');
+            
+            // Ajusta posição para não sair da tela
+            popup.style.left = `${mouseX + 10}px`;
+            popup.style.top = `${mouseY + 10}px`;
+            popup.classList.remove('hidden');
+
+            let content = `<p class="font-bold text-slate-800 mb-2 border-b border-slate-100 pb-1">${comp.id}</p>`;
+
+            if (['SW1', 'SW3', 'SW4'].includes(comp.type)) {
+                let stateText = comp.state ? "Desligar / Reto" : "Ligar / Cruzado";
+                if(comp.type === 'SW3') stateText = comp.state === 0 ? "Mudar para Via 2" : "Mudar para Via 1";
+
+                content += `<button onclick="togglePopupState()" class="w-full text-left px-2 py-1.5 hover:bg-indigo-50 text-indigo-700 font-bold rounded transition-colors mb-1 flex items-center gap-2"><i class="fa-solid fa-toggle-on"></i> Mudar Chave</button>`;
+            }
+            
+            content += `<button onclick="deletePopupComp()" class="w-full text-left px-2 py-1.5 hover:bg-rose-50 text-rose-600 font-bold rounded transition-colors flex items-center gap-2"><i class="fa-solid fa-trash"></i> Apagar Item</button>`;
+
+            popup.innerHTML = content;
+        }
+
+        function closePopup() {
+            document.getElementById('componentPopup').classList.add('hidden');
+            selectedForPopup = null;
+        }
+
+        function togglePopupState() {
+            if(!selectedForPopup) return;
+            let c = selectedForPopup;
+            if (c.type === 'SW1' || c.type === 'SW4') c.state = !c.state;
+            if (c.type === 'SW3') c.state = c.state === 0 ? 1 : 0;
+            solveCircuit(); drawSchematic(); closePopup();
+        }
+
+        function deletePopupComp() {
+            if(!selectedForPopup) return;
+            removeComponent(selectedForPopup.id);
+            closePopup();
+        }
+
+        // --- INTERAÇÕES E DESENHO (COM ZONA MORTA) ---
+        let hasMoved = false; 
+        let isCanvasLocked = false; 
+        let clickStartX = 0; 
+        let clickStartY = 0;
+        let isDraggingAllowed = false;
+
+        function toggleCanvasLock() {
+            isCanvasLocked = !isCanvasLocked;
+            const icon = document.getElementById('lockIcon');
+            icon.className = isCanvasLocked ? 'fa-solid fa-lock text-rose-500 text-lg' : 'fa-solid fa-lock-open text-slate-400 text-lg';
+        }
+
+        function getMouseWorldPos(e) {
+            const rect = sCanvas.getBoundingClientRect();
+            const mouseX = (e.clientX - rect.left) * (sCanvas.width / rect.width);
+            const mouseY = (e.clientY - rect.top) * (sCanvas.height / rect.height);
+            return { mouseX, mouseY, worldX: (mouseX - offsetX) / scale, worldY: (mouseY - offsetY) / scale };
+        }
+
+        sCanvas.addEventListener('wheel', (e) => {
+            e.preventDefault();
+            const { mouseX, mouseY, worldX, worldY } = getMouseWorldPos(e);
+            let newScale = scale * (e.deltaY > 0 ? 1/1.1 : 1.1);
+            newScale = Math.max(0.4, Math.min(newScale, 3));
+            offsetX = mouseX - worldX * newScale; offsetY = mouseY - worldY * newScale;
+            scale = newScale; drawSchematic();
+        }, { passive: false });
+
+        sCanvas.addEventListener('mousedown', (e) => {
+            closePopup(); // Sempre fecha o popup ao clicar em qualquer lugar
+            
+            const { mouseX, mouseY, worldX, worldY } = getMouseWorldPos(e);
+            
+            // Reseta as variáveis e salva o ponto exato do clique
+            hasMoved = false;
+            isDraggingAllowed = false;
+            clickStartX = mouseX;
+            clickStartY = mouseY;
+
+            draggedNode = nodes.find(n => Math.hypot(n.x - worldX, n.y - worldY) < 14);
+            if (!draggedNode) draggedComponent = circuit.find(c => c.type !== 'W' && Math.hypot(c.x - worldX, c.y - worldY) < 20);
+            
+            if (draggedNode && draggedNode.type.startsWith('BUS_')) { 
+                draggedComponent = circuit.find(c => c.nodes[0] === draggedNode.id); 
+                draggedNode = null; 
+            }
+            
+            if (!draggedNode && !draggedComponent && !isCanvasLocked) { 
+                isPanning = true; 
+                startPanX = mouseX - offsetX; 
+                startPanY = mouseY - offsetY; 
+                sCanvas.style.cursor = 'grabbing'; 
+            }
+        });
+
+        sCanvas.addEventListener('mousemove', (e) => {
+            const { mouseX, mouseY, worldX, worldY } = getMouseWorldPos(e);
+            
+            // ZONA MORTA: Checa se o mouse moveu mais de 5 pixels da posição inicial
+            if (!isDraggingAllowed && Math.hypot(mouseX - clickStartX, mouseY - clickStartY) > 5) {
+                isDraggingAllowed = true;
+                hasMoved = true;
+            }
+
+            // Só executa o movimento se tiver saído da zona morta
+            if (isDraggingAllowed) {
+                if (isPanning) { 
+                    offsetX = mouseX - startPanX; offsetY = mouseY - startPanY; 
+                    drawSchematic(); 
+                } 
+                else if (draggedNode) { 
+                    draggedNode.x = worldX; draggedNode.y = worldY; 
+                    drawSchematic(); 
+                } 
+                else if (draggedComponent) { 
+                    draggedComponent.x = worldX; draggedComponent.y = worldY; 
+                    if(draggedComponent.type.startsWith('BUS_')) {
+                        let bNode = nodes.find(n => n.id === draggedComponent.nodes[0]);
+                        if(bNode) { bNode.x = worldX; bNode.y = worldY; }
+                    }
+                    drawSchematic(); 
+                }
+            }
+        });
+
+        // Clique para abrir Popup em vez de ligar direto
+        window.addEventListener('mouseup', (e) => { 
+            // Se NÃO saiu da zona morta, considera um clique intencional e abre o popup
+            if (!hasMoved && draggedComponent) {
+                showPopup(draggedComponent, e.clientX, e.clientY);
+            }
+
+            isPanning = false; 
+            draggedNode = null; 
+            draggedComponent = null; 
+            sCanvas.style.cursor = 'grab'; 
+        });
+
+        function drawSchematic() {
+            sCtx.clearRect(0, 0, sCanvas.width, sCanvas.height);
+            sCtx.save(); sCtx.translate(offsetX, offsetY); sCtx.scale(scale, scale);
+            
+            const startX = -offsetX / scale; const startY = -offsetY / scale;
+            const endX = startX + sCanvas.width / scale; const endY = startY + sCanvas.height / scale;
+            sCtx.fillStyle = '#f1f5f9';
+            for (let x = Math.floor(startX / 30) * 30; x < endX; x += 30) {
+                for (let y = Math.floor(startY / 30) * 30; y < endY; y += 30) sCtx.fillRect(x, y, 1.5 / scale, 1.5 / scale);
+            }
+
+            sCtx.lineCap = 'round'; sCtx.lineJoin = 'round';
+            
+            circuit.forEach(c => {
+                if (c.type.startsWith('BUS_')) {
+                    sCtx.beginPath(); sCtx.moveTo(c.x - 200, c.y); sCtx.lineTo(c.x + 200, c.y);
+                    sCtx.lineWidth = 6 / scale; sCtx.strokeStyle = c.type === 'BUS_F' ? '#ef4444' : '#0ea5e9'; sCtx.stroke();
+                    sCtx.fillStyle = c.type === 'BUS_F' ? '#991b1b' : '#075985'; sCtx.font = `bold ${12/scale}px sans-serif`;
+                    sCtx.fillText(c.id, c.x - 180, c.y - 10/scale);
+                }
+            });
+
+            circuit.forEach(c => {
+                if (c.type === 'W') {
+                    const nA = nodes.find(n => n.id === c.nodes[0]); const nB = nodes.find(n => n.id === c.nodes[1]);
+                    if (!nA || !nB) return;
+                    let ax = nA.x, ay = nA.y, bx = nB.x, by = nB.y;
+                    
+                    sCtx.beginPath();
+                    if (nA.type && nA.type.startsWith('BUS_')) { sCtx.moveTo(bx, ay); sCtx.lineTo(bx, by); } 
+                    else if (nB.type && nB.type.startsWith('BUS_')) { sCtx.moveTo(ax, ay); sCtx.lineTo(ax, by); } 
+                    else { sCtx.moveTo(ax, ay); sCtx.lineTo(bx, ay); sCtx.lineTo(bx, by); }
+                    
+                    sCtx.strokeStyle = '#334155'; sCtx.lineWidth = 2.5 / scale; sCtx.stroke();
+                } else if (!c.type.startsWith('BUS_')) {
+                    sCtx.strokeStyle = '#64748b'; sCtx.lineWidth = 2 / scale;
+                    c.nodes.forEach((nId) => {
+                        let n = nodes.find(nd => nd.id === nId);
+                        if(n) { sCtx.beginPath(); sCtx.moveTo(c.x, c.y); sCtx.lineTo(n.x, n.y); sCtx.stroke(); }
+                    });
+                }
+            });
+
+            circuit.forEach(c => {
+                if (c.type === 'W' || c.type.startsWith('BUS_')) return;
+                
+                sCtx.save(); sCtx.translate(c.x, c.y);
+                sCtx.fillStyle = '#ffffff'; sCtx.strokeStyle = '#0f172a'; sCtx.lineWidth = 2 / scale;
+                sCtx.beginPath(); sCtx.arc(0, 0, 18, 0, 2*Math.PI); sCtx.fill(); sCtx.stroke();
+
+                if (c.type === 'LAMP') {
+                    if (c.isLit) {
+                        sCtx.fillStyle = '#fef08a'; sCtx.shadowBlur = 15; sCtx.shadowColor = '#eab308';
+                        sCtx.fill(); sCtx.shadowBlur = 0; sCtx.strokeStyle = '#ca8a04'; sCtx.stroke();
+                    } 
+                    sCtx.beginPath(); sCtx.moveTo(-8, -8); sCtx.lineTo(8, 8); sCtx.moveTo(8, -8); sCtx.lineTo(-8, 8); sCtx.stroke();
+                } 
+                else if (c.type === 'SW1') {
+                    sCtx.fillStyle = '#334155'; sCtx.beginPath(); sCtx.arc(-8, 0, 2, 0, 2*Math.PI); sCtx.arc(8, 0, 2, 0, 2*Math.PI); sCtx.fill();
+                    sCtx.beginPath(); sCtx.moveTo(-8, 0); 
+                    if(c.state) sCtx.lineTo(8, 0); else sCtx.lineTo(4, -8);
+                    sCtx.stroke();
+                }
+                else if (c.type === 'SW3') {
+                    sCtx.fillStyle = '#334155'; sCtx.beginPath(); 
+                    sCtx.arc(-8, 0, 2, 0, 2*Math.PI); sCtx.arc(8, -6, 2, 0, 2*Math.PI); sCtx.arc(8, 6, 2, 0, 2*Math.PI); sCtx.fill();
+                    sCtx.beginPath(); sCtx.moveTo(-8, 0); sCtx.lineTo(8, c.state === 0 ? -6 : 6); sCtx.stroke();
+                }
+                else if (c.type === 'SW4') {
+                    sCtx.fillStyle = '#334155'; sCtx.beginPath(); 
+                    sCtx.arc(-8, -6, 2, 0, 2*Math.PI); sCtx.arc(-8, 6, 2, 0, 2*Math.PI);
+                    sCtx.arc(8, -6, 2, 0, 2*Math.PI); sCtx.arc(8, 6, 2, 0, 2*Math.PI); sCtx.fill();
+                    sCtx.beginPath();
+                    if(!c.state) { sCtx.moveTo(-8, -6); sCtx.lineTo(8, -6); sCtx.moveTo(-8, 6); sCtx.lineTo(8, 6); } 
+                    else { sCtx.moveTo(-8, -6); sCtx.lineTo(8, 6); sCtx.moveTo(-8, 6); sCtx.lineTo(8, -6); }
+                    sCtx.stroke();
+                }
+                
+                sCtx.font = `bold ${10/scale}px sans-serif`; sCtx.fillStyle = '#475569'; sCtx.textAlign = 'center';
+                sCtx.fillText(c.id, 0, -25/scale);
+                sCtx.restore();
+            });
+
+            nodes.forEach(n => {
+                if (n.type && n.type.startsWith('BUS_')) return;
+                sCtx.beginPath(); sCtx.arc(n.x, n.y, 5, 0, 2 * Math.PI);
+                sCtx.fillStyle = '#ffffff'; sCtx.strokeStyle = '#0f172a'; sCtx.fill(); 
+                sCtx.lineWidth = 1.5 / scale; sCtx.stroke();
+                sCtx.fillStyle = '#64748b'; sCtx.font = `bold ${9/scale}px Fira Code`; sCtx.textAlign = 'center'; sCtx.textBaseline = 'middle';
+                sCtx.fillText(n.id, n.x, n.y + 12/scale);
+            });
+            
+            sCtx.restore();
+        }
+
+        window.onload = () => { clearCircuit(); };
+    </script>
+</body>
+</html>

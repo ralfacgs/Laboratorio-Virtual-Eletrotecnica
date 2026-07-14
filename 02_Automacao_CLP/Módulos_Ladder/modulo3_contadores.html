@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Módulo Contadores - Lab CLP</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        
+        .draggable { cursor: grab; }
+        .draggable:active { cursor: grabbing; }
+        .dropzone.dragover { background-color: #d1fae5; border-color: #10b981; border-style: dashed; }
+        
+        /* CSS do Fio Vertical */
+        .v-wire { position: absolute; left: -1rem; top: 50%; width: 4px; height: 7rem; background-color: black; z-index: 0; border-radius: 2px; }
+        .v-wire-energized { background-color: #10b981 !important; box-shadow: 0 0 8px #34d399; }
+        
+        /* Cores Base para Fios e Blocos */
+        .wire-unpowered { background-color: black; }
+        .wire-powered { background-color: #10b981 !important; }
+        .coil-energized { border-color: #10b981 !important; background-color: #10b981 !important; color: white !important; box-shadow: 0 0 15px #34d399; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
+
+    <div id="edit-modal" class="hidden fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center backdrop-blur-sm">
+        <div class="bg-white p-6 rounded-xl shadow-xl border border-slate-200 w-80 transform transition-all">
+            <h3 class="font-bold text-slate-800 mb-2"><i class="fa-solid fa-pen-to-square text-emerald-500 mr-2"></i>Propriedades</h3>
+            
+            <label class="text-xs font-bold text-slate-500 mb-1 block">Endereço (Ex: I1, Q1, T1, C1):</label>
+            <input type="text" id="edit-input" class="w-full border-2 border-slate-300 rounded-lg px-4 py-2 mb-2 focus:outline-none focus:border-emerald-500 font-bold uppercase text-slate-700" autocomplete="off">
+            
+            <div id="timer-settings" class="hidden flex-col gap-2 mt-2 p-3 bg-slate-50 border border-slate-200 rounded-lg mb-4">
+                <label class="text-xs font-bold text-slate-700">Modo de Operação (Timer):</label>
+                <select id="edit-timer-mode" class="border-2 border-slate-300 rounded-md p-1.5 text-sm font-bold text-slate-600 focus:border-emerald-500 outline-none">
+                    <option value="TON">TON (Atraso ao Ligar)</option>
+                    <option value="TOF">TOF (Atraso ao Desligar)</option>
+                    <option value="TP">TP (Pulso de Tempo)</option>
+                </select>
+                <label class="text-xs font-bold text-slate-700 mt-2">Tempo (Segundos):</label>
+                <input type="number" id="edit-timer-preset" class="border-2 border-slate-300 rounded-md p-1.5 text-sm font-bold text-slate-600 focus:border-emerald-500 outline-none" value="3" min="1" max="60">
+            </div>
+
+            <div id="counter-settings" class="hidden flex-col gap-2 mt-2 p-3 bg-slate-50 border border-slate-200 rounded-lg mb-4">
+                <label class="text-xs font-bold text-slate-700">Modo de Operação (Counter):</label>
+                <select id="edit-counter-mode" class="border-2 border-slate-300 rounded-md p-1.5 text-sm font-bold text-slate-600 focus:border-emerald-500 outline-none">
+                    <option value="CTU">CTU (Contagem Crescente)</option>
+                    <option value="CTD">CTD (Contagem Decrescente)</option>
+                </select>
+                <label class="text-xs font-bold text-slate-700 mt-2">Pulsos (Preset):</label>
+                <input type="number" id="edit-counter-preset" class="border-2 border-slate-300 rounded-md p-1.5 text-sm font-bold text-slate-600 focus:border-emerald-500 outline-none" value="5" min="1" max="999">
+            </div>
+
+            <div class="flex justify-end gap-2 mt-4">
+                <button onclick="closeModal()" class="px-4 py-2 text-sm font-bold text-slate-500 hover:bg-slate-100 rounded-lg transition-colors">Cancelar</button>
+                <button onclick="saveVarName()" class="px-4 py-2 text-sm font-bold text-white bg-emerald-500 hover:bg-emerald-600 rounded-lg transition-colors shadow-md shadow-emerald-500/30">Salvar</button>
+            </div>
+        </div>
+    </div>
+
+    <header class="bg-emerald-700 text-white shadow-md py-4 px-6 compact relative z-10">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="flex items-center gap-4">
+                <div class="bg-white p-2 rounded shadow-sm text-emerald-700 font-bold text-xl flex items-center justify-center h-12 w-12">
+                    <i class="fa-solid fa-arrow-up-9-1"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold tracking-wide">Contadores Industriais (Counters)</h1>
+                    <p class="text-xs text-emerald-100 font-medium">Laboratório Virtual de CLP</p>
+                </div>
+            </div>
+            <a href="../dic_automacao_clp.html" class="text-sm font-semibold text-emerald-50 hover:text-white bg-emerald-800 hover:bg-emerald-900 px-4 py-2 rounded transition-colors border border-emerald-800 hover:border-emerald-600">
+                <i class="fa-solid fa-arrow-left mr-2"></i> Sair do Simulador
+            </a>
+        </div>
+    </header>
+
+    <main class="flex-grow max-w-7xl w-full mx-auto p-4 flex flex-col lg:flex-row gap-6 mt-4">
+        
+        <aside class="w-full lg:w-80 flex flex-col gap-6">
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 text-center">
+                <h3 class="font-bold text-slate-700 mb-4">Status do CLP</h3>
+                <button id="btn-power" onclick="togglePower()" class="w-full py-3 rounded-lg font-black text-lg transition-all duration-300 bg-slate-200 text-slate-600 hover:bg-slate-300">
+                    <i class="fa-solid fa-stop mt-1 mr-2"></i> MODO STOP
+                </button>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
+                <h3 class="font-bold text-slate-700 mb-4 border-b pb-2"><i class="fa-solid fa-microchip mr-2"></i>Entradas Físicas</h3>
+                <div id="physical-inputs-container" class="space-y-3"></div>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5" id="toolbox">
+                <h3 class="font-bold text-slate-700 mb-4 border-b pb-2"><i class="fa-solid fa-toolbox mr-2"></i>Ferramentas</h3>
+                
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="draggable bg-emerald-50 border border-emerald-200 text-emerald-700 p-3 rounded flex flex-col items-center hover:bg-emerald-100" draggable="true" ondragstart="dragStart(event, 'NA')">
+                        <div class="flex items-center justify-center w-full h-8 mb-2 pointer-events-none">
+                            <div class="h-1 bg-black w-full"></div><div class="h-6 w-1 bg-black flex-shrink-0"></div><div class="w-4 flex-shrink-0"></div><div class="h-6 w-1 bg-black flex-shrink-0"></div><div class="h-1 bg-black w-full"></div>
+                        </div>
+                        <span class="text-[10px] font-bold pointer-events-none uppercase">Contato NA</span>
+                    </div>
+                    
+                    <div class="draggable bg-rose-50 border border-rose-200 text-rose-700 p-3 rounded flex flex-col items-center hover:bg-rose-100" draggable="true" ondragstart="dragStart(event, 'NF')">
+                        <div class="flex items-center justify-center w-full h-8 mb-2 pointer-events-none">
+                            <div class="h-1 bg-black w-full"></div><div class="h-6 w-1 bg-black flex-shrink-0"></div><div class="w-4 flex-shrink-0 relative"><div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-8 w-1 bg-black rotate-[45deg]"></div></div><div class="h-6 w-1 bg-black flex-shrink-0"></div><div class="h-1 bg-black w-full"></div>
+                        </div>
+                        <span class="text-[10px] font-bold pointer-events-none uppercase">Contato NF</span>
+                    </div>
+
+                    <div class="draggable bg-blue-50 border border-blue-200 text-blue-700 p-3 rounded flex flex-col items-center hover:bg-blue-100" draggable="true" ondragstart="dragStart(event, 'COIL')">
+                        <div class="flex items-center justify-center w-full h-8 mb-2 pointer-events-none">
+                            <div class="h-1 bg-black w-full"></div><div class="h-6 w-6 rounded-full border-2 border-black flex-shrink-0"></div><div class="h-1 bg-black w-full"></div>
+                        </div>
+                        <span class="text-[10px] font-bold pointer-events-none uppercase">Bobina (Q)</span>
+                    </div>
+
+                    <div class="draggable bg-violet-50 border border-violet-200 text-violet-700 p-3 rounded flex flex-col items-center hover:bg-violet-100" draggable="true" ondragstart="dragStart(event, 'TIMER')">
+                        <div class="flex items-center justify-center w-full h-8 mb-2 pointer-events-none">
+                            <div class="h-1 bg-black w-full"></div><div class="h-6 w-6 rounded border-2 border-black flex items-center justify-center flex-shrink-0 text-[8px] font-black">T</div><div class="h-1 bg-black w-full"></div>
+                        </div>
+                        <span class="text-[10px] font-bold pointer-events-none uppercase">Temporizador</span>
+                    </div>
+
+                    <div class="draggable bg-cyan-50 border border-cyan-200 text-cyan-700 p-3 rounded flex flex-col items-center hover:bg-cyan-100" draggable="true" ondragstart="dragStart(event, 'COUNTER')">
+                        <div class="flex items-center justify-center w-full h-8 mb-2 pointer-events-none">
+                            <div class="h-1 bg-black w-full"></div><div class="h-6 w-6 rounded border-2 border-black flex items-center justify-center flex-shrink-0 text-[8px] font-black">C</div><div class="h-1 bg-black w-full"></div>
+                        </div>
+                        <span class="text-[10px] font-bold pointer-events-none uppercase">Contador</span>
+                    </div>
+
+                    <div class="draggable bg-orange-50 border border-orange-200 text-orange-700 p-3 rounded flex flex-col items-center hover:bg-orange-100" draggable="true" ondragstart="dragStart(event, 'RESET')">
+                        <div class="flex items-center justify-center w-full h-8 mb-2 pointer-events-none">
+                            <div class="h-1 bg-black w-full"></div><div class="h-6 w-6 rounded-full border-2 border-black flex items-center justify-center flex-shrink-0 text-[8px] font-black">R</div><div class="h-1 bg-black w-full"></div>
+                        </div>
+                        <span class="text-[10px] font-bold pointer-events-none uppercase">Reset (R)</span>
+                    </div>
+                </div>
+                
+                <div class="mt-3 grid grid-cols-3 gap-2">
+                    <div class="draggable bg-slate-100 border border-slate-300 text-slate-700 p-2 rounded flex flex-col items-center justify-center hover:bg-slate-200" draggable="true" ondragstart="dragStart(event, 'WIRE')">
+                        <i class="fa-solid fa-minus text-sm mb-1 pointer-events-none"></i><span class="text-[9px] font-bold pointer-events-none">Fio</span>
+                    </div>
+                    <div class="draggable bg-amber-50 border border-amber-300 text-amber-700 p-2 rounded flex flex-col items-center justify-center hover:bg-amber-100" draggable="true" ondragstart="dragStart(event, 'VWIRE')">
+                        <i class="fa-solid fa-arrows-up-down text-sm mb-1 pointer-events-none"></i><span class="text-[9px] font-bold pointer-events-none">Paralelo</span>
+                    </div>
+                    <div class="draggable bg-slate-50 border border-dashed border-slate-300 text-slate-500 p-2 rounded flex flex-col items-center justify-center hover:bg-slate-100" draggable="true" ondragstart="dragStart(event, 'ERASER')">
+                        <i class="fa-solid fa-eraser text-sm mb-1 pointer-events-none"></i><span class="text-[9px] font-bold pointer-events-none">Apagar</span>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <section class="flex-grow bg-white rounded-xl shadow-sm border border-slate-200 p-6 flex flex-col">   
+
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="font-bold text-slate-800 text-xl"><i class="fa-solid fa-sitemap text-emerald-500 mr-2"></i> Ambiente de Programação</h3>
+                <span class="text-xs bg-emerald-100 text-emerald-800 px-3 py-1 rounded-full font-bold"><i class="fa-solid fa-hand-pointer mr-1"></i> Clique na TAG da variável para editá-la</span>
+            </div>
+
+            <div class="flex-grow bg-slate-50 border border-slate-200 rounded-lg p-4 overflow-x-auto relative min-h-[400px]">
+                <div class="absolute left-4 top-4 bottom-4 w-1 bg-rose-500 rounded z-0"></div>
+                <div class="absolute right-16 top-4 bottom-4 w-1 bg-blue-500 rounded z-0"></div>
+
+                <div class="ml-4 mr-16 mt-8 flex flex-col gap-8 relative z-10" id="ladder-grid"></div>
+
+                <div class="mt-8 ml-4 mr-16 flex gap-4 relative z-10">
+                    <button onclick="addRung()" class="flex-grow border-2 border-dashed border-slate-300 text-slate-500 hover:text-emerald-600 hover:border-emerald-500 hover:bg-emerald-50 py-3 rounded-lg transition-colors font-bold text-sm">
+                        <i class="fa-solid fa-plus mr-2"></i> Adicionar Nova Linha
+                    </button>
+                    <button onclick="clearAll()" class="px-6 border-2 border-dashed border-slate-300 text-slate-500 hover:text-rose-600 hover:border-rose-500 hover:bg-rose-50 py-3 rounded-lg transition-colors font-bold text-sm">
+                        <i class="fa-solid fa-trash-can mr-2"></i> Limpar Tudo
+                    </button>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-slate-900 text-slate-400 text-center py-4 text-xs border-t border-slate-800 mt-auto">
+        Material de Apoio Didático — Desenvolvido para o Curso Técnico em Eletrotécnica IFRN
+    </footer>
+
+    <script>
+        let isRunning = false;
+        let grid = [];
+        const COLS = 5;
+        let nodePower = []; 
+        
+        const memory = { inputs: {}, outputs: {} };
+        const timersConfig = {}; 
+        const countersConfig = {}; // Guarda configs: { mode, preset, cv, q, lastIn }
+
+        const ladderGrid = document.getElementById('ladder-grid');
+        const physicalInputsContainer = document.getElementById('physical-inputs-container');
+
+        // --- SISTEMA DE MODAL ---
+        let editingCell = null;
+
+        function openEditModal(r, c) {
+            if (isRunning) return alert("Desligue o CLP (MODO STOP) para editar variáveis.");
+            
+            editingCell = { r, c };
+            const cellData = grid[r][c];
+            const input = document.getElementById('edit-input');
+            const timerPanel = document.getElementById('timer-settings');
+            const counterPanel = document.getElementById('counter-settings');
+            
+            input.value = cellData.varName;
+            timerPanel.classList.replace('flex', 'hidden');
+            counterPanel.classList.replace('flex', 'hidden');
+            
+            if (cellData.type === 'TIMER') {
+                timerPanel.classList.replace('hidden', 'flex');
+                let tConf = timersConfig[cellData.varName] || { mode: 'TON', preset: 3000 };
+                document.getElementById('edit-timer-mode').value = tConf.mode;
+                document.getElementById('edit-timer-preset').value = tConf.preset / 1000;
+            } 
+            else if (cellData.type === 'COUNTER') {
+                counterPanel.classList.replace('hidden', 'flex');
+                let cConf = countersConfig[cellData.varName] || { mode: 'CTU', preset: 5, cv: 0 };
+                document.getElementById('edit-counter-mode').value = cConf.mode;
+                document.getElementById('edit-counter-preset').value = cConf.preset;
+            }
+
+            document.getElementById('edit-modal').classList.remove('hidden');
+            input.focus();
+        }
+
+        function closeModal() {
+            document.getElementById('edit-modal').classList.add('hidden');
+            editingCell = null;
+        }
+
+        function saveVarName() {
+            if (!editingCell) return;
+            const input = document.getElementById('edit-input');
+            const newName = input.value.trim().toUpperCase();
+            const cellData = grid[editingCell.r][editingCell.c];
+            
+            if (newName !== "") {
+                if (cellData.type === 'TIMER') {
+                    const mode = document.getElementById('edit-timer-mode').value;
+                    const secs = parseInt(document.getElementById('edit-timer-preset').value) || 1;
+                    timersConfig[newName] = { mode: mode, preset: secs * 1000, startTime: null, q: false, lastIn: false };
+                } 
+                else if (cellData.type === 'COUNTER') {
+                    const mode = document.getElementById('edit-counter-mode').value;
+                    const preset = parseInt(document.getElementById('edit-counter-preset').value) || 1;
+                    
+                    // Inicializa o CV (Current Value) com 0 (CTU) ou com o Preset (CTD)
+                    let initialCv = (mode === 'CTD') ? preset : 0;
+                    countersConfig[newName] = { mode: mode, preset: preset, cv: initialCv, q: false, lastIn: false };
+                }
+
+                grid[editingCell.r][editingCell.c].varName = newName;
+                updatePhysicalInputsUI();
+                renderGrid();
+            }
+            closeModal();
+        }
+
+        document.getElementById('edit-input').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') saveVarName();
+        });
+
+        function clearAll() {
+            if (isRunning) return alert("Pare a simulação para limpar.");
+            if (confirm("Tem certeza que deseja apagar todo o diagrama?")) {
+                grid = [];
+                for (let key in memory.inputs) delete memory.inputs[key];
+                for (let key in memory.outputs) delete memory.outputs[key];
+                for (let key in timersConfig) delete timersConfig[key];
+                for (let key in countersConfig) delete countersConfig[key];
+                addRung(); addRung(); addRung();
+            }
+        }
+
+        // --- ESTRUTURA E DRAG AND DROP ---
+        function initSystem() {
+            addRung(); addRung(); addRung();
+        }
+
+        function addRung() {
+            if (isRunning) return alert("Pare a simulação para editar.");
+            grid.push(Array(COLS).fill().map(() => ({ type: 'EMPTY', varName: '', vWire: false })));
+            renderGrid();
+        }
+
+        function deleteRung(rowIndex) {
+            if (isRunning) return alert("Pare a simulação para editar.");
+            if (grid.length <= 1) return alert("O diagrama deve ter pelo menos uma linha.");
+            grid.splice(rowIndex, 1);
+            updatePhysicalInputsUI();
+            renderGrid();
+        }
+
+        function getNextVar(prefix) {
+            let maxIndex = 0;
+            for (let r = 0; r < grid.length; r++) {
+                for (let c = 0; c < COLS; c++) {
+                    const cellName = grid[r][c].varName;
+                    if (cellName && cellName.startsWith(prefix)) {
+                        const num = parseInt(cellName.replace(prefix, ''));
+                        if (!isNaN(num) && num > maxIndex) maxIndex = num;
+                    }
+                }
+            }
+            return `${prefix}${maxIndex + 1}`;
+        }
+
+        function dragStart(e, type) {
+            if (isRunning) { e.preventDefault(); return; }
+            e.dataTransfer.setData('text/plain', type);
+        }
+
+        function dragOver(e) {
+            if (isRunning) return;
+            e.preventDefault(); 
+            const dropzone = e.target.closest('.dropzone');
+            if(dropzone) dropzone.classList.add('dragover');
+        }
+
+        function dragLeave(e) {
+            const dropzone = e.target.closest('.dropzone');
+            if(dropzone) dropzone.classList.remove('dragover');
+        }
+
+        function drop(e) {
+            if (isRunning) return;
+            e.preventDefault();
+            
+            const dropzone = e.target.closest('.dropzone');
+            if (!dropzone) return;
+            
+            dropzone.classList.remove('dragover');
+            
+            const r = parseInt(dropzone.dataset.row);
+            const c = parseInt(dropzone.dataset.col);
+            const type = e.dataTransfer.getData('text/plain');
+
+            if (!type) return; 
+
+            if (type === 'VWIRE') {
+                if (c === 0) return alert("Não é possível colocar fio vertical no barramento principal.");
+                if (r === grid.length - 1) return alert("Adicione mais uma linha abaixo para conectar.");
+                grid[r][c].vWire = !grid[r][c].vWire;
+                renderGrid();
+                return;
+            }
+
+            const coilTypes = ['COIL', 'TIMER', 'COUNTER', 'RESET'];
+            if (c === COLS - 1 && !coilTypes.includes(type) && type !== 'ERASER') return alert("Esta coluna é restrita para Bobinas/Blocos Especiais.");
+            if (c < COLS - 1 && coilTypes.includes(type)) return alert("Bobinas e Blocos Especiais devem ficar na última coluna.");
+
+            let varName = '';
+            if (type === 'NA' || type === 'NF') varName = getNextVar('I'); 
+            else if (type === 'COIL') varName = getNextVar('Q'); 
+            else if (type === 'TIMER') {
+                varName = getNextVar('T');
+                timersConfig[varName] = { mode: 'TON', preset: 3000, startTime: null, q: false, lastIn: false };
+            }
+            else if (type === 'COUNTER') {
+                varName = getNextVar('C');
+                countersConfig[varName] = { mode: 'CTU', preset: 5, cv: 0, q: false, lastIn: false };
+            }
+            else if (type === 'RESET') {
+                varName = getNextVar('C'); // Auto-sugere nome de contador
+            }
+
+            if (type === 'ERASER') {
+                grid[r][c] = { type: 'EMPTY', varName: '', vWire: false };
+            } else {
+                const currentVWire = grid[r][c].vWire;
+                grid[r][c] = { type, varName, vWire: currentVWire };
+            }
+            
+            updatePhysicalInputsUI();
+            renderGrid();
+        }
+
+        // --- RENDERIZAÇÃO ---
+        function renderGrid() {
+            ladderGrid.innerHTML = '';
+            
+            for (let r = 0; r < grid.length; r++) {
+                const rowDiv = document.createElement('div');
+                rowDiv.className = 'flex items-center gap-0 h-20 relative before:content-[""] before:absolute before:left-0 before:-ml-4 before:w-4 before:h-1 before:bg-rose-500';
+                
+                for (let c = 0; c < COLS; c++) {
+                    const cellData = grid[r][c];
+                    const isLast = c === COLS - 1;
+                    
+                    const cell = document.createElement('div');
+                    cell.className = `dropzone flex-1 h-full relative border-y-2 border-r-2 ${c===0?'border-l-2':''} ${cellData.type === 'EMPTY' ? 'border-dashed border-slate-200 text-slate-300' : 'border-solid border-slate-200 text-slate-700 bg-white'} flex flex-col items-center justify-center transition-all group`;
+                    cell.dataset.row = r;
+                    cell.dataset.col = c;
+                    
+                    cell.addEventListener('dragover', dragOver);
+                    cell.addEventListener('dragleave', dragLeave);
+                    cell.addEventListener('drop', drop);
+
+                    let innerContent = '';
+                    let tagContent = '';
+
+                    if (cellData.type === 'NA') {
+                        innerContent = `<div class="flex items-center justify-center w-full h-full pointer-events-none"><div class="h-1 wire-unpowered flex-grow transition-colors" id="wireL-${r}-${c}"></div><div class="h-8 w-1 bg-black flex-shrink-0 rounded-full"></div><div class="w-6 flex-shrink-0"></div><div class="h-8 w-1 bg-black flex-shrink-0 rounded-full"></div><div class="h-1 wire-unpowered flex-grow transition-colors" id="wireR-${r}-${c}"></div></div>`;
+                        tagContent = `<div class="absolute top-0 left-1/2 -translate-x-1/2 flex items-center gap-1 bg-emerald-50 text-emerald-800 hover:bg-emerald-100 px-2 py-0.5 rounded text-[10px] font-bold cursor-pointer z-20 shadow-sm whitespace-nowrap" onclick="event.stopPropagation(); openEditModal(${r}, ${c})">${cellData.varName} <i class="fa-solid fa-pen text-[8px]"></i></div>`;
+                    } 
+                    else if (cellData.type === 'NF') {
+                        innerContent = `<div class="flex items-center justify-center w-full h-full pointer-events-none"><div class="h-1 wire-unpowered flex-grow transition-colors" id="wireL-${r}-${c}"></div><div class="h-8 w-1 bg-black flex-shrink-0 rounded-full"></div><div class="w-6 flex-shrink-0 relative"><div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-10 w-1 bg-black rotate-[45deg] rounded-full"></div></div><div class="h-8 w-1 bg-black flex-shrink-0 rounded-full"></div><div class="h-1 wire-unpowered flex-grow transition-colors" id="wireR-${r}-${c}"></div></div>`;
+                        tagContent = `<div class="absolute top-0 left-1/2 -translate-x-1/2 flex items-center gap-1 bg-rose-50 text-rose-800 hover:bg-rose-100 px-2 py-0.5 rounded text-[10px] font-bold cursor-pointer z-20 shadow-sm whitespace-nowrap" onclick="event.stopPropagation(); openEditModal(${r}, ${c})">${cellData.varName} <i class="fa-solid fa-pen text-[8px]"></i></div>`;
+                    } 
+                    else if (cellData.type === 'WIRE') {
+                        innerContent = `<div class="flex items-center justify-center w-full h-full pointer-events-none"><div class="h-1 wire-unpowered w-full transition-colors" id="wireMain-${r}-${c}"></div></div>`;
+                    } 
+                    else if (cellData.type === 'COIL') {
+                        innerContent = `<div class="flex items-center justify-center w-full h-full pointer-events-none"><div class="h-1 wire-unpowered flex-grow transition-colors" id="wireL-${r}-${c}"></div><div class="h-8 w-8 rounded-full border-4 border-black flex items-center justify-center font-bold text-xs bg-white flex-shrink-0 transition-colors z-10" id="coil-${r}-${c}">Q</div><div class="h-1 wire-unpowered flex-grow transition-colors" id="wireR-${r}-${c}"></div></div>`;
+                        tagContent = `<div class="absolute top-0 left-1/2 -translate-x-1/2 flex items-center gap-1 bg-blue-50 text-blue-800 hover:bg-blue-100 px-2 py-0.5 rounded text-[10px] font-bold cursor-pointer z-20 shadow-sm whitespace-nowrap" onclick="event.stopPropagation(); openEditModal(${r}, ${c})">${cellData.varName} <i class="fa-solid fa-pen text-[8px]"></i></div>`;
+                    }
+                    else if (cellData.type === 'TIMER') {
+                        innerContent = `<div class="flex items-center justify-center w-full h-full pointer-events-none"><div class="h-1 wire-unpowered flex-grow transition-colors" id="wireL-${r}-${c}"></div><div class="h-10 w-12 rounded border-4 border-black flex flex-col items-center justify-center font-black text-[10px] bg-white flex-shrink-0 transition-colors z-10" id="coil-${r}-${c}">T</div><div class="h-1 wire-unpowered flex-grow transition-colors" id="wireR-${r}-${c}"></div></div>`;
+                        let tConf = timersConfig[cellData.varName] || { mode: 'TON', preset: 3000 };
+                        let displayInfo = `${cellData.varName} (${tConf.mode} ${tConf.preset/1000}s)`;
+                        tagContent = `<div class="absolute top-0 left-1/2 -translate-x-1/2 flex items-center gap-1 bg-violet-50 text-violet-800 hover:bg-violet-100 px-2 py-0.5 rounded text-[10px] font-bold cursor-pointer z-20 shadow-sm whitespace-nowrap" onclick="event.stopPropagation(); openEditModal(${r}, ${c})">${displayInfo} <i class="fa-solid fa-pen text-[8px]"></i></div>`;
+                    }
+                    else if (cellData.type === 'COUNTER') {
+                        // Símbolo Visual do Contador [ C ]
+                        innerContent = `<div class="flex items-center justify-center w-full h-full pointer-events-none"><div class="h-1 wire-unpowered flex-grow transition-colors" id="wireL-${r}-${c}"></div><div class="h-10 w-12 rounded border-4 border-black flex flex-col items-center justify-center font-black text-[10px] bg-white flex-shrink-0 transition-colors z-10" id="coil-${r}-${c}">C</div><div class="h-1 wire-unpowered flex-grow transition-colors" id="wireR-${r}-${c}"></div></div>`;
+                        let cConf = countersConfig[cellData.varName] || { mode: 'CTU', preset: 5, cv: 0 };
+                        // Mostra o Current Value (CV) dinâmico
+                        let displayInfo = `${cellData.varName} (${cConf.mode} ${cConf.preset}p) | CV: <span id="cv-${r}-${c}" class="text-cyan-600">${cConf.cv}</span>`;
+                        tagContent = `<div class="absolute top-0 left-1/2 -translate-x-1/2 flex items-center gap-1 bg-cyan-50 text-cyan-800 border border-cyan-200 hover:bg-cyan-100 px-2 py-0.5 rounded text-[10px] font-bold cursor-pointer z-20 shadow-sm whitespace-nowrap" onclick="event.stopPropagation(); openEditModal(${r}, ${c})">${displayInfo} <i class="fa-solid fa-pen text-[8px]"></i></div>`;
+                    }
+                    else if (cellData.type === 'RESET') {
+                        // Símbolo Visual do Reset ( R )
+                        innerContent = `<div class="flex items-center justify-center w-full h-full pointer-events-none"><div class="h-1 wire-unpowered flex-grow transition-colors" id="wireL-${r}-${c}"></div><div class="h-8 w-8 rounded-full border-4 border-black flex items-center justify-center font-black text-[10px] bg-white flex-shrink-0 transition-colors z-10" id="coil-${r}-${c}">R</div><div class="h-1 wire-unpowered flex-grow transition-colors" id="wireR-${r}-${c}"></div></div>`;
+                        let displayInfo = `Reseta ${cellData.varName}`;
+                        tagContent = `<div class="absolute top-0 left-1/2 -translate-x-1/2 flex items-center gap-1 bg-orange-50 text-orange-800 border border-orange-200 hover:bg-orange-100 px-2 py-0.5 rounded text-[10px] font-bold cursor-pointer z-20 shadow-sm whitespace-nowrap" onclick="event.stopPropagation(); openEditModal(${r}, ${c})">${displayInfo} <i class="fa-solid fa-pen text-[8px]"></i></div>`;
+                    }
+
+                    cell.innerHTML = innerContent + tagContent;
+
+                    if (cellData.vWire && r < grid.length - 1) {
+                        const vWireEl = document.createElement('div');
+                        vWireEl.className = 'v-wire transition-colors';
+                        vWireEl.id = `vwire-${r}-${c}`;
+                        vWireEl.style.left = '-2px'; 
+                        cell.appendChild(vWireEl);
+                    }
+
+                    rowDiv.appendChild(cell);
+
+                    if (!isLast) {
+                        const connector = document.createElement('div');
+                        connector.className = 'w-4 h-1 bg-black transition-colors';
+                        connector.id = `hconn-${r}-${c}`;
+                        rowDiv.appendChild(connector);
+                    }
+                }
+
+                const deleteBtn = document.createElement('button');
+                deleteBtn.className = 'absolute -right-12 w-8 h-8 flex items-center justify-center rounded-full text-slate-300 hover:text-rose-500 hover:bg-rose-50 transition-colors z-10';
+                deleteBtn.innerHTML = '<i class="fa-solid fa-trash text-sm"></i>';
+                deleteBtn.onclick = () => deleteRung(r);
+                rowDiv.appendChild(deleteBtn);
+
+                ladderGrid.appendChild(rowDiv);
+            }
+        }
+
+        // --- SISTEMA INTELIGENTE DE CHAVES FÍSICAS ---
+        function updatePhysicalInputsUI() {
+            const existingInputs = new Map();
+            
+            grid.flat().forEach(cell => {
+                if (cell.varName && cell.varName.startsWith('I')) {
+                    if(!existingInputs.has(cell.varName)) {
+                        existingInputs.set(cell.varName, cell.type === 'NF' ? true : false);
+                    }
+                }
+            });
+
+            if(existingInputs.size === 0) {
+                physicalInputsContainer.innerHTML = '<div class="text-xs text-slate-400 text-center py-4 border-2 border-dashed border-slate-200 rounded">Nenhuma entrada (I) no diagrama.</div>';
+                return;
+            }
+
+            physicalInputsContainer.innerHTML = '';
+            
+            Array.from(existingInputs.keys()).sort().forEach(inputName => {
+                if (memory.inputs[inputName] === undefined) {
+                    memory.inputs[inputName] = existingInputs.get(inputName);
+                }
+                
+                const state = memory.inputs[inputName];
+                
+                const div = document.createElement('div');
+                div.className = 'flex items-center justify-between p-2 bg-slate-50 rounded border';
+                div.innerHTML = `
+                    <span class="font-bold text-slate-600">${inputName}</span>
+                    <button onclick="toggleInput('${inputName}')" id="btn-${inputName}" class="w-12 h-6 rounded-full ${state ? 'bg-emerald-500' : 'bg-slate-300'} relative transition-colors" ${!isRunning ? 'disabled' : ''}>
+                        <div id="knob-${inputName}" class="w-5 h-5 bg-white rounded-full absolute top-0.5 left-0.5 shadow transition-transform ${state ? 'translate-x-6' : ''}"></div>
+                    </button>
+                `;
+                physicalInputsContainer.appendChild(div);
+            });
+        }
+
+        // --- MOTOR DO CLP E VARREDURA LÓGICA ---
+        function togglePower() {
+            isRunning = !isRunning;
+            const btn = document.getElementById('btn-power');
+            
+            updatePhysicalInputsUI(); 
+            
+            if (isRunning) {
+                document.getElementById('toolbox').style.opacity = '0.5';
+                btn.innerHTML = '<i class="fa-solid fa-play mt-1 mr-2"></i> MODO RUN';
+                btn.className = "w-full py-3 rounded-lg font-black text-lg bg-emerald-500 text-white shadow-lg shadow-emerald-500/30 hover:bg-emerald-600";
+                
+                // Reseta variáveis temporárias
+                for (let key in timersConfig) {
+                    timersConfig[key].startTime = null;
+                    timersConfig[key].q = false;
+                    timersConfig[key].lastIn = false;
+                }
+                for (let key in countersConfig) {
+                    countersConfig[key].lastIn = false; 
+                    // NÃO reseta o CV nem o Q, pois contador tem memória!
+                }
+                
+                runScanCycle();
+            } else {
+                document.getElementById('toolbox').style.opacity = '1';
+                btn.innerHTML = '<i class="fa-solid fa-stop mt-1 mr-2"></i> MODO STOP';
+                btn.className = "w-full py-3 rounded-lg font-black text-lg bg-slate-200 text-slate-600 hover:bg-slate-300";
+                
+                for (let key in memory.outputs) memory.outputs[key] = false;
+                renderGrid(); 
+            }
+        }
+
+        function toggleInput(inputName) {
+            if (!isRunning) return;
+            memory.inputs[inputName] = !memory.inputs[inputName];
+            updatePhysicalInputsUI();
+        }
+
+        function evalComponent(cell) {
+            if (cell.type === 'EMPTY') return false;
+            if (cell.type === 'WIRE') return true;
+            
+            let state = false;
+            if (cell.varName.startsWith('T')) {
+                state = timersConfig[cell.varName] ? timersConfig[cell.varName].q : false;
+            } 
+            else if (cell.varName.startsWith('C')) {
+                state = countersConfig[cell.varName] ? countersConfig[cell.varName].q : false;
+            } 
+            else {
+                state = memory.inputs[cell.varName] || memory.outputs[cell.varName];
+            }
+
+            if (cell.type === 'NA') return !!state;
+            if (cell.type === 'NF') return !state;
+            if (cell.type === 'COIL' || cell.type === 'TIMER' || cell.type === 'COUNTER' || cell.type === 'RESET') return true; 
+            return false;
+        }
+
+        function colorWire(id, isPowered) {
+            const el = document.getElementById(id);
+            if(el) {
+                if(isPowered) el.classList.add('wire-powered');
+                else el.classList.remove('wire-powered');
+            }
+        }
+
+        function runScanCycle() {
+            if (!isRunning) return;
+
+            const ROWS = grid.length;
+            const now = Date.now(); 
+            
+            nodePower = Array(ROWS).fill().map(() => Array(COLS + 1).fill(false));
+            for (let r = 0; r < ROWS; r++) nodePower[r][0] = true;
+
+            for (let c = 0; c < COLS; c++) {
+                
+                // Resolução de fios verticais (Paralelo)
+                let changed = true;
+                let limit = 0;
+                while(changed && limit < ROWS) {
+                    changed = false;
+                    for (let r = 0; r < ROWS - 1; r++) {
+                        if (grid[r][c].vWire) {
+                            const sharedEnergy = nodePower[r][c] || nodePower[r+1][c];
+                            if (nodePower[r][c] !== sharedEnergy || nodePower[r+1][c] !== sharedEnergy) {
+                                nodePower[r][c] = sharedEnergy;
+                                nodePower[r+1][c] = sharedEnergy;
+                                changed = true;
+                            }
+                            
+                            const vWireEl = document.getElementById(`vwire-${r}-${c}`);
+                            if (vWireEl) {
+                                if (sharedEnergy) vWireEl.classList.add('v-wire-energized');
+                                else vWireEl.classList.remove('v-wire-energized');
+                            }
+                        }
+                    }
+                    limit++;
+                }
+
+                // Avaliação Horizontal
+                for (let r = 0; r < ROWS; r++) {
+                    const cell = grid[r][c];
+                    const powerIn = nodePower[r][c];
+                    
+                    if (c < COLS - 1) {
+                        const componentPasses = evalComponent(cell);
+                        nodePower[r][c+1] = powerIn && componentPasses;
+                        
+                        if (cell.type === 'WIRE') {
+                            colorWire(`wireMain-${r}-${c}`, powerIn);
+                        } else if (cell.type === 'NA' || cell.type === 'NF') {
+                            colorWire(`wireL-${r}-${c}`, powerIn);
+                            colorWire(`wireR-${r}-${c}`, nodePower[r][c+1]);
+                        }
+                        
+                        const hConn = document.getElementById(`hconn-${r}-${c}`);
+                        if(hConn) hConn.style.backgroundColor = nodePower[r][c+1] ? '#10b981' : 'black';
+                        
+                    } else {
+                        // ÚLTIMA COLUNA: EXECUÇÃO DE BOBINAS, TIMERS, COUNTERS E RESET
+                        const coilTypes = ['COIL', 'TIMER', 'COUNTER', 'RESET'];
+                        if (coilTypes.includes(cell.type)) {
+                            colorWire(`wireL-${r}-${c}`, powerIn);
+                            colorWire(`wireR-${r}-${c}`, powerIn); 
+                            
+                            let isEnergized = powerIn;
+
+                            if (cell.type === 'COIL') {
+                                memory.outputs[cell.varName] = powerIn;
+                            } 
+                            else if (cell.type === 'TIMER') {
+                                let t = timersConfig[cell.varName];
+                                if(t) {
+                                    if (t.mode === 'TON') {
+                                        if (powerIn) {
+                                            if (!t.lastIn) t.startTime = now; 
+                                            if (t.startTime && (now - t.startTime) >= t.preset) t.q = true;
+                                        } else { t.startTime = null; t.q = false; }
+                                    } 
+                                    else if (t.mode === 'TOF') {
+                                        if (powerIn) { t.q = true; t.startTime = null; } 
+                                        else {
+                                            if (t.lastIn) t.startTime = now; 
+                                            if (t.startTime && (now - t.startTime) >= t.preset) { t.q = false; t.startTime = null; }
+                                        }
+                                    } 
+                                    else if (t.mode === 'TP') {
+                                        if (powerIn && !t.lastIn && !t.startTime) { t.startTime = now; t.q = true; }
+                                        if (t.startTime && (now - t.startTime) >= t.preset) { t.q = false; t.startTime = null; }
+                                    }
+                                    t.lastIn = powerIn;
+                                    isEnergized = t.q; 
+                                }
+                            }
+                            else if (cell.type === 'COUNTER') {
+                                let cConf = countersConfig[cell.varName];
+                                if(cConf) {
+                                    // Identifica Borda de Subida
+                                    if (powerIn && !cConf.lastIn) {
+                                        if (cConf.mode === 'CTU' && cConf.cv < 9999) cConf.cv++;
+                                        else if (cConf.mode === 'CTD' && cConf.cv > -9999) cConf.cv--;
+                                        
+                                        // Atualiza o CV na interface em tempo real!
+                                        const cvSpan = document.getElementById(`cv-${r}-${c}`);
+                                        if(cvSpan) cvSpan.innerText = cConf.cv;
+                                    }
+                                    
+                                    // Atualiza estado Q
+                                    if (cConf.mode === 'CTU') cConf.q = (cConf.cv >= cConf.preset);
+                                    else if (cConf.mode === 'CTD') cConf.q = (cConf.cv <= 0);
+
+                                    cConf.lastIn = powerIn;
+                                    isEnergized = cConf.q;
+                                }
+                            }
+                            else if (cell.type === 'RESET') {
+                                let targetC = countersConfig[cell.varName];
+                                if (targetC && powerIn) {
+                                    // Zera o contador na hora
+                                    targetC.cv = (targetC.mode === 'CTD') ? targetC.preset : 0;
+                                    targetC.q = false;
+                                    
+                                    // Busca onde o contador está na tela para atualizar o CV visualmente
+                                    for(let rr=0; rr<ROWS; rr++) {
+                                        if(grid[rr][COLS-1].varName === cell.varName && grid[rr][COLS-1].type === 'COUNTER') {
+                                            const cvSpan = document.getElementById(`cv-${rr}-${COLS-1}`);
+                                            if(cvSpan) cvSpan.innerText = targetC.cv;
+                                        }
+                                    }
+                                }
+                                isEnergized = powerIn;
+                            }
+
+                            const coilEl = document.getElementById(`coil-${r}-${c}`);
+                            if (coilEl) {
+                                if (isEnergized) coilEl.classList.add('coil-energized');
+                                else coilEl.classList.remove('coil-energized');
+                            }
+                        }
+                    }
+                }
+            }
+            setTimeout(runScanCycle, 100);
+        }
+
+        initSystem();
+    </script>
+</body>
+</html>

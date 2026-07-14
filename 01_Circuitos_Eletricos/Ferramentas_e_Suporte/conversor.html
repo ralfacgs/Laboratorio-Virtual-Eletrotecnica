@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Conversor de Unidades - Lab AC Pro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap');
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: #f8fafc; 
+        }
+        input[type="number"]::-webkit-inner-spin-button,
+        input[type="number"]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        input[type="number"] {
+            -moz-appearance: textfield;
+        }
+    </style>
+</head>
+<body class="text-slate-800 min-h-screen flex flex-col">
+
+    <!-- CABEÇALHO PADRÃO -->
+    <header class="bg-emerald-700 text-white shadow-md py-4 px-6 relative z-10">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="flex items-center gap-4">
+                <div class="bg-white p-2 rounded shadow-sm text-emerald-700 font-bold text-xl flex items-center justify-center h-12 w-12">
+                    <i class="fa-solid fa-bolt"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold tracking-wide">CONVERSOR DE UNIDADES</h1>
+                    <p class="text-xs text-emerald-100 font-medium">Engenharia Eletrotécnica</p>
+                </div>
+            </div>
+            <!-- Botão Voltar -->
+            <a href="../dic_circuitos_eletricos.html" class="text-sm font-semibold text-emerald-50 hover:text-white bg-emerald-800 hover:bg-emerald-900 px-4 py-2 rounded transition-colors flex items-center gap-2">
+                <i class="fa-solid fa-arrow-left"></i> Voltar ao Portal
+            </a>
+        </div>
+    </header>
+
+    <!-- ÁREA PRINCIPAL -->
+    <main class="flex-grow w-full max-w-5xl mx-auto p-4 md:p-6 flex flex-col items-center">
+
+        <!-- Módulo: Conversor de Unidades (Ajustado para max-w-3xl para ficar elegante no centro) -->
+        <div class="w-full max-w-3xl bg-white p-6 md:p-8 rounded-xl border border-slate-200 shadow-sm transition-all mt-6">
+            
+            <!-- Título Interno do Card -->
+            <div class="mb-8 text-center md:text-left">
+                <h2 class="text-2xl font-bold text-emerald-800">Cálculo de Escalas</h2>
+                <p class="text-sm text-slate-500 mt-1">Converta grandezas elétricas rapidamente (de Pico a Tera).</p>
+            </div>
+
+            <!-- Formulário do Conversor -->
+            <div class="space-y-6">
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <!-- Seletor de Grandeza -->
+                    <div>
+                        <label for="grandeza" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Grandeza Elétrica</label>
+                        <div class="relative">
+                            <select id="grandeza" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3.5 text-slate-900 font-medium focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all cursor-pointer appearance-none">
+                                <option value="V">Tensão (Volts - V)</option>
+                                <option value="A">Corrente (Amperes - A)</option>
+                                <option value="Ω">Resistência (Ohms - Ω)</option>
+                                <option value="W">Potência Ativa (Watts - W)</option>
+                                <option value="VA">Potência Aparente (VA)</option>
+                                <option value="VAr">Potência Reativa (VAr)</option>
+                                <option value="F">Capacitância (Farads - F)</option>
+                                <option value="H">Indutância (Henrys - H)</option>
+                                <option value="Hz">Frequência (Hertz - Hz)</option>
+                                <option value="C">Carga Elétrica (Coulombs - C)</option>
+                                <option value="S">Condutância (Siemens - S)</option>
+                                <option value="J">Energia (Joules - J)</option>
+                            </select>
+                            <div class="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none">
+                                <i class="fa-solid fa-chevron-down text-slate-400 text-sm"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Campo de Input -->
+                    <div>
+                        <label for="valorInput" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Valor a Converter</label>
+                        <div class="relative">
+                            <input type="number" id="valorInput" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3.5 text-slate-900 text-lg font-medium focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all placeholder-slate-400" placeholder="Ex: 1500">
+                            <div class="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none">
+                                <i class="fa-solid fa-calculator text-slate-300 text-lg"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Seletores (De / Para) -->
+                <div class="grid grid-cols-1 md:grid-cols-9 items-center gap-4 pt-2">
+                    
+                    <!-- Origem (De) -->
+                    <div class="md:col-span-4">
+                        <label for="unidadeDe" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">De</label>
+                        <select id="unidadeDe" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3.5 text-slate-900 font-medium focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all cursor-pointer">
+                            <!-- Gerado via JS -->
+                        </select>
+                    </div>
+
+                    <!-- Botão Intermediário Inverter -->
+                    <div class="md:col-span-1 flex justify-center pt-2 md:pt-6">
+                        <button id="btnInverter" class="bg-emerald-50 hover:bg-emerald-100 text-emerald-700 w-12 h-12 rounded-full flex items-center justify-center transition-all border border-emerald-200 hover:border-emerald-300 focus:ring-2 focus:ring-emerald-500 outline-none group shadow-sm" title="Inverter Escalas">
+                            <i class="fa-solid fa-right-left rotate-90 md:rotate-0 transition-transform group-hover:scale-110"></i>
+                        </button>
+                    </div>
+
+                    <!-- Destino (Para) -->
+                    <div class="md:col-span-4">
+                        <label for="unidadePara" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Para</label>
+                        <select id="unidadePara" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3.5 text-slate-900 font-medium focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all cursor-pointer">
+                            <!-- Gerado via JS -->
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Painel de Resultado -->
+                <div class="mt-8 bg-slate-50 rounded-xl border border-slate-200 p-6 md:p-8 text-center shadow-inner relative overflow-hidden">
+                    <div class="absolute top-0 left-0 h-1.5 w-full bg-emerald-600"></div>
+                    <span class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">Resultado Final</span>
+                    <div id="resultadoTexto" class="text-4xl md:text-5xl font-black text-slate-900 tracking-tight break-all">
+                        0 <span class="text-slate-400 text-3xl font-semibold">V</span>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <footer class="bg-slate-900 text-slate-400 text-center py-4 text-xs border-t border-slate-800 mt-auto w-full">
+        Material de Apoio Didático — Desenvolvido para o Curso Técnico em Eletrotécnica IFRN
+    </footer>
+
+    <!-- Script de Lógica -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const grandezaSelect = document.getElementById('grandeza');
+            const inputValor = document.getElementById('valorInput');
+            const selectDe = document.getElementById('unidadeDe');
+            const selectPara = document.getElementById('unidadePara');
+            const displayResultado = document.getElementById('resultadoTexto');
+            const btnInverter = document.getElementById('btnInverter');
+
+            // Escala completa de grandezas em engenharia (Pico a Tera)
+            const escala = [
+                { valor: "1e12", nome: "Tera", sim: "T" },
+                { valor: "1e9",  nome: "Giga", sim: "G" },
+                { valor: "1e6",  nome: "Mega", sim: "M" },
+                { valor: "1e3",  nome: "Quilo", sim: "k" },
+                { valor: "1",    nome: "Base", sim: "" },
+                { valor: "1e-3", nome: "Mili", sim: "m" },
+                { valor: "1e-6", nome: "Micro", sim: "µ" },
+                { valor: "1e-9", nome: "Nano", sim: "n" },
+                { valor: "1e-12", nome: "Pico", sim: "p" }
+            ];
+
+            // Função para popular os selects dinamicamente baseado na grandeza
+            const popularEscalas = () => {
+                const base = grandezaSelect.value;
+                
+                // Salvar valores atuais para manter selecção
+                const valDe = selectDe.value || "1";
+                const valPara = selectPara.value || "1e3";
+
+                selectDe.innerHTML = "";
+                selectPara.innerHTML = "";
+
+                escala.forEach(item => {
+                    const textLabel = item.nome === "Base" 
+                        ? `Unidade Base (${base})` 
+                        : `${item.nome} (${item.sim}${base})`;
+
+                    const optDe = new Option(textLabel, item.valor);
+                    if (item.valor === valDe) optDe.selected = true;
+                    selectDe.add(optDe);
+
+                    const optPara = new Option(textLabel, item.valor);
+                    if (item.valor === valPara) optPara.selected = true;
+                    selectPara.add(optPara);
+                });
+                
+                calcularConversao();
+            };
+
+            // Função para formatar o número
+            const formatarNumero = (num) => {
+                if (num === 0) return "0";
+                
+                if (Math.abs(num) >= 1e10 || Math.abs(num) < 1e-4) {
+                    return num.toExponential(4).replace('.', ',');
+                }
+                
+                return parseFloat(num.toFixed(8)).toLocaleString('pt-BR', {
+                    maximumFractionDigits: 8
+                });
+            };
+
+            // Cálculo principal
+            const calcularConversao = () => {
+                const valor = parseFloat(inputValor.value);
+                const base = grandezaSelect.value;
+                
+                if (isNaN(valor)) {
+                    displayResultado.innerHTML = `0 <span class="text-slate-400 text-3xl font-semibold ml-1">${base}</span>`;
+                    return;
+                }
+
+                const fatorDe = parseFloat(selectDe.value);
+                const fatorPara = parseFloat(selectPara.value);
+
+                const resultado = (valor * fatorDe) / fatorPara;
+                const prefixoDestino = escala.find(e => e.valor === selectPara.value).sim;
+
+                // Alterado a cor do destaque para emerald-600 para bater com o tema
+                displayResultado.innerHTML = `${formatarNumero(resultado)} <span class="text-emerald-600 text-3xl md:text-4xl font-black ml-1">${prefixoDestino}${base}</span>`;
+            };
+
+            // Inversão
+            const inverterUnidades = () => {
+                const temp = selectDe.value;
+                selectDe.value = selectPara.value;
+                selectPara.value = temp;
+                calcularConversao();
+            };
+
+            // Listeners
+            grandezaSelect.addEventListener('change', popularEscalas);
+            inputValor.addEventListener('input', calcularConversao);
+            selectDe.addEventListener('change', calcularConversao);
+            selectPara.addEventListener('change', calcularConversao);
+            btnInverter.addEventListener('click', inverterUnidades);
+
+            // Init
+            popularEscalas();
+        });
+    </script>
+</body>
+</html>

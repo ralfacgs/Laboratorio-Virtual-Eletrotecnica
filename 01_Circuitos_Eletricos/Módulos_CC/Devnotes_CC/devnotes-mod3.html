@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Memorial Técnico - Leis de Kirchhoff</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&family=Fira+Code:wght@400;500&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
+        .code-font { font-family: 'Fira Code', monospace; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
+
+    <header class="bg-teal-600 text-white shadow-md py-4 px-6 relative z-10">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="flex items-center gap-4">
+                <div class="bg-white p-2 rounded shadow-sm text-teal-600 font-bold text-xl flex items-center justify-center h-12 w-12">
+                    <i class="fa-solid fa-book"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold tracking-wide">INSTITUTO FEDERAL DO RIO GRANDE DO NORTE</h1>
+                    <p class="text-xs text-teal-100 font-medium">Campus João Câmara | Curso Técnico em Eletrotécnica</p>
+                </div>
+            </div>
+            <div class="text-center md:text-right">
+                <p class="text-sm font-semibold text-teal-50">Memorial Técnico do Módulo 3</p>
+                <p class="text-xs text-teal-200">Prof. Rafael Cândido Gomes da Silva</p>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-grow w-full max-w-4xl mx-auto p-4 md:p-6 flex flex-col">
+        
+        <div class="mb-6">
+            <a href="dic_circuitos_eletricos.html" class="inline-flex items-center gap-2 text-teal-600 hover:text-teal-800 font-semibold transition-colors bg-white hover:bg-teal-50 px-4 py-2 rounded-lg border border-slate-200 hover:border-teal-200 shadow-sm">
+                <i class="fa-solid fa-arrow-left"></i> Voltar para a Simulação
+            </a>
+        </div>
+
+        <div class="mb-8 bg-white p-6 rounded-xl border border-slate-200 shadow-sm border-l-4 border-l-teal-600 relative overflow-hidden">
+            <div class="absolute right-0 top-0 opacity-5 p-4 pointer-events-none">
+                <i class="fa-solid fa-network-wired text-8xl text-teal-600"></i>
+            </div>
+            <div class="relative z-10">
+                <h2 class="text-2xl font-black text-slate-900 tracking-tight">Notas de Engenharia: Leis de Kirchhoff</h2>
+                <p class="text-slate-500 text-sm mt-1">Este documento detalha a arquitetura matemática base e os modelos de malhas implementados na engine de simulação.</p>
+            </div>
+        </div>
+
+        <div class="bg-white p-6 md:p-8 rounded-xl border border-slate-200 shadow-sm space-y-8">
+            
+            <section class="space-y-3">
+                <h3 class="text-lg font-bold text-slate-900 border-b border-slate-100 pb-2 flex items-center gap-2">
+                    <i class="fa-solid fa-square-root-variable text-teal-500"></i> 1. Resolução Lógica por Topologia Circuital
+                </h3>
+                <p class="text-sm text-slate-600 leading-relaxed">
+                    O núcleo do simulador gerencia dinamicamente o cálculo da resistência equivalente (<code class="code-font text-xs bg-slate-100 px-1 py-0.5 rounded text-teal-600">req</code>) com base na propriedade <code class="code-font text-xs bg-slate-100 px-1 py-0.5 rounded text-teal-600">circuitoAtual</code>. O motor do sistema suporta circuitos puramente em série, paralelos ou arranjos mistos complexos de até 4 resistores ôhmicos.
+                </p>
+                <div class="bg-slate-950 text-teal-400 p-4 rounded-lg code-font text-xs space-y-1 shadow-inner">
+                    <p>// Topologias Série (Série Simples e 3 Resistores)</p>
+                    <p>req = r1 + r2 + (numR === 3 ? r3 : 0);</p>
+                    <p>it = v / req;</p>
+                    <p class="mt-2">// Topologias Paralelas (Paralelo Simples e 3 Ramos)</p>
+                    <p>let invReq = (1/r1) + (1/r2) + (numR === 3 ? 1/r3 : 0);</p>
+                    <p>req = 1 / invReq;</p>
+                </div>
+            </section>
+
+            <section class="space-y-3">
+                <h3 class="text-lg font-bold text-slate-900 border-b border-slate-100 pb-2 flex items-center gap-2">
+                    <i class="fa-solid fa-diagram-project text-blue-500"></i> 2. Formulação de Malhas Mistas (Análise de Nós Internos)
+                </h3>
+                <p class="text-sm text-slate-600 leading-relaxed">
+                    Para as topologias mistas (<code class="code-font text-xs bg-slate-100 px-1 rounded text-slate-800">mista</code> e <code class="code-font text-xs bg-slate-100 px-1 rounded text-slate-800">mista2</code>), o script realiza uma redução em etapas. Primeiro, calcula-se o equivalente paralelo dos resistores internos (<code class="code-font text-xs bg-slate-100 px-1 rounded text-slate-800">R₂</code> e <code class="code-font text-xs bg-slate-100 px-1 rounded text-slate-800">R₃</code>). Posteriormente, as quedas de tensão na malha principal são subtraídas para determinar o potencial efetivo nos nós de ramificação (<code class="code-font text-xs bg-slate-100 px-1 rounded text-slate-800">va</code>).
+                </p>
+                <div class="bg-slate-950 text-blue-400 p-4 rounded-lg code-font text-xs space-y-1 shadow-inner">
+                    <p>const rp = (r2 * r3) / (r2 + r3);</p>
+                    <p>req = r1 + rp + (circuitoAtual === 'mista2' ? r4 : 0);</p>
+                    <p>it = v / req;</p>
+                    <p>v1 = r1 * it;</p>
+                    <p>v4 = (circuitoAtual === 'mista2') ? (r4 * it) : 0;</p>
+                    <p>let va = v - v1 - v4; // Tensão resultante no nó compartilhado</p>
+                </div>
+            </section>
+
+            <section class="space-y-3">
+                <h3 class="text-lg font-bold text-slate-900 border-b border-slate-100 pb-2 flex items-center gap-2">
+                    <i class="fa-solid fa-code-branch text-indigo-500"></i> 3. Validação das Leis de Kirchhoff (LKC e LKT)
+                </h3>
+                <p class="text-sm text-slate-600 leading-relaxed">
+                    O painel expansível de expressões matemáticas (<code class="code-font text-xs bg-slate-100 px-1 rounded text-slate-800">equationBox</code>) atua como um validador pedagógico em tempo real das leis fundamentais:
+                </p>
+                <ul class="list-disc list-inside text-sm text-slate-600 pl-2 space-y-1">
+                    <li><strong>Lei dos Nós (LKC):</strong> Demonstra graficamente que a corrente total da malha converge exatamente com a soma das correntes derivadas dos sub-ramos (<code class="code-font text-xs text-indigo-600 font-bold">It = I₂ + I₃</code>).</li>
+                    <li><strong>Lei das Malhas (LKT):</strong> Comprova que a soma algébrica das diferenças de potencial ao longo do percurso fechado é nula (<code class="code-font text-xs text-indigo-600 font-bold">Vfonte - VR₁ - Vparalelo - VR₄ = 0</code>).</li>
+                </ul>
+            </section>
+
+            <section class="space-y-3">
+                <h3 class="text-lg font-bold text-slate-900 border-b border-slate-100 pb-2 flex items-center gap-2">
+                    <i class="fa-solid fa-fire text-amber-500"></i> 4. Dissipação Térmica Dinâmica (Efeito Joule Visual)
+                </h3>
+                <p class="text-sm text-slate-600 leading-relaxed">
+                    A função <code class="code-font text-xs bg-slate-100 px-1 rounded text-teal-600">drawUniversalResistor</code> monitora a taxa de potência convertida em calor (<code class="code-font text-xs bg-slate-100 px-1 rounded text-slate-800">P = V · I</code>). Caso a potência calculada ultrapasse os limiares críticos estabelecidos na física do ambiente virtual, o gradiente térmico do componente é alterado dinamicamente via Canvas API:
+                </p>
+                <div class="bg-slate-950 text-amber-400 p-4 rounded-lg code-font text-xs space-y-1 shadow-inner">
+                    <p>let color = overrideColor || "#334155"; // Estado nominal (cinza)</p>
+                    <p>if (power > 0.5) color = "#b45309"; // Aquecimento leve (marrom)</p>
+                    <p>if (power > 2.0) color = "#ea580c"; // Estresse térmico (laranja)</p>
+                    <p>if (power > 5.0) color = "#ef4444"; // Dissipação crítica (vermelho brilhante)</p>
+                    <p>// Ativação do efeito glow em alta potência</p>
+                    <p>if (power > 1.0) { ctx.shadowBlur = 12; ctx.shadowColor = color; }</p>
+                </div>
+            </section>
+
+            <section class="space-y-3">
+                <h3 class="text-lg font-bold text-slate-900 border-b border-slate-100 pb-2 flex items-center gap-2">
+                    <i class="fa-solid fa-bolt text-cyan-500"></i> 5. Cinemática de Partículas e Mapeamento Geométrico
+                </h3>
+                <p class="text-sm text-slate-600 leading-relaxed">
+                    A representação cinemática do fluxo elétrico é gerenciada de forma assíncrona. Os elétrons (<code class="code-font text-xs bg-slate-100 px-1 rounded text-slate-800">drawPathDots</code>) avançam sob incrementos de offsets dic_circuitos_eletricosados à intensidade de corrente local, normalizados pela constante linear <code class="code-font text-xs bg-slate-100 px-1 rounded text-slate-800">SPEED = 15</code>. A rotina <code class="code-font text-xs bg-slate-100 px-1 rounded text-slate-800">getResistorOffset</code> injeta uma matriz de deformação geométrica no vetor de translação, forçando os pontos a rastrearem fielmente o perfil em zigue-zague dos condutores internos.
+                </p>
+            </section>
+
+        </div>
+    </main>
+
+    <footer class="bg-slate-900 text-slate-400 text-center py-4 text-xs border-t border-slate-800 mt-12 w-full">
+        Material de Apoio Didático — Desenvolvido para o Curso Técnico em Eletrotécnica IFRN
+    </footer>
+
+</body>
+</html>

@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Memorial Técnico - Módulo 5</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&family=Fira+Code:wght@400;500&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
+        .code-font { font-family: 'Fira Code', monospace; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
+
+    <header class="bg-violet-700 text-white shadow-md py-4 px-6 relative z-10">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="flex items-center gap-4">
+                <div class="bg-white p-2 rounded shadow-sm text-violet-700 font-bold text-xl flex items-center justify-center h-12 w-12 flex-shrink-0">
+                    <i class="fa-solid fa-microchip"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold tracking-wide">INSTITUTO FEDERAL DO RIO GRANDE DO NORTE</h1>
+                    <p class="text-xs text-violet-100 font-medium">Campus João Câmara | Curso Técnico em Eletrotécnica</p>
+                </div>
+            </div>
+            <div class="text-center md:text-right">
+                <p class="text-sm font-semibold text-violet-50">Memorial Técnico do Módulo 5</p>
+                <p class="text-xs text-violet-200">Prof. Rafael Cândido Gomes da Silva</p>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-grow w-full max-w-4xl mx-auto p-4 md:p-6 flex flex-col">
+        
+        <div class="mb-6">
+            <a href="modulo_cc_5_simulador_cc.html" class="inline-flex items-center gap-2 text-violet-600 hover:text-violet-800 font-semibold transition-colors bg-white hover:bg-violet-50 px-4 py-2 rounded-lg border border-slate-200 hover:border-violet-200 shadow-sm">
+                <i class="fa-solid fa-arrow-left"></i> Voltar para a Simulação
+            </a>
+        </div>
+
+        <div class="mb-8 bg-white p-6 rounded-xl border border-slate-200 shadow-sm border-l-4 border-l-violet-600 relative overflow-hidden">
+            <div class="absolute right-0 top-0 opacity-5 p-4 pointer-events-none">
+                <i class="fa-solid fa-network-wired text-8xl text-violet-600"></i>
+            </div>
+            <div class="relative z-10">
+                <h2 class="text-2xl font-black text-slate-900 tracking-tight">Notas de Engenharia: Solver Estático e Topologia</h2>
+                <p class="text-slate-500 text-sm mt-1">Este documento detalha a arquitetura matemática e os algoritmos gráficos implementados no arquivo <code class="code-font bg-slate-100 px-1 rounded text-violet-600">modulo_cc_5_simulador_cc.html</code>.</p>
+            </div>
+        </div>
+
+        <div class="bg-white p-6 md:p-8 rounded-xl border border-slate-200 shadow-sm space-y-8">
+            
+            <section class="space-y-3">
+                <h3 class="text-lg font-bold text-slate-900 border-b border-slate-100 pb-2 flex items-center gap-2">
+                    <i class="fa-solid fa-matrix-api text-violet-500"></i> 1. Motor de Cálculo (Modified Nodal Analysis - MNA)
+                </h3>
+                <p class="text-sm text-slate-600 leading-relaxed">
+                    A resolução do circuito não obedece a rotinas fixas (como divisores de tensão pré-programados), mas sim a um motor de Análise Nodal Modificada. O algoritmo constrói dinamicamente a matriz de condutâncias ($A$) e o vetor de correntes/tensões conhecidas ($Z$), resolvendo o sistema linear bidimensional $A \cdot X = Z$ através da decomposição LU, utilizando a biblioteca externa <code class="code-font text-slate-800">math.js</code>.
+                </p>
+                <div class="bg-slate-950 text-violet-400 p-4 rounded-lg code-font text-xs space-y-1 shadow-inner overflow-x-auto">
+                    <p>// Alocação de componentes na Matriz de Condutância Estática</p>
+                    <p>const g = 1 / res.value;</p>
+                    <p>if (i !== -1) A[i][i] += g; // Diagonal principal</p>
+                    <p>if (j !== -1) A[j][j] += g;</p>
+                    <p>if (i !== -1 && j !== -1) { A[i][j] -= g; A[j][i] -= g; }</p>
+                </div>
+            </section>
+
+            <section class="space-y-3">
+                <h3 class="text-lg font-bold text-slate-900 border-b border-slate-100 pb-2 flex items-center gap-2">
+                    <i class="fa-solid fa-camera-retro text-blue-500"></i> 2. Câmera Virtual e Interação Espacial
+                </h3>
+                <p class="text-sm text-slate-600 leading-relaxed">
+                    A área gráfica foi modelada como um plano infinito utilizando a API nativa do HTML5 Canvas. A manipulação de visualização (Pan & Zoom) utiliza matrizes de transformação de estado em tempo real (<code class="code-font text-slate-800">translate</code> e <code class="code-font text-slate-800">scale</code>). O algoritmo de zoom calcula o deslocamento relativo do mouse para garantir que o escalonamento ocorra exatamente sob o cursor, otimizando a UX (User Experience).
+                </p>
+                <div class="bg-slate-950 text-blue-400 p-4 rounded-lg code-font text-xs space-y-1 shadow-inner overflow-x-auto">
+                    <p>// Cálculo do offset de Câmera sob o ponteiro</p>
+                    <p>const zoomDirection = e.deltaY > 0 ? -1 : 1;</p>
+                    <p>let newScale = scale * (zoomDirection > 0 ? 1.1 : 1 / 1.1);</p>
+                    <p>offsetX = mouseX - worldX * newScale;</p>
+                    <p>offsetY = mouseY - worldY * newScale;</p>
+                </div>
+            </section>
+
+            <section class="space-y-3">
+                <h3 class="text-lg font-bold text-slate-900 border-b border-slate-100 pb-2 flex items-center gap-2">
+                    <i class="fa-solid fa-route text-indigo-500"></i> 3. Algoritmo de Roteamento Ortogonal Automático
+                </h3>
+                <p class="text-sm text-slate-600 leading-relaxed">
+                    Para garantir o padrão visual esquemático de engenharia, os ramos de conexão nunca formam retas diagonais entre dois nós. O sistema calcula o perímetro de ligação entre as coordenadas de origem e destino, determinando o caminho mais curto usando dobras ortogonais ($90^{\circ}$) em formato <code class="code-font text-slate-800">|-</code> ou <code class="code-font text-slate-800">-|</code> para os fios e terminais de componentes.
+                </p>
+            </section>
+
+            <section class="space-y-3">
+                <h3 class="text-lg font-bold text-slate-900 border-b border-slate-100 pb-2 flex items-center gap-2">
+                    <i class="fa-solid fa-shield-halved text-rose-500"></i> 4. Camada de Autenticação e Exportação (TikZ/LaTeX)
+                </h3>
+                <p class="text-sm text-slate-600 leading-relaxed">
+                    O módulo de extração acadêmica traduz as coordenadas virtuais (pixels) em código <code class="code-font text-slate-800">\usepackage{circuitikz}</code> para uso no Overleaf. Por se tratar de um recurso de geração de gabarito para provas e listas de exercícios, essas funções são englobadas por um <i>Wrapper</i> de segurança, que valida as credenciais do docente via base64 de contingência (<i>Fallback</i>) ou integração direta com o <code class="code-font text-slate-800">logins.js</code>.
+                </p>
+                <div class="bg-slate-950 text-rose-400 p-4 rounded-lg code-font text-xs space-y-1 shadow-inner overflow-x-auto">
+                    <p>// Validador do Wrapper de Exportação</p>
+                    <p>if (typeof AuthProfessor !== "undefined") {</p>
+                    <p>&nbsp;&nbsp;&nbsp;&nbsp;const auth = AuthProfessor.validarDetalhado(user, pass);</p>
+                    <p>&nbsp;&nbsp;&nbsp;&nbsp;if (auth.sucesso) sessionUnlocked = true;</p>
+                    <p>} else if (btoa(user) === "cmFmYWVsLnNpbHZh" ...) {</p>
+                    <p>&nbsp;&nbsp;&nbsp;&nbsp;// Contingência base64 local</p>
+                    <p>}</p>
+                </div>
+            </section>
+
+        </div>
+    </main>
+
+    <footer class="bg-slate-900 text-slate-400 text-center py-4 text-xs border-t border-slate-800 mt-12 w-full">
+        Material de Apoio Didático — Desenvolvido para o Curso Técnico em Eletrotécnica IFRN
+    </footer>
+
+</body>
+</html>

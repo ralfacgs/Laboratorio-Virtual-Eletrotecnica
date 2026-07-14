@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Memorial Técnico - Módulo 1</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&family=Fira+Code:wght@400;500&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
+        .code-font { font-family: 'Fira Code', monospace; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
+
+    <header class="bg-emerald-700 text-white shadow-md py-4 px-6 relative z-10">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="flex items-center gap-4">
+                <div class="bg-white p-2 rounded shadow-sm text-emerald-700 font-bold text-xl flex items-center justify-center h-12 w-12">
+                    <i class="fa-solid fa-book"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold tracking-wide">INSTITUTO FEDERAL DO RIO GRANDE DO NORTE</h1>
+                    <p class="text-xs text-emerald-100 font-medium">Campus João Câmara | Curso Técnico em Eletrotécnica</p>
+                </div>
+            </div>
+            <div class="text-center md:text-right">
+                <p class="text-sm font-semibold text-emerald-50">Memorial Técnico do Módulo 1</p>
+                <p class="text-xs text-emerald-200">Prof. Rafael Cândido Gomes da Silva</p>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-grow w-full max-w-4xl mx-auto p-4 md:p-6 flex flex-col">
+        
+        <div class="mb-6">
+            <a href="modulo1_sinais_ca_basico.html" class="inline-flex items-center gap-2 text-blue-600 hover:text-blue-800 font-semibold transition-colors bg-white hover:bg-blue-50 px-4 py-2 rounded-lg border border-slate-200 hover:border-blue-200 shadow-sm">
+                <i class="fa-solid fa-arrow-left"></i> Voltar para a Simulação
+            </a>
+        </div>
+
+        <div class="mb-8 bg-white p-6 rounded-xl border border-slate-200 shadow-sm border-l-4 border-l-blue-600 relative overflow-hidden">
+            <div class="absolute right-0 top-0 opacity-5 p-4 pointer-events-none">
+                <i class="fa-solid fa-wave-square text-8xl text-blue-600"></i>
+            </div>
+            <div class="relative z-10">
+                <h2 class="text-2xl font-black text-slate-900 tracking-tight">Notas de Engenharia: Sinais CA Básicos</h2>
+                <p class="text-slate-500 text-sm mt-1">Este documento detalha a arquitetura matemática base implementada no arquivo <code class="code-font bg-slate-100 px-1 rounded text-blue-600">modulo1_sinais_ca_basico.html</code>.</p>
+            </div>
+        </div>
+
+        <div class="bg-white p-6 md:p-8 rounded-xl border border-slate-200 shadow-sm space-y-8">
+            
+            <section class="space-y-3">
+                <h3 class="text-lg font-bold text-slate-900 border-b border-slate-100 pb-2 flex items-center gap-2">
+                    <i class="fa-solid fa-square-root-variable text-blue-500"></i> 1. Modelagem da Onda Senoidal
+                </h3>
+                <p class="text-sm text-slate-600 leading-relaxed">
+                    O simulador gera uma representação vetorial em tempo real da grandeza elétrica. A equação fundamental que dita o comportamento do gráfico converte a frequência em Hz informada no painel para a velocidade angular da máquina geradora.
+                </p>
+                <div class="bg-slate-950 text-blue-400 p-4 rounded-lg code-font text-xs space-y-1 shadow-inner">
+                    <p>// Equação Base: v(t) = Vp * sin(2πft)</p>
+                    <p>const omega = 2 * Math.PI * f;</p>
+                    <p>const v_t = Vp * Math.sin(omega * tSec - phaseShift);</p>
+                </div>
+            </section>
+
+            <section class="space-y-3">
+                <h3 class="text-lg font-bold text-slate-900 border-b border-slate-100 pb-2 flex items-center gap-2">
+                    <i class="fa-solid fa-magnifying-glass-chart text-emerald-500"></i> 2. Base de Tempo Dinâmica (Zoom Time/Div)
+                </h3>
+                <p class="text-sm text-slate-600 leading-relaxed">
+                    Atuando como o seletor de "Time/Div" de um osciloscópio físico, o algoritmo permite ao usuário ajustar a escala do eixo X para exibir de 0.5 a 1.000 ciclos. A duração total da amostragem em tela é calculada em tempo real multiplicando-se a quantidade de ciclos exigida pelo Período elétrico.
+                </p>
+                <div class="bg-slate-950 text-emerald-400 p-4 rounded-lg code-font text-xs space-y-1 shadow-inner">
+                    <p>const T = 1 / f; // Período de um ciclo</p>
+                    <p>const totalDurationMs = cycles * T * 1000; // Janela total visível</p>
+                </div>
+            </section>
+
+            <section class="space-y-3">
+                <h3 class="text-lg font-bold text-slate-900 border-b border-slate-100 pb-2 flex items-center gap-2">
+                    <i class="fa-solid fa-microchip text-purple-500"></i> 3. Proteção contra Aliasing (Amostragem Inteligente)
+                </h3>
+                <p class="text-sm text-slate-600 leading-relaxed">
+                    Para garantir que a onda mantenha a curvatura perfeita independentemente do zoom aplicado, o sistema adapta a quantidade de pontos calculados (<code class="code-font text-slate-800">samples</code>). O algoritmo aloca idealmente 50 pontos matemáticos por ciclo, mas implementa um teto máximo rígido de 5.000 pontos. Essa proteção impede que varreduras extensas (ex: 1.000 ciclos) travem a memória RAM do navegador e evita o fenômeno visual de subamostragem (Aliasing).
+                </p>
+                <div class="bg-slate-950 text-purple-400 p-4 rounded-lg code-font text-xs space-y-1 shadow-inner">
+                    <p>// Limita entre 150 (mínimo de fluidez) e 5000 (teto de hardware)</p>
+                    <p>const samples = Math.min(5000, Math.max(150, Math.round(cycles * 50)));</p>
+                </div>
+            </section>
+
+            <section class="space-y-3">
+                <h3 class="text-lg font-bold text-slate-900 border-b border-slate-100 pb-2 flex items-center gap-2">
+                    <i class="fa-solid fa-fire text-amber-500"></i> 4. Referência de Tensão Eficaz (True RMS)
+                </h3>
+                <p class="text-sm text-slate-600 leading-relaxed">
+                    Para consolidar o conceito de que a Corrente Alternada possui um valor constante equivalente em dissipação térmica (efeito Joule), o gráfico injeta uma reta de referência absoluta (<span class="font-bold text-rose-600">V<sub>rms</sub></span>). O valor RMS negativo é omitido propositalmente na versão atual do sistema, demonstrando pedagogicamente aos alunos que o cálculo eficaz (Root Mean Square - Raiz Quadrada da Média dos Quadrados) origina sempre uma grandeza física estritamente positiva.
+                </p>
+            </section>
+
+            <section class="space-y-3">
+                <h3 class="text-lg font-bold text-slate-900 border-b border-slate-100 pb-2 flex items-center gap-2">
+                    <i class="fa-solid fa-hand-pointer text-cyan-500"></i> 5. Inspeção de Valores Instantâneos
+                </h3>
+                <p class="text-sm text-slate-600 leading-relaxed">
+                    Aproveitando os recursos interativos de *tooltips* com <code class="code-font text-slate-800">mode: 'dic_circuitos_eletricos'</code>, o eixo cruzado do mouse permite ao aluno inspecionar a coordenada exata em um dado milissegundo. Essa ferramenta comprova empiricamente que o valor instantâneo flutua freneticamente e cruza o zero, enquanto o valor eficaz (leitura do multímetro) se mantém como uma linha imperturbável sobre o tempo.
+                </p>
+            </section>
+
+            <section class="space-y-3">
+                <h3 class="text-lg font-bold text-slate-900 border-b border-slate-100 pb-2 flex items-center gap-2">
+                    <i class="fa-solid fa-stopwatch text-slate-500"></i> 6. Motor de Animação e Deslocamento Temporal
+                </h3>
+                <p class="text-sm text-slate-600 leading-relaxed">
+                    Para o botão "Simular Fluxo de Tempo", a ferramenta utiliza a API <code class="code-font text-slate-800">requestAnimationFrame()</code> nativa dos navegadores. Em vez de deslocar os vetores do gráfico destrutivamente, o algoritmo incrementa a constante de fase (<code class="code-font text-slate-800">phaseShift</code>) da função seno. Isso cria uma ilusão óptica contínua e perfeita do tempo passando sem degradar os dados anteriores em memória.
+                </p>
+            </section>
+
+        </div>
+    </main>
+
+    <footer class="bg-slate-900 text-slate-400 text-center py-4 text-xs border-t border-slate-800 mt-12 w-full">
+        Material de Apoio Didático — Desenvolvido para o Curso Técnico em Eletrotécnica IFRN
+    </footer>
+
+</body>
+</html>

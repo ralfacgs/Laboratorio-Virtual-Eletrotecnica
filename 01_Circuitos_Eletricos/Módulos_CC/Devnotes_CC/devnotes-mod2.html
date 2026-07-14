@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Memorial Técnico - Módulo 2</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&family=Fira+Code:wght@400;500&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
+        .code-font { font-family: 'Fira Code', monospace; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
+
+    <!-- Cabeçalho Institucional Padronizado com Tema Laranja -->
+    <header class="bg-orange-600 text-white shadow-md py-4 px-6 relative z-10">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="flex items-center gap-4">
+                <div class="bg-white p-2 rounded shadow-sm text-orange-600 font-bold text-xl flex items-center justify-center h-12 w-12">
+                    <i class="fa-solid fa-book"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold tracking-wide">INSTITUTO FEDERAL DO RIO GRANDE DO NORTE</h1>
+                    <p class="text-xs text-orange-100 font-medium">Campus João Câmara | Curso Técnico em Eletrotécnica</p>
+                </div>
+            </div>
+            <div class="text-center md:text-right">
+                <p class="text-sm font-semibold text-orange-50">Memorial Técnico do Módulo 2</p>
+                <p class="text-xs text-orange-200">Prof. Rafael Cândido Gomes da Silva</p>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-grow w-full max-w-4xl mx-auto p-4 md:p-6 flex flex-col">
+        
+        <!-- Botão de Voltar para a Simulação -->
+        <div class="mb-6">
+            <a href="modulo_cc_2_associacao_resistores.html" class="inline-flex items-center gap-2 text-orange-600 hover:text-orange-800 font-semibold transition-colors bg-white hover:bg-orange-50 px-4 py-2 rounded-lg border border-slate-200 hover:border-orange-200 shadow-sm">
+                <i class="fa-solid fa-arrow-left"></i> Voltar para a Simulação
+            </a>
+        </div>
+
+        <!-- Banner de Contexto -->
+        <div class="mb-8 bg-white p-6 rounded-xl border border-slate-200 shadow-sm border-l-4 border-l-orange-600 relative overflow-hidden">
+            <div class="absolute right-0 top-0 opacity-5 p-4 pointer-events-none">
+                <i class="fa-solid fa-network-wired text-8xl text-orange-600"></i>
+            </div>
+            <div class="relative z-10">
+                <h2 class="text-2xl font-black text-slate-900 tracking-tight">Notas de Engenharia: Associação de Resistores</h2>
+                <p class="text-slate-500 text-sm mt-1">Este documento detalha a arquitetura matemática base implementada no arquivo <code class="code-font bg-slate-100 px-1 rounded text-orange-600">modulo2_associacao_resistores.html</code>.</p>
+            </div>
+        </div>
+
+        <!-- Conteúdo Técnico -->
+        <div class="bg-white p-6 md:p-8 rounded-xl border border-slate-200 shadow-sm space-y-8">
+            
+            <section class="space-y-3">
+                <h3 class="text-lg font-bold text-slate-900 border-b border-slate-100 pb-2 flex items-center gap-2">
+                    <i class="fa-solid fa-square-root-variable text-orange-500"></i> 1. Modelagem Matemática das Associações (Lei de Ohm)
+                </h3>
+                <p class="text-sm text-slate-600 leading-relaxed">
+                    O simulador computa dinamicamente a resistência equivalente ($R_{eq}$) para as duas topologias clássicas de circuitos baseados em corrente contínua. A partir desse valor e da tensão fornecida, determina-se o fluxo de cargas do circuito por meio da Primeira Lei de Ohm.
+                </p>
+                <div class="bg-slate-950 text-orange-400 p-4 rounded-lg code-font text-xs space-y-1 shadow-inner">
+                    <p>// Topologia 1: Circuito Série (Req = R1 + R2)</p>
+                    <p>const reqSeries = r1 + r2;</p>
+                    <p>const iSeries = v / reqSeries;</p>
+                    <p class="mt-2">// Topologia 2: Circuito Paralelo (Req = (R1 * R2) / (R1 + r2))</p>
+                    <p>const reqParallel = (r1 * r2) / (r1 + r2);</p>
+                    <p>const i1 = v / r1;</p>
+                    <p>const i2 = v / r2;</p>
+                </div>
+            </section>
+
+            <section class="space-y-3">
+                <h3 class="text-lg font-bold text-slate-900 border-b border-slate-100 pb-2 flex items-center gap-2">
+                    <i class="fa-solid fa-chart-line text-blue-500"></i> 2. Divisor de Tensão Dinâmico (Malha Série)
+                </h3>
+                <p class="text-sm text-slate-600 leading-relaxed">
+                    No circuito série, a corrente é estritamente invariante ao longo de toda a malha, enquanto a diferença de potencial distribui-se de forma diretamente proporcional a cada componente ôhmico. O sistema calcula e plota essas parcelas em tempo real, validando pedagogicamente a Segunda Lei de Kirchhoff (Lei das Malhas).
+                </p>
+                <div class="bg-slate-950 text-blue-400 p-4 rounded-lg code-font text-xs space-y-1 shadow-inner">
+                    <p>// Quedas de Tensão parciais</p>
+                    <p>const v1 = r1 * iSeries;</p>
+                    <p>const v2 = r2 * iSeries;</p>
+                    <p>// Validação: v1 + v2 deve convergir perfeitamente para v_total</p>
+                </div>
+            </section>
+
+            <section class="space-y-3">
+                <h3 class="text-lg font-bold text-slate-900 border-b border-slate-100 pb-2 flex items-center gap-2">
+                    <i class="fa-solid fa-code-fork text-indigo-500"></i> 3. Conservação de Carga e Divisor de Corrente (Nós Paralelos)
+                </h3>
+                <p class="text-sm text-slate-600 leading-relaxed">
+                    Ao ativar a malha paralela, o simulador demonstra fisicamente a Primeira Lei de Kirchhoff (Lei dos Nós). A corrente principal que sai do polo positivo da bateria subdivide-se inversamente à resistência de cada ramificação. Para traduzir isso de forma visual aos alunos, o motor gráfico renderiza fluxos de elétrons independentes com velocidades parametrizadas pelas intensidades locais de corrente ($I_1$ e $I_2$).
+                </p>
+            </section>
+
+            <section class="space-y-3">
+                <h3 class="text-lg font-bold text-slate-900 border-b border-slate-100 pb-2 flex items-center gap-2">
+                    <i class="fa-solid fa-fire text-amber-500"></i> 4. Dissipação de Potência por Efeito Joule (Gradiente Térmico)
+                </h3>
+                <p class="text-sm text-slate-600 leading-relaxed">
+                    Para consolidar o entendimento prático do efeito de aquecimento ôhmico, o sistema calcula continuamente a potência elétrica convertida em energia térmica ($P = I^2 \cdot R$). Com base nesses valores, os resistores sofrem uma alteração cromática dinâmica no Canvas, mudando de cor (cinza escuro &rarr; marrom &rarr; laranja &rarr; vermelho brilhante com efeito glow) para representar graficamente o estresse de potência e dissipação térmica do componente.
+                </p>
+            </section>
+
+            <section class="space-y-3">
+                <h3 class="text-lg font-bold text-slate-900 border-b border-slate-100 pb-2 flex items-center gap-2">
+                    <i class="fa-solid fa-bolt text-cyan-500"></i> 5. Arquitetura do Motor Elétron-Cinético (Offsets Independentes)
+                </h3>
+                <p class="text-sm text-slate-600 leading-relaxed">
+                    Diferente de simulações lineares convencionais, o script utiliza variáveis de deslocamento independentes (<code class="code-font text-slate-800">animMain</code>, <code class="code-font text-slate-800">animB1</code>, e <code class="code-font text-slate-800">animB2</code>) incrementadas sob taxas proporcionais às correntes calculadas. A constante <code class="code-font text-slate-800">DOT_SPACING = 55</code> garante uma densidade enxuta, limpa e balanceada de partículas, permitindo que a divergência de velocidade e a divisão de cargas nos nós paralelos fiquem nitidamente visíveis em tela.
+                </p>
+            </section>
+
+        </div>
+    </main>
+
+    <!-- Rodapé Padrão -->
+    <footer class="bg-slate-900 text-slate-400 text-center py-4 text-xs border-t border-slate-800 mt-12 w-full">
+        Material de Apoio Didático — Desenvolvido para o Curso Técnico em Eletrotécnica IFRN
+    </footer>
+
+</body>
+</html>

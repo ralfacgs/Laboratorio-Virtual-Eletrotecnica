@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Memorial Técnico - Módulo 2</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&family=Fira+Code:wght@400;500&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
+        .code-font { font-family: 'Fira Code', monospace; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
+
+    <header class="bg-emerald-700 text-white shadow-md py-4 px-6 relative z-10">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="flex items-center gap-4">
+                <div class="bg-white p-2 rounded shadow-sm text-emerald-700 font-bold text-xl flex items-center justify-center h-12 w-12">
+                    <i class="fa-solid fa-book"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold tracking-wide">INSTITUTO FEDERAL DO RIO GRANDE DO NORTE</h1>
+                    <p class="text-xs text-emerald-100 font-medium">Campus João Câmara | Curso Técnico em Eletrotécnica</p>
+                </div>
+            </div>
+            <div class="text-center md:text-right">
+                <p class="text-sm font-semibold text-emerald-50">Memorial Técnico do Módulo 2</p>
+                <p class="text-xs text-emerald-200">Prof. Rafael Cândido Gomes da Silva</p>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-grow w-full max-w-4xl mx-auto p-4 md:p-6 flex flex-col">
+        
+        <div class="mb-6">
+            <a href="modulo2_potencia_e_defasagem.html" class="inline-flex items-center gap-2 text-emerald-600 hover:text-emerald-800 font-semibold transition-colors bg-white hover:bg-emerald-50 px-4 py-2 rounded-lg border border-slate-200 hover:border-emerald-200 shadow-sm">
+                <i class="fa-solid fa-arrow-left"></i> Voltar para a Simulação
+            </a>
+        </div>
+
+        <div class="mb-8 bg-white p-6 rounded-xl border border-slate-200 shadow-sm border-l-4 border-l-emerald-600 relative overflow-hidden">
+            <div class="absolute right-0 top-0 opacity-5 p-4 pointer-events-none">
+                <i class="fa-solid fa-bolt text-8xl text-emerald-600"></i>
+            </div>
+            <div class="relative z-10">
+                <h2 class="text-2xl font-black text-slate-900 tracking-tight">Notas de Engenharia: Módulo de Potência e Defasagem</h2>
+                <p class="text-slate-500 text-sm mt-1">Este documento detalha os modelos matemáticos e de programação implementados no arquivo <code class="code-font bg-slate-100 px-1 rounded text-emerald-600">modulo2_potencia_e_defasagem.html</code>.</p>
+            </div>
+        </div>
+
+        <div class="bg-white p-6 md:p-8 rounded-xl border border-slate-200 shadow-sm space-y-8">
+            
+            <section class="space-y-3">
+                <h3 class="text-lg font-bold text-slate-900 border-b border-slate-100 pb-2 flex items-center gap-2">
+                    <i class="fa-solid fa-chart-line text-blue-500"></i> 1. Modelagem das Equações Instantâneas
+                </h3>
+                <p class="text-sm text-slate-600 leading-relaxed">
+                    As formas de onda plotadas no osciloscópio digital seguem a modelagem matemática convencional para circuitos de Corrente Alternada. A tensão senoidal pura serve como a referência angular do sistema (0°). A corrente elétrica é modelada com base no atraso ou adiantamento provocado pela reatância da carga (φ).
+                </p>
+                <div class="bg-slate-950 text-emerald-400 p-4 rounded-lg code-font text-xs space-y-1 shadow-inner">
+                    <p>// Tensão instantânea: v(t) = Vp * sin(ωt)</p>
+                    <p>const v = Vp * Math.sin(omega * tSec - phaseShift);</p>
+                    <p class="pt-2">// Corrente instantânea defasada: i(t) = Ip * sin(ωt - φ)</p>
+                    <p>const i_val = Ip * Math.sin(omega * tSec - phiRad - phaseShift);</p>
+                </div>
+            </section>
+
+            <section class="space-y-3">
+                <h3 class="text-lg font-bold text-slate-900 border-b border-slate-100 pb-2 flex items-center gap-2">
+                    <i class="fa-solid fa-bolt text-amber-500"></i> 2. Potência Instantânea p(t) e Frequência Dupla
+                </h3>
+                <p class="text-sm text-slate-600 leading-relaxed">
+                    A curva de potência instantânea é obtida através do produto ponto a ponto dos vetores de tensão e corrente: p(t) = v(t) · i(t). Matematicamente, a expansão trigonométrica desse produto comprova o fenômeno da frequência dupla observado na tela do osciloscópio:
+                </p>
+                <div class="bg-slate-50 border border-slate-200 p-4 rounded-lg text-center text-sm font-serif italic text-slate-800">
+                    p(t) = V<sub>rms</sub> · I<sub>rms</sub> · cos(φ) - V<sub>rms</sub> · I<sub>rms</sub> · cos(2ωt - φ)
+                </div>
+                <p class="text-sm text-slate-600 leading-relaxed">
+                    A presença do termo 2ω explica pedagogicamente por que a onda de potência (cor de âmbar) oscila a 120 Hz enquanto as fontes de sinal operam em 60 Hz. Quando a curva cruza a linha de zero e entra na região negativa, o simulador evidencia a energia sendo devolvida pelos campos magnéticos/elétricos da carga de volta para a rede.
+                </p>
+            </section>
+
+            <section class="space-y-3">
+                <h3 class="text-lg font-bold text-slate-900 border-b border-slate-100 pb-2 flex items-center gap-2">
+                    <i class="fa-solid fa-triangle-exclamation text-rose-500"></i> 3. Cálculos do Triângulo de Potência
+                </h3>
+                <p class="text-sm text-slate-600 leading-relaxed">
+                    Para preencher os blocos de métricas, o script realiza a conversão dos valores de pico informados nos seletores numéricos para valores eficazes (Root Mean Square), aplicando as leis fundamentais do triângulo de potência:
+                </p>
+                <div class="bg-slate-950 text-emerald-400 p-4 rounded-lg code-font text-xs space-y-1 shadow-inner">
+                    <p>const Vrms = Vp / Math.sqrt(2);</p>
+                    <p>const Irms = Ip / Math.sqrt(2);</p>
+                    <p class="pt-2">const S = Vrms * Irms; // Potência Aparente [VA]</p>
+                    <p>const P = S * Math.cos(phiRad); // Potência Ativa [W]</p>
+                    <p>const Q = S * Math.sin(phiRad); // Potência Reativa [VAr]</p>
+                    <p>const FP = Math.cos(phiRad); // Fator de Potência</p>
+                </div>
+            </section>
+
+            <section class="space-y-3">
+                <h3 class="text-lg font-bold text-slate-900 border-b border-slate-100 pb-2 flex items-center gap-2">
+                    <i class="fa-solid fa-magnifying-glass-chart text-purple-500"></i> 4. Base de Tempo e Proteção Anti-Aliasing
+                </h3>
+                <p class="text-sm text-slate-600 leading-relaxed">
+                    O simulador incorpora um controle de zoom equivalente ao ajuste de "Time/Div" físico, permitindo a análise de 0.5 a 1.000 ciclos. Para evitar que altas frequências ou muitos ciclos descaracterizem o desenho da onda (subamostragem), foi implementado um motor de amostragem dinâmica que calcula os pontos ideais com um teto protetor de memória de 5.000 amostras simultâneas.
+                </p>
+            </section>
+
+            <section class="space-y-3">
+                <h3 class="text-lg font-bold text-slate-900 border-b border-slate-100 pb-2 flex items-center gap-2">
+                    <i class="fa-solid fa-stopwatch text-slate-500"></i> 5. Sincronismo de Fase e Animação Temporal
+                </h3>
+                <p class="text-sm text-slate-600 leading-relaxed">
+                    O fluxo de tempo (<code class="code-font text-slate-800">requestAnimationFrame</code>) foi projetado para responder fidedignamente à frequência. O incremento da variável <code class="code-font text-slate-800">phaseShift</code> foi amarrado ao parâmetro <code class="code-font text-slate-800">f</code> (frequência). Dessa forma, se o aluno dobrar a frequência de 60 Hz para 120 Hz durante a animação ativa, a velocidade de varredura visual das ondas na tela também dobrará proporcionalmente.
+                </p>
+            </section>
+
+        </div>
+    </main>
+
+    <footer class="bg-slate-900 text-slate-400 text-center py-4 text-xs border-t border-slate-800 mt-12 w-full">
+        Material de Apoio Didático — Desenvolvido para o Curso Técnico em Eletrotécnica IFRN
+    </footer>
+
+</body>
+</html>

@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diagramas Fasoriais - Lab AC Pro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&family=Fira+Code:wght@500&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
+        .timer-font { font-family: 'Fira Code', monospace; }
+        canvas { cursor: crosshair; }
+    </style>
+</head>
+<body class="text-slate-800 min-h-screen flex flex-col">
+
+    <header class="bg-amber-700 text-white shadow-md py-4 px-6 relative z-10">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="flex items-center gap-4">
+                <div class="bg-white p-2 rounded shadow-sm text-amber-700 font-bold text-xl flex items-center justify-center h-12 w-12">
+                    <i class="fa-solid fa-compass"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold tracking-wide">MÓDULO: DIAGRAMAS FASORIAIS</h1>
+                    <p class="text-xs text-amber-100 font-medium">Análise Temporal e Vetorial</p>
+                </div>
+            </div>
+            <a href="../dic_circuitos_eletricos.html" class="text-sm font-semibold text-amber-50 hover:text-white bg-amber-800 hover:bg-amber-900 px-4 py-2 rounded transition-colors">
+                <i class="fa-solid fa-house"></i> Voltar ao Portal
+            </a>
+        </div>
+    </header>
+
+    <main class="flex-grow w-full max-w-6xl mx-auto p-4 md:p-6">
+        
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            
+            <div class="lg:col-span-4 bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-6 self-start">
+                <h3 class="font-black text-slate-800 text-sm uppercase tracking-wider border-b border-slate-100 pb-2">
+                    <i class="fa-solid fa-sliders text-amber-500"></i> Parâmetros
+                </h3>
+
+                <button id="btnMode" onclick="toggleMode()" class="w-full bg-amber-600 text-white py-3 rounded-xl font-bold shadow-lg hover:bg-amber-700 transition-all flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-sync"></i> Modo: Monofásico
+                </button>
+
+                <div class="space-y-4">
+                    <div>
+                        <div class="flex justify-between items-end mb-2">
+                            <label class="block text-xs font-bold text-slate-600">Amplitude (V<sub class="text-[9px]">p</sub>):</label>
+                            <div class="text-[10px] font-bold text-slate-500 bg-slate-100 border border-slate-200 px-2 py-0.5 rounded tracking-wide">
+                                V<sub class="text-[8px]">rms</sub>: <span id="dispVrms" class="text-amber-600">70.7</span> V
+                            </div>
+                        </div>
+                        <div class="flex gap-2">
+                            <input type="range" id="rangeAmp" min="10" max="180" value="100" class="flex-grow accent-amber-600" oninput="sync('Amp', 'range')">
+                            <input type="number" id="numAmp" value="100" min="10" max="180" class="w-16 border rounded p-1 text-center font-bold text-sm" oninput="sync('Amp', 'num')">
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-xs font-bold text-slate-600 mb-2">Fase Inicial (θ°):</label>
+                        <div class="flex gap-2">
+                            <input type="range" id="rangePhase" min="-180" max="180" value="0" class="flex-grow accent-amber-600" oninput="sync('Phase', 'range')">
+                            <input type="number" id="numPhase" value="0" min="-180" max="180" class="w-16 border rounded p-1 text-center font-bold text-sm" oninput="sync('Phase', 'num')">
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <div class="flex justify-between items-end mb-2">
+                            <label class="block text-xs font-bold text-slate-600">Freq. Angular (ω):</label>
+                            <div class="text-[10px] font-bold text-slate-500 bg-slate-100 border border-slate-200 px-2 py-0.5 rounded tracking-wide">
+                                f: <span id="dispHz" class="text-amber-600">0.32</span> Hz
+                            </div>
+                        </div>
+                        <div class="flex gap-2">
+                            <input type="range" id="rangeFreq" min="0.01" max="600" value="2" step="0.1" class="flex-grow accent-amber-600" oninput="sync('Freq', 'range')">
+                            <input type="number" id="numFreq" value="2" min="0.01" max="600" step="0.1" class="w-20 border rounded p-1 text-center font-bold text-sm" oninput="sync('Freq', 'num')">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-3 gap-2">
+                    <button onclick="toggleSimulation()" id="btnSim" class="col-span-2 bg-slate-800 text-white py-4 rounded-xl font-black uppercase tracking-wider hover:bg-black transition-all shadow">
+                        Iniciar Simulação
+                    </button>
+                    <button onclick="resetSimulation()" class="col-span-1 bg-slate-200 text-slate-700 py-4 rounded-xl font-black uppercase tracking-wider hover:bg-slate-300 transition-all shadow" title="Voltar ao início (t=0)">
+                        <i class="fa-solid fa-rotate-left"></i> Reset
+                    </button>
+                </div>
+
+                <div class="mt-6 pt-6 border-t border-slate-200">
+                    <a href="soma_fasores.html" class="w-full bg-indigo-600 text-white py-4 rounded-xl font-black uppercase tracking-wider hover:bg-indigo-700 transition-all shadow-md flex items-center justify-center gap-3">
+                        <i class="fa-solid fa-vector-square text-lg"></i> Somar Fasores
+                    </a>
+                    <p class="text-[10px] text-slate-400 text-center mt-2 font-medium">Ir para o laboratório de adição vetorial</p>
+                </div>
+            </div>
+
+            <div class="lg:col-span-8 space-y-4">
+                
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                    <canvas id="canvas" width="800" height="400" class="w-full"></canvas>
+                </div>
+                
+                <div id="legend" class="flex justify-center gap-6 bg-white p-3 rounded-xl border border-slate-200 shadow-sm">
+                    <div class="flex items-center gap-2 text-xs font-bold"><span class="w-4 h-4 bg-[#059669] rounded-sm"></span> Fase A</div>
+                    <div id="legB" class="hidden items-center gap-2 text-xs font-bold"><span class="w-4 h-4 bg-[#d97706] rounded-sm"></span> Fase B</div>
+                    <div id="legC" class="hidden items-center gap-2 text-xs font-bold"><span class="w-4 h-4 bg-[#be185d] rounded-sm"></span> Fase C</div>
+                </div>
+
+                <div id="equationBox" class="bg-slate-50 p-5 rounded-xl border border-slate-200 shadow-sm font-mono text-sm sm:text-base flex flex-col items-center justify-center gap-2">
+                </div>
+                
+            </div>
+            
+        </div> 
+
+        <div class="mt-8 bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col sm:flex-row justify-between items-center gap-4">
+            <div class="flex items-center gap-3">
+                <div class="bg-amber-50 p-2 rounded-lg flex-shrink-0">
+                    <i class="fa-solid fa-book text-amber-600 text-lg"></i>
+                </div>
+                <div>
+                    <h4 class="text-sm font-bold text-slate-800">Memorial Técnico do Módulo</h4>
+                    <p class="text-xs text-slate-500">Consulte as notas de engenharia e os modelos matemáticos deste simulador.</p>
+                </div>
+            </div>
+            <a href="devnotes_modulo3.html" class="whitespace-nowrap inline-flex items-center gap-2 text-xs text-amber-700 hover:text-white font-bold transition-colors py-2.5 px-4 bg-amber-50 hover:bg-amber-600 rounded-lg border border-amber-200 hover:border-amber-600">
+                Acessar Dev Notes <i class="fa-solid fa-arrow-right"></i>
+            </a>
+        </div>
+
+    </main>
+
+    <footer class="bg-slate-900 text-slate-400 text-center py-4 text-xs border-t border-slate-800 mt-auto w-full">
+        Material de Apoio Didático — Desenvolvido para o Curso Técnico em Eletrotécnica IFRN
+    </footer>
+
+    <script>
+        let isThreePhase = false;
+        let isRunning = false;
+        let t = 0; 
+        let isDragging = false;
+
+        const canvas = document.getElementById('canvas');
+        const cx = 150, cy = 200; 
+
+        // Interação com o Mouse
+        canvas.addEventListener('mousedown', () => isDragging = true);
+        window.addEventListener('mouseup', () => isDragging = false);
+        canvas.addEventListener('mousemove', (e) => {
+            if (isDragging) {
+                const rect = canvas.getBoundingClientRect();
+                const scaleX = canvas.width / rect.width;
+                const scaleY = canvas.height / rect.height;
+                
+                const x = (e.clientX - rect.left) * scaleX - cx;
+                const y = (e.clientY - rect.top) * scaleY - cy;
+                
+                let angle = Math.atan2(-y, x) * (180/Math.PI);
+                
+                document.getElementById('numPhase').value = Math.round(angle);
+                document.getElementById('rangePhase').value = Math.round(angle);
+                drawStatic();
+            }
+        });
+
+        function toggleMode() {
+            isThreePhase = !isThreePhase;
+            document.getElementById('btnMode').innerHTML = isThreePhase ? '<i class="fa-solid fa-sync"></i> Modo: Trifásico' : '<i class="fa-solid fa-sync"></i> Modo: Monofásico';
+            document.getElementById('legB').style.display = isThreePhase ? "flex" : "none";
+            document.getElementById('legC').style.display = isThreePhase ? "flex" : "none";
+            drawStatic();
+        }
+
+        function sync(type, source) {
+            const range = document.getElementById('range' + type);
+            const num = document.getElementById('num' + type);
+            if (source === 'range') { num.value = range.value; } 
+            else { range.value = num.value; }
+            drawStatic();
+        }
+
+        function toggleSimulation() {
+            isRunning = !isRunning;
+            document.getElementById('btnSim').innerText = isRunning ? "Parar Simulação" : "Iniciar Simulação";
+            if(isRunning) animate();
+        }
+
+        function resetSimulation() {
+            t = 0; 
+            drawStatic();
+        }
+
+        function animate() {
+            if(!isRunning) return;
+            t += 0.05; 
+            draw();
+            requestAnimationFrame(animate);
+        }
+
+        function drawStatic() { 
+            if(!isRunning) draw(); 
+        }
+
+        function drawArrow(ctx, fromx, fromy, tox, toy, color) {
+            const headlen = 10;
+            const angle = Math.atan2(toy - fromy, tox - fromx);
+            ctx.strokeStyle = color; ctx.fillStyle = color; ctx.lineWidth = 4;
+            
+            ctx.beginPath(); ctx.moveTo(fromx, fromy); ctx.lineTo(tox, toy); ctx.stroke();
+            
+            ctx.beginPath(); ctx.moveTo(tox, toy);
+            ctx.lineTo(tox - headlen * Math.cos(angle - Math.PI/6), toy - headlen * Math.sin(angle - Math.PI/6));
+            ctx.lineTo(tox - headlen * Math.cos(angle + Math.PI/6), toy - headlen * Math.sin(angle + Math.PI/6));
+            ctx.lineTo(tox, toy); ctx.fill();
+        }
+
+        function formatPhase(p) {
+            let norm = p % 360;
+            if (norm > 180) norm -= 360;
+            if (norm <= -180) norm += 360;
+            if (Math.round(norm) === 0) return "+ 0";
+            return norm > 0 ? `+ ${norm.toFixed(1)}` : `- ${Math.abs(norm).toFixed(1)}`;
+        }
+
+        function draw() {
+            const ctx = canvas.getContext('2d');
+            const amp = parseFloat(document.getElementById('numAmp').value);
+            const phaseInput = parseFloat(document.getElementById('numPhase').value);
+            const phase0 = phaseInput * (Math.PI/180);
+            const freq = parseFloat(document.getElementById('numFreq').value);
+            
+            // Atualizar valores de Vrms e Hertz dinamicamente na UI
+            document.getElementById('dispVrms').innerText = (amp / Math.SQRT2).toFixed(1);
+            document.getElementById('dispHz').innerText = (freq / (2 * Math.PI)).toFixed(2);
+
+            ctx.clearRect(0, 0, 800, 400);
+
+            const scale = 120 / Math.max(amp, 1); 
+
+            // Círculo base e Eixos (Cruz central)
+            ctx.strokeStyle = '#cbd5e1'; ctx.lineWidth = 1; 
+            ctx.beginPath(); ctx.arc(cx, cy, amp * scale, 0, Math.PI*2); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(cx-140, cy); ctx.lineTo(cx+140, cy); ctx.moveTo(cx, cy-140); ctx.lineTo(cx, cy+140); ctx.stroke();
+            
+            let phases = isThreePhase ? [0, -120, -240] : [0];
+            let colors = ['#059669', '#d97706', '#be185d'];
+            let phaseNames = ['A', 'B', 'C'];
+            
+            let mathHTML = '';
+            const ampStr = amp.toFixed(1);
+            const freqStr = freq.toFixed(1);
+
+            phases.forEach((offset, i) => {
+                const angle = phase0 + (freq * t) + (offset * Math.PI/180);
+                const x = cx + amp * scale * Math.cos(angle);
+                const y = cy - amp * scale * Math.sin(angle);
+                
+                // Desenha o Vetor
+                drawArrow(ctx, cx, cy, x, y, colors[i]);
+
+                // Projeções Seno/Cosseno no Eixo Cartesiano (apenas no modo monofásico)
+                if(!isThreePhase) {
+                    ctx.setLineDash([5, 5]); ctx.strokeStyle = '#94a3b8'; ctx.lineWidth = 1;
+                    ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x, cy); ctx.stroke(); 
+                    ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(cx, y); ctx.stroke(); 
+                    ctx.setLineDash([]);
+                }
+
+                // Linha pontilhada de projeção do fasor para a senoide
+                ctx.strokeStyle = colors[i] + '40'; ctx.setLineDash([5, 5]);
+                ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(350, y); ctx.stroke(); ctx.setLineDash([]);
+
+                // Plotagem da Senoide
+                ctx.beginPath(); ctx.strokeStyle = colors[i]; ctx.lineWidth = 2;
+                for(let x_plot = 350; x_plot < 800; x_plot++) {
+                    const time = (x_plot - 350) * 0.02; 
+                    const val = amp * scale * Math.sin(phase0 + (freq * t) + (offset * Math.PI/180) + time);
+                    ctx.lineTo(x_plot, 200 - val); 
+                }
+                ctx.stroke();
+
+                // Matemática Dinâmica
+                const instVal = (amp * Math.sin(angle)).toFixed(1);
+                const phaseStr = formatPhase(phaseInput + offset);
+                
+                // 1. Polar
+                let polarAngle = (angle * 180 / Math.PI) % 360;
+                if (polarAngle > 180) polarAngle -= 360;
+                if (polarAngle <= -180) polarAngle += 360;
+
+                // 2. Retangular
+                const realPart = (amp * Math.cos(angle)).toFixed(1);
+                const imagPart = (amp * Math.sin(angle)).toFixed(1);
+                const sign = imagPart >= 0 ? '+' : '-';
+                const rectStr = `${realPart} ${sign} ${Math.abs(imagPart).toFixed(1)}j`;
+
+                const nameTag = isThreePhase ? `<sub>${phaseNames[i]}</sub>` : '';
+
+                mathHTML += `
+                <div class="text-[${colors[i]}] w-full max-w-2xl flex flex-col py-3 border-b border-slate-200/60 last:border-0 last:pb-0">
+                    <div class="flex justify-between font-bold tracking-wide text-base">
+                        <span>v${nameTag}(t) = ${ampStr} · sin(${freqStr}t ${phaseStr}°)</span> 
+                        <span>= <span class="inline-block w-24 text-right">${instVal} V</span></span>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4 font-medium text-sm tracking-wide mt-2 opacity-80">
+                        <div><span class="text-slate-500 text-xs uppercase mr-1">Polar:</span> V${nameTag} = ${ampStr} ∠ ${polarAngle.toFixed(1)}°</div>
+                        <div class="text-right"><span class="text-slate-500 text-xs uppercase mr-1">Retangular:</span> V${nameTag} = ${rectStr}</div>
+                    </div>
+                </div>`;
+            });
+
+            document.getElementById('equationBox').innerHTML = mathHTML;
+        }
+        
+        window.onload = draw;
+    </script>
+</body>
+</html>

@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Utilitários - Conversor Booleano</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        
+        .wire-unpowered { background-color: black; }
+        
+        /* CORREÇÃO DO Z-INDEX: Traz a linha vertical para a primeira camada (frente) */
+        .v-wire { position: absolute; left: -2px; top: 50%; width: 4px; height: 5rem; background-color: black; z-index: 30; border-radius: 2px; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
+
+    <header class="bg-slate-800 text-white shadow-md py-4 px-6 relative z-10">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="flex items-center gap-4">
+                <div class="bg-white p-2 rounded shadow-sm text-slate-800 font-bold text-xl flex items-center justify-center h-12 w-12">
+                    <i class="fa-solid fa-calculator"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold tracking-wide">Ferramentas de Suporte</h1>
+                    <p class="text-xs text-slate-300 font-medium">Conversor de Lógica Booleana para LADDER</p>
+                </div>
+            </div>
+            <a href="../dic_automacao_clp.html" class="text-sm font-semibold text-slate-300 hover:text-white bg-slate-700 hover:bg-slate-600 px-4 py-2 rounded transition-colors border border-slate-600">
+                <i class="fa-solid fa-arrow-left mr-2"></i> Voltar ao Hub
+            </a>
+        </div>
+    </header>
+
+    <main class="flex-grow max-w-7xl w-full mx-auto p-4 flex flex-col lg:flex-row gap-6 mt-4">
+        
+        <aside class="w-full lg:w-96 flex flex-col gap-6">
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 space-y-4">
+                <h3 class="font-bold text-slate-700 border-b pb-2 flex items-center gap-2">
+                    <i class="fa-solid fa-keyboard text-emerald-600"></i>Entrada de Dados
+                </h3>
+                
+                <div>
+                    <label class="text-xs font-black text-slate-500 block mb-1">Expressão Booleana:</label>
+                    <input type="text" id="boolean-input" class="w-full border-2 border-slate-300 rounded-lg px-4 py-2 font-mono font-bold text-lg text-slate-700 focus:outline-none focus:border-emerald-500 uppercase" placeholder="I1.I2 + I3" autocomplete="off">
+                </div>
+
+                <div>
+                    <span class="text-[11px] font-bold text-slate-400 block mb-2">Injetar Operadores e Variáveis:</span>
+                    <div class="grid grid-cols-4 gap-2">
+                        <button onclick="inject('I1')" class="bg-slate-100 hover:bg-slate-200 font-mono font-bold p-2 rounded border text-sm">I1</button>
+                        <button onclick="inject('I2')" class="bg-slate-100 hover:bg-slate-200 font-mono font-bold p-2 rounded border text-sm">I2</button>
+                        <button onclick="inject('I3')" class="bg-slate-100 hover:bg-slate-200 font-mono font-bold p-2 rounded border text-sm">I3</button>
+                        <button onclick="inject('I4')" class="bg-slate-100 hover:bg-slate-200 font-mono font-bold p-2 rounded border text-sm">I4</button>
+                        
+                        <button onclick="inject('.')" class="bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-mono font-black p-2 rounded border text-sm" title="E lógico (Série)">.</button>
+                        <button onclick="inject(' + ')" class="bg-amber-50 hover:bg-amber-100 text-amber-700 font-mono font-black p-2 rounded border text-sm" title="OU lógico (Paralelo)">+</button>
+                        <button onclick="inject('/')" class="bg-rose-50 hover:bg-rose-100 text-rose-700 font-mono font-black p-2 rounded border text-sm" title="NÃO lógico (Contato NF)">/</button>
+                        <button onclick="clearInput()" class="bg-slate-200 hover:bg-slate-300 text-slate-600 font-bold p-2 rounded border text-xs uppercase">Limpar</button>
+                    </div>
+                </div>
+
+                <button onclick="processExpression()" class="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-black tracking-wide transition-all shadow-md shadow-emerald-600/20 uppercase text-sm">
+                    <i class="fa-solid fa-wand-magic-sparkles mr-2"></i> Gerar Diagrama LADDER
+                </button>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 text-xs text-slate-500 space-y-2">
+                <h4 class="font-bold text-slate-700 uppercase flex items-center gap-1"><i class="fa-solid fa-circle-info text-blue-500"></i> Regras de Sintaxe</h4>
+                <p class="text-justify">Para garantir a correta interpretação da malha elétrica, utilize o formato padrão de Soma de Produtos:</p>
+                <ul class="list-disc list-inside space-y-1 font-medium text-slate-600 bg-slate-50 p-2.5 rounded border">
+                    <li><code class="text-emerald-600 font-bold">I1.I2</code> : Contatos em Série (AND)</li>
+                    <li><code class="text-amber-600 font-bold">I1 + I2</code> : Ramos em Paralelo (OR)</li>
+                    <li><code class="text-rose-600 font-bold">/I1</code> : Contato NF (NOT)</li>
+                </ul>
+                <p class="text-[11px] italic pt-1">Exemplo complexo: <span class="font-mono font-bold text-slate-700">I1.I2 + /I3</span></p>
+            </div>
+        </aside>
+
+        <section class="flex-grow bg-white rounded-xl shadow-sm border border-slate-200 p-6 flex flex-col">
+            <h3 class="font-bold text-slate-800 text-xl mb-6"><i class="fa-solid fa-diagram-project text-emerald-500 mr-2"></i> Mapeamento Elétrico Equivalente</h3>
+            
+            <div class="flex-grow bg-slate-50 border border-slate-200 rounded-lg p-4 overflow-x-auto relative min-h-[350px] flex flex-col justify-center">
+                <div class="absolute left-4 top-4 bottom-4 w-1 bg-rose-500 rounded"></div>
+                <div class="absolute right-16 top-4 bottom-4 w-1 bg-blue-500 rounded"></div>
+
+                <div class="ml-4 mr-16 flex flex-col gap-0 relative z-10" id="output-ladder-grid">
+                    <div class="text-center text-slate-400 text-sm italic py-8">Aguardando inserção de expressão lógica...</div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-slate-900 text-slate-400 text-center py-4 text-xs border-t border-slate-800 mt-auto">
+        Portal de Laboratórios Virtuais — Centro de Ferramentas e Utilitários Didáticos
+    </footer>
+
+    <script>
+        const COLS = 5;
+        const gridContainer = document.getElementById('output-ladder-grid');
+        const inputEl = document.getElementById('boolean-input');
+
+        function inject(val) {
+            inputEl.value += val;
+            inputEl.focus();
+        }
+
+        function clearInput() {
+            inputEl.value = '';
+            gridContainer.innerHTML = '<div class="text-center text-slate-400 text-sm italic py-8">Aguardando inserção de expressão lógica...</div>';
+        }
+
+        function processExpression() {
+            const rawExpr = inputEl.value.trim().toUpperCase();
+            if(!rawExpr) return alert("Por favor, digite ou monte uma expressão lógica primeiro.");
+
+            const branches = rawExpr.split('+').map(b => b.trim()).filter(b => b !== '');
+            if(branches.length === 0) return;
+
+            gridContainer.innerHTML = '';
+            
+            let maxSeriesLen = 0;
+            const parsedBranches = branches.map(branch => {
+                const elements = branch.split('.').map(e => e.trim()).filter(e => e !== '');
+                if(elements.length > maxSeriesLen) maxSeriesLen = elements.length;
+                return elements;
+            });
+
+            if(maxSeriesLen > COLS - 1) {
+                alert("A expressão possui muitos elementos em série para a largura da grelha (Máx: 4 contatos).");
+                return;
+            }
+
+            for (let r = 0; r < parsedBranches.length; r++) {
+                const elements = parsedBranches[r];
+                const rowData = Array(COLS).fill().map(() => ({ type: 'EMPTY', varName: '', vWire: false }));
+                
+                for(let c = 0; c < elements.length; c++) {
+                    let token = elements[c];
+                    if (token.startsWith('/')) {
+                        rowData[c] = { type: 'NF', varName: token.replace('/', '') };
+                    } else {
+                        rowData[c] = { type: 'NA', varName: token };
+                    }
+                }
+
+                for(let c = elements.length; c < maxSeriesLen; c++) {
+                    rowData[c] = { type: 'WIRE', varName: '' };
+                }
+
+                if (r === 0) {
+                    for(let c = maxSeriesLen; c < COLS - 1; c++) {
+                        rowData[c] = { type: 'WIRE', varName: '' };
+                    }
+                    rowData[COLS - 1] = { type: 'COIL', varName: 'Q1' };
+                } else {
+                    for(let c = maxSeriesLen; c < COLS; c++) {
+                        rowData[c] = { type: 'EMPTY', varName: '' };
+                    }
+                }
+
+                if (r < parsedBranches.length - 1) {
+                    rowData[maxSeriesLen].vWire = true;
+                }
+
+                renderGeneratedRow(r, rowData, parsedBranches.length, maxSeriesLen);
+            }
+        }
+
+        function renderGeneratedRow(rowIndex, rowData, totalRows, maxSeriesLen) {
+            const rowDiv = document.createElement('div');
+            rowDiv.className = 'flex items-center gap-0 h-20 relative before:content-[""] before:absolute before:left-0 before:-ml-4 before:w-4 before:h-1 before:bg-rose-500';
+            
+            for (let c = 0; c < COLS; c++) {
+                const cellData = rowData[c];
+                const isLast = c === COLS - 1;
+                
+                const cell = document.createElement('div');
+                cell.className = `flex-1 h-full relative border-y-2 border-r-2 ${c===0?'border-l-2':''} border-solid border-slate-200 bg-white flex flex-col items-center justify-center`;
+                
+                let innerContent = '';
+                let tagContent = '';
+                
+                let tagColor = 'bg-blue-50 border-blue-200 text-blue-800';
+                if (cellData.varName.startsWith('I')) tagColor = 'bg-emerald-50 border-emerald-200 text-emerald-800';
+
+                if (cellData.type === 'NA') {
+                    innerContent = `
+                    <div class="flex items-center justify-center w-full h-full pointer-events-none">
+                        <div class="h-1 bg-black flex-grow"></div>
+                        <div class="h-8 w-1 bg-black flex-shrink-0 rounded-full"></div><div class="w-4 flex-shrink-0"></div><div class="h-8 w-1 bg-black flex-shrink-0 rounded-full"></div>
+                        <div class="h-1 bg-black flex-grow"></div>
+                    </div>`;
+                    tagContent = `<div class="absolute top-0 left-1/2 -translate-x-1/2 ${tagColor} border px-2 py-0.5 rounded text-[10px] font-bold shadow-sm select-none">${cellData.varName}</div>`;
+                } 
+                else if (cellData.type === 'NF') {
+                    innerContent = `
+                    <div class="flex items-center justify-center w-full h-full pointer-events-none">
+                        <div class="h-1 bg-black flex-grow"></div>
+                        <div class="h-8 w-1 bg-black flex-shrink-0 rounded-full"></div>
+                        <div class="w-4 flex-shrink-0 relative"><div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-10 w-1 bg-black rotate-[45deg] rounded-full"></div></div>
+                        <div class="h-8 w-1 bg-black flex-shrink-0 rounded-full"></div>
+                        <div class="h-1 bg-black flex-grow"></div>
+                    </div>`;
+                    tagContent = `<div class="absolute top-0 left-1/2 -translate-x-1/2 ${tagColor} border px-2 py-0.5 rounded text-[10px] font-bold shadow-sm select-none">${cellData.varName}</div>`;
+                } 
+                else if (cellData.type === 'WIRE') {
+                    innerContent = `<div class="flex items-center justify-center w-full h-full pointer-events-none"><div class="h-1 bg-black w-full"></div></div>`;
+                } 
+                else if (cellData.type === 'COIL') {
+                    innerContent = `
+                    <div class="flex items-center justify-center w-full h-full pointer-events-none">
+                        <div class="h-1 bg-black flex-grow"></div>
+                        <div class="h-8 w-8 rounded-full border-4 border-black flex items-center justify-center font-black text-xs bg-white flex-shrink-0 z-10">Q</div>
+                        <div class="h-1 bg-black flex-grow"></div>
+                    </div>`;
+                    tagContent = `<div class="absolute top-0 left-1/2 -translate-x-1/2 ${tagColor} border px-2 py-0.5 rounded text-[10px] font-bold shadow-sm select-none">${cellData.varName}</div>`;
+                }
+
+                cell.innerHTML = innerContent + tagContent;
+
+                if (cellData.vWire && rowIndex < totalRows - 1) {
+                    const vWireEl = document.createElement('div');
+                    vWireEl.className = 'v-wire';
+                    vWireEl.style.height = '5rem'; 
+                    cell.appendChild(vWireEl);
+                }
+
+                rowDiv.appendChild(cell);
+
+                if (!isLast) {
+                    const connector = document.createElement('div');
+                    connector.className = 'w-4 h-1 bg-black';
+                    rowDiv.appendChild(connector);
+                }
+            }
+            gridContainer.appendChild(rowDiv);
+        }
+
+        document.getElementById('boolean-input').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') processExpression();
+        });
+    </script>
+</body>
+</html>

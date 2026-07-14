@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestão de Usuários - Área Master</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script src="../../logins.js"></script> 
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&family=Fira+Code:wght@400;500&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
+        .math-font { font-family: 'Fira Code', monospace; }
+    </style>
+</head>
+<body class="text-slate-800 min-h-screen flex flex-col">
+
+    <header class="bg-rose-700 text-white shadow-md py-4 px-6 compact relative z-10">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="flex items-center gap-4">
+                <div class="bg-white p-2 rounded shadow-sm text-rose-700 font-bold text-xl flex items-center justify-center h-12 w-12">
+                    <i class="fa-solid fa-user-shield"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold tracking-wide">CONFIGURAÇÕES DE SEGURANÇA</h1>
+                    <p class="text-xs text-rose-100 font-medium">Cadastro de Monitores e Professores Parceiros</p>
+                </div>
+            </div>
+            <a href="../dic_circuitos_eletricos.html" class="text-sm font-semibold text-rose-50 hover:text-white bg-rose-800 hover:bg-rose-900 px-4 py-2 rounded transition-colors">
+                <i class="fa-solid fa-arrow-left"></i> Voltar ao Portal
+            </a>
+        </div>
+    </header>
+
+    <main class="flex-grow w-full max-w-3xl mx-auto p-4 md:p-6 flex flex-col items-center justify-center">
+
+        <div id="screen-login" class="w-full max-w-md bg-white p-8 rounded-2xl shadow-lg border border-slate-200">
+            <div class="text-center mb-6">
+                <i class="fa-solid fa-shield-halved text-4xl text-rose-500 mb-3"></i>
+                <h2 class="text-2xl font-black text-slate-800">Admin Master</h2>
+                <p class="text-sm text-slate-500">Apenas o administrador do sistema pode gerar novas chaves.</p>
+            </div>
+            
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-600 mb-1">Usuário Master</label>
+                    <input type="text" id="adminUser" class="w-full border border-slate-300 px-4 py-2 rounded-lg focus:outline-none focus:border-rose-500 focus:ring-1 focus:ring-rose-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-600 mb-1">Senha Master</label>
+                    <input type="password" id="adminPass" class="w-full border border-slate-300 px-4 py-2 rounded-lg focus:outline-none focus:border-rose-500 focus:ring-1 focus:ring-rose-500" onkeypress="if(event.key === 'Enter') checkAdminLogin()">
+                </div>
+                
+                <div id="login-error" class="hidden text-xs text-rose-500 font-bold text-center bg-rose-50 p-2 rounded border border-rose-200">Acesso negado. Credenciais Master inválidas.</div>
+                
+                <button onclick="checkAdminLogin()" class="w-full bg-rose-600 hover:bg-rose-700 text-white font-bold py-3 rounded-lg shadow transition-colors mt-2">
+                    Validar Acesso
+                </button>
+            </div>
+        </div>
+
+        <div id="screen-register" class="hidden w-full bg-white p-8 rounded-2xl shadow-lg border border-slate-200 border-t-4 border-t-rose-600">
+            
+            <div class="flex items-center gap-3 mb-6 border-b border-slate-100 pb-4">
+                <i class="fa-solid fa-user-plus text-2xl text-slate-400"></i>
+                <div>
+                    <h2 class="text-xl font-black text-slate-800">Cadastrar Novo Usuário</h2>
+                    <p class="text-xs text-slate-500">Os dados serão ofuscados e embutidos no arquivo do sistema.</p>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-600 mb-1">Novo Usuário (Login):</label>
+                        <input type="text" id="newUser" placeholder="Ex: joao.monitor" class="w-full border-2 border-slate-200 px-4 py-2 rounded-lg focus:outline-none focus:border-rose-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-600 mb-1">Definir Senha:</label>
+                        <input type="password" id="newPass1" class="w-full border-2 border-slate-200 px-4 py-2 rounded-lg focus:outline-none focus:border-rose-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-600 mb-1">Confirme a Senha:</label>
+                        <input type="password" id="newPass2" class="w-full border-2 border-slate-200 px-4 py-2 rounded-lg focus:outline-none focus:border-rose-500">
+                    </div>
+
+                    <div id="reg-error" class="hidden text-xs text-rose-500 font-bold bg-rose-50 p-2 rounded border border-rose-200">As senhas não coincidem.</div>
+
+                    <button onclick="generateNewFile()" class="w-full bg-slate-800 hover:bg-slate-900 text-white font-bold py-3.5 rounded-xl shadow transition-colors flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-microchip"></i> Gerar Credenciais
+                    </button>
+                </div>
+
+                <div class="bg-slate-50 p-5 rounded-xl border border-slate-200 flex flex-col items-center justify-center text-center">
+                    
+                    <div id="wait-state" class="text-slate-400">
+                        <i class="fa-solid fa-file-code text-4xl mb-3"></i>
+                        <p class="text-sm font-semibold">Preencha os dados ao lado para gerar o novo arquivo de autenticação.</p>
+                    </div>
+
+                    <div id="ready-state" class="hidden w-full flex flex-col items-center">
+                        <div class="bg-emerald-100 text-emerald-700 w-12 h-12 rounded-full flex items-center justify-center text-xl mb-3">
+                            <i class="fa-solid fa-check"></i>
+                        </div>
+                        <h3 class="font-black text-slate-800 mb-1">Arquivo Gerado!</h3>
+                        <p class="text-xs text-slate-500 mb-5">O novo arquivo já contém as suas credenciais e as do novo colega.</p>
+                        
+                        <a id="btnDownload" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black py-3 rounded-lg shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer">
+                            <i class="fa-solid fa-download"></i> Baixar novo logins.js
+                        </a>
+
+                        <div class="mt-4 text-[10px] text-slate-400 text-left bg-white p-3 border rounded shadow-inner w-full">
+                            <p class="font-bold text-rose-600 mb-1">O que fazer agora?</p>
+                            <p>1. Clique no botão acima para baixar o arquivo.</p>
+                            <p>2. Mova o arquivo baixado para a sua pasta principal do laboratório, substituindo o antigo.</p>
+                            <p>3. Faça o upload no GitHub.</p>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+
+    </main>
+
+    <footer class="bg-slate-900 text-slate-400 text-center py-4 text-xs border-t border-slate-800 mt-auto w-full">
+        Material de Apoio Didático — Desenvolvido para o Curso Técnico em Eletrotécnica IFRN
+    </footer>
+
+    <script>
+        // Chave cravada (Hardcoded) de Admin.
+        // Mesmo que no logins.js você adicione outros professores, 
+        // SOMENTE a chave exata de 'rafael.silva' abre este painel.
+        const HASH_ADMIN_USER = "hZHbpNnLsVWYmFmc";
+        const HASH_ADMIN_PASS = "jpmbyZWa";
+
+        function checkAdminLogin() {
+            const u = document.getElementById('adminUser').value;
+            const p = document.getElementById('adminPass').value;
+            
+            // Reutiliza a função de ofuscação do nosso logins.js para testar
+            if(AuthProfessor.codificar(u) === HASH_ADMIN_USER && AuthProfessor.codificar(p) === HASH_ADMIN_PASS) {
+                document.getElementById('screen-login').classList.add('hidden');
+                document.getElementById('screen-register').classList.remove('hidden');
+            } else {
+                document.getElementById('login-error').classList.remove('hidden');
+            }
+        }
+
+        function generateNewFile() {
+            const newUser = document.getElementById('newUser').value.trim();
+            const pass1 = document.getElementById('newPass1').value;
+            const pass2 = document.getElementById('newPass2').value;
+            const errorDiv = document.getElementById('reg-error');
+
+            if(newUser === '' || pass1 === '') {
+                errorDiv.innerText = "Preencha todos os campos.";
+                errorDiv.classList.remove('hidden');
+                return;
+            }
+
+            if(pass1 !== pass2) {
+                errorDiv.innerText = "As senhas digitadas não coincidem.";
+                errorDiv.classList.remove('hidden');
+                return;
+            }
+
+            errorDiv.classList.add('hidden');
+
+            // 1. Gera o hash para as novas credenciais
+            const newUserHash = AuthProfessor.codificar(newUser);
+            const newPassHash = AuthProfessor.codificar(pass1);
+
+            // 2. Monta o bloco de usuários antigos (lendo direto da memória do AuthProfessor)
+            let usuariosExistentesCode = AuthProfessor.usuarios.map(u => `        { user: "${u.user}", pass: "${u.pass}" }`).join(',\n');
+            
+            // 3. Acrescenta o novo usuário no bloco
+            usuariosExistentesCode += `,\n        { user: "${newUserHash}", pass: "${newPassHash}" }`;
+
+            // 4. Monta o texto completo do arquivo logins.js como uma grande string
+            const novoArquivoJS = `// Arquivo: logins.js
+// Módulo de Autenticação Centralizado do Lab AC Pro
+
+const AuthProfessor = {
+    // 1. Função que ofusca o que foi digitado (Base64 + Inversão)
+    codificar: function(texto) {
+        return btoa(encodeURIComponent(texto)).split('').reverse().join('');
+    },
+
+    // 2. Banco de dados de usuários autorizados
+    usuarios: [
+${usuariosExistentesCode}
+    ],
+
+    // 3. Função antiga mantida por compatibilidade
+    validar: function(usuarioDigitado, senhaDigitada) {
+        return this.validarDetalhado(usuarioDigitado, senhaDigitada).sucesso;
+    },
+
+    // 4. Nova função com mensagens de erro detalhadas
+    validarDetalhado: function(usuarioDigitado, senhaDigitada) {
+        const userOfuscado = this.codificar(usuarioDigitado);
+        const passOfuscada = this.codificar(senhaDigitada);
+        
+        const usuarioEncontrado = this.usuarios.find(c => c.user === userOfuscado);
+        
+        if (!usuarioEncontrado) {
+            return { sucesso: false, erro: "Usuário não encontrado no banco de dados." };
+        }
+        
+        if (usuarioEncontrado.pass !== passOfuscada) {
+            return { sucesso: false, erro: "Senha incorreta." };
+        }
+        
+        return { sucesso: true, erro: "" };
+    }
+};`;
+
+            // 5. Transforma essa string em um arquivo físico para download (Blob)
+            const blob = new Blob([novoArquivoJS], { type: "text/javascript" });
+            const url = URL.createObjectURL(blob);
+            
+            // 6. Configura o botão de download
+            const btnDownload = document.getElementById('btnDownload');
+            btnDownload.href = url;
+            btnDownload.download = "logins.js"; // O nome do arquivo que será salvo
+
+            // 7. Troca a interface para mostrar o botão verde
+            document.getElementById('wait-state').classList.add('hidden');
+            document.getElementById('ready-state').classList.remove('hidden');
+            
+            // Limpa os campos por segurança
+            document.getElementById('newUser').value = '';
+            document.getElementById('newPass1').value = '';
+            document.getElementById('newPass2').value = '';
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leis de Kirchhoff - Lab AC Pro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&family=Fira+Code:wght@500&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
+        .timer-font { font-family: 'Fira Code', monospace; }
+        canvas { cursor: crosshair; }
+        .disabled-param { opacity: 0.4; pointer-events: none; }
+        .hidden-param { display: none !important; }
+    </style>
+</head>
+<body class="text-slate-800 min-h-screen flex flex-col">
+
+    <header class="bg-teal-600 text-white shadow-md py-4 px-6 relative z-10">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="flex items-center gap-4">
+                <div class="bg-white p-2 rounded shadow-sm text-teal-600 font-bold text-xl flex items-center justify-center h-12 w-12 flex-shrink-0">
+                    <i class="fa-solid fa-network-wired"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold tracking-wide">MÓDULO: LEIS DE KIRCHHOFF</h1>
+                    <p class="text-xs text-teal-100 font-medium">Análise de Malhas e Nós</p>
+                </div>
+            </div>
+            
+            <div class="flex items-center gap-4 w-full md:w-auto justify-between md:justify-end">
+                <a href="../dic_circuitos_eletricos.html" class="text-sm font-semibold text-teal-50 hover:text-white bg-teal-700 hover:bg-teal-800 px-4 py-2.5 rounded-lg transition-colors flex items-center gap-2 border border-teal-500/50 whitespace-nowrap shadow-sm">
+                    <i class="fa-solid fa-house"></i> Voltar ao Portal
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-grow w-full max-w-7xl mx-auto p-4 md:p-6 flex flex-col">
+        
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            
+            <div class="lg:col-span-4 bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-6 self-start">
+                
+                <h3 class="font-black text-slate-800 text-sm uppercase tracking-wider border-b border-slate-100 pb-2 flex justify-between items-center">
+                    <span><i class="fa-solid fa-sliders text-teal-500 mr-1"></i> Controles</span>
+                </h3>
+
+                <div class="bg-slate-100 p-3 rounded-xl border border-slate-200 shadow-inner">
+                    <label class="block text-xs font-bold text-slate-500 mb-2 uppercase tracking-wider">Topologia do Circuito</label>
+                    <select id="seletorCircuito" onchange="mudarCircuito()" class="w-full bg-white text-slate-700 text-sm font-bold p-2.5 rounded-lg outline-none border border-slate-300 shadow-sm focus:border-teal-500 transition-colors cursor-pointer">
+                        <option value="mista">Circuito Misto (1 Série, 2 Paralelos)</option>
+                        <option value="mista2">Circuito Misto (2 Séries, 2 Paralelos)</option>
+                        <option value="serie">Circuito Série (3 Resistores)</option>
+                        <option value="paralelo">Circuito Paralelo (3 Resistores)</option>
+                        <option value="serie2">Circuito Série Simples (2 Resistores)</option>
+                        <option value="paralelo2">Circuito Paralelo Simples (2 Resistores)</option>
+                    </select>
+                </div>
+
+                <div class="space-y-4 pt-2 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
+                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
+                        <label class="block text-sm font-bold text-slate-700 mb-3"><i class="fa-solid fa-battery-full text-teal-600 mr-1"></i> Tensão da Fonte (V)</label>
+                        <div class="flex gap-3 items-center">
+                            <input type="range" id="rangeVolt" min="0" max="48" value="24" step="1" class="flex-grow accent-teal-600 h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer" oninput="sync('Volt', 'range')">
+                            <div class="flex items-center bg-white border border-slate-300 rounded px-2 py-1 shadow-sm">
+                                <input type="number" id="numVolt" value="24" min="0" max="48" step="1" class="w-12 text-center font-bold text-sm outline-none text-teal-700 timer-font" oninput="sync('Volt', 'num')">
+                                <span class="text-xs font-bold text-slate-500 ml-1">V</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-200" id="boxR1">
+                        <label class="block text-sm font-bold text-slate-700 mb-3"><i class="fa-solid fa-wave-square text-teal-500 mr-1"></i> Resistor 1 (R₁)</label>
+                        <div class="flex gap-3 items-center">
+                            <input type="range" id="rangeR1" min="10" max="500" value="100" step="10" class="flex-grow accent-teal-500 h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer" oninput="sync('R1', 'range')">
+                            <div class="flex items-center bg-white border border-slate-300 rounded px-2 py-1 shadow-sm">
+                                <input type="number" id="numR1" value="100" min="10" max="500" step="10" class="w-14 text-center font-bold text-sm outline-none text-teal-600 timer-font" oninput="sync('R1', 'num')">
+                                <span class="text-xs font-bold text-slate-500 ml-1">Ω</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-200" id="boxR2">
+                        <label class="block text-sm font-bold text-slate-700 mb-3"><i class="fa-solid fa-wave-square text-blue-500 mr-1"></i> Resistor 2 (R₂)</label>
+                        <div class="flex gap-3 items-center">
+                            <input type="range" id="rangeR2" min="10" max="500" value="200" step="10" class="flex-grow accent-blue-500 h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer" oninput="sync('R2', 'range')">
+                            <div class="flex items-center bg-white border border-slate-300 rounded px-2 py-1 shadow-sm">
+                                <input type="number" id="numR2" value="200" min="10" max="500" step="10" class="w-14 text-center font-bold text-sm outline-none text-blue-600 timer-font" oninput="sync('R2', 'num')">
+                                <span class="text-xs font-bold text-slate-500 ml-1">Ω</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 transition-all duration-300" id="boxR3">
+                        <label class="block text-sm font-bold text-slate-700 mb-3"><i class="fa-solid fa-wave-square text-purple-600 mr-1"></i> Resistor 3 (R₃)</label>
+                        <div class="flex gap-3 items-center">
+                            <input type="range" id="rangeR3" min="10" max="500" value="200" step="10" class="flex-grow accent-purple-600 h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer" oninput="sync('R3', 'range')">
+                            <div class="flex items-center bg-white border border-slate-300 rounded px-2 py-1 shadow-sm">
+                                <input type="number" id="numR3" value="200" min="10" max="500" step="10" class="w-14 text-center font-bold text-sm outline-none text-purple-700 timer-font" oninput="sync('R3', 'num')">
+                                <span class="text-xs font-bold text-slate-500 ml-1">Ω</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 hidden-param transition-all duration-300" id="boxR4">
+                        <label class="block text-sm font-bold text-slate-700 mb-3"><i class="fa-solid fa-wave-square text-emerald-500 mr-1"></i> Resistor 4 (R₄ - Retorno)</label>
+                        <div class="flex gap-3 items-center">
+                            <input type="range" id="rangeR4" min="10" max="500" value="50" step="10" class="flex-grow accent-emerald-500 h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer" oninput="sync('R4', 'range')">
+                            <div class="flex items-center bg-white border border-slate-300 rounded px-2 py-1 shadow-sm">
+                                <input type="number" id="numR4" value="50" min="10" max="500" step="10" class="w-14 text-center font-bold text-sm outline-none text-emerald-600 timer-font" oninput="sync('R4', 'num')">
+                                <span class="text-xs font-bold text-slate-500 ml-1">Ω</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 gap-2 mt-4">
+                    <button onclick="toggleSimulation()" id="btnSim" class="bg-slate-800 text-white py-4 rounded-xl font-black uppercase tracking-wider hover:bg-black transition-all shadow-md flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-play" id="iconSim"></i> <span id="textSim">Iniciar Simulação</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="lg:col-span-8 space-y-4">
+                
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 relative overflow-hidden">
+                    <div class="absolute top-4 left-4 flex gap-2">
+                        <span id="badgeTopologia" class="bg-teal-100 text-teal-800 text-[10px] font-bold px-2 py-1 rounded border border-teal-200 uppercase tracking-widest">Malha Mista</span>
+                    </div>
+                    <div class="absolute top-4 right-4 flex gap-2">
+                        <button id="btnToggleEq" onclick="toggleEquacoes()" class="inline-flex items-center gap-1.5 text-[10px] text-white font-bold transition-all py-1.5 px-3 bg-teal-600 hover:bg-teal-700 rounded shadow-sm">
+                            <i class="fa-solid fa-eye" id="iconEq"></i> <span id="textToggleEq">Mostrar Expressões</span>
+                        </button>
+                    </div>
+                    <canvas id="canvas" width="800" height="400" class="w-full bg-slate-50 rounded-xl border border-slate-100"></canvas>
+                </div>
+                
+                <div id="equationBox" class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm transition-all duration-300 hidden">
+                    </div>
+
+            </div>
+        </div> 
+
+        <div class="mt-8 bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col sm:flex-row justify-between items-center gap-4">
+            <div class="flex items-center gap-3">
+                <div class="bg-teal-50 p-2 rounded-lg flex-shrink-0">
+                    <i class="fa-solid fa-book text-teal-600 text-lg"></i>
+                </div>
+                <div>
+                    <h4 class="text-sm font-bold text-slate-800">Memorial Técnico do Módulo</h4>
+                    <p class="text-xs text-slate-500">Consulte as notas de engenharia e os modelos matemáticos deste simulador.</p>
+                </div>
+            </div>
+            <a href="devnotes-mod3.html" class="whitespace-nowrap inline-flex items-center gap-2 text-xs text-teal-700 hover:text-white font-bold transition-colors py-2.5 px-4 bg-teal-50 hover:bg-teal-600 rounded-lg border border-teal-200 hover:border-teal-600">
+                Acessar Dev Notes <i class="fa-solid fa-arrow-right"></i>
+            </a>
+        </div>
+        
+    </main>
+
+    <footer class="bg-slate-900 text-slate-400 text-center py-4 text-xs border-t border-slate-800 mt-auto w-full">
+        Material de Apoio Didático — Desenvolvido para o Curso Técnico em Eletrotécnica IFRN
+    </footer>
+
+    <script>
+        let isRunning = false;
+        let circuitoAtual = 'mista'; 
+        
+        let animMain = 0; 
+        let animB1 = 0;   
+        let animB2 = 0;   
+        
+        const DOT_SPACING = 55;
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+
+        // Estado da visualização das equações
+        let equacoesVisiveis = false;
+
+        function toggleEquacoes() {
+            equacoesVisiveis = !equacoesVisiveis;
+            const eqBox = document.getElementById('equationBox');
+            const btnToggleEq = document.getElementById('btnToggleEq');
+            const iconEq = document.getElementById('iconEq');
+            const textToggleEq = document.getElementById('textToggleEq');
+
+            if (equacoesVisiveis) {
+                eqBox.classList.remove('hidden');
+                textToggleEq.innerText = "Ocultar Expressões";
+                iconEq.className = "fa-solid fa-eye-slash";
+                btnToggleEq.className = "inline-flex items-center gap-1.5 text-[10px] text-white font-bold transition-all py-1.5 px-3 bg-slate-600 hover:bg-slate-700 rounded shadow-sm";
+            } else {
+                eqBox.classList.add('hidden');
+                textToggleEq.innerText = "Mostrar Expressões";
+                iconEq.className = "fa-solid fa-eye";
+                btnToggleEq.className = "inline-flex items-center gap-1.5 text-[10px] text-white font-bold transition-all py-1.5 px-3 bg-teal-600 hover:bg-teal-700 rounded shadow-sm";
+            }
+            drawStatic();
+        }
+
+        function mudarCircuito() {
+            circuitoAtual = document.getElementById('seletorCircuito').value;
+            const boxR3 = document.getElementById('boxR3');
+            const boxR4 = document.getElementById('boxR4');
+            const badge = document.getElementById('badgeTopologia');
+            
+            if(circuitoAtual === 'serie2' || circuitoAtual === 'paralelo2') {
+                boxR3.classList.add('disabled-param');
+            } else {
+                boxR3.classList.remove('disabled-param');
+            }
+
+            if(circuitoAtual === 'mista2') {
+                boxR4.classList.remove('hidden-param');
+            } else {
+                boxR4.classList.add('hidden-param');
+            }
+
+            const nomes = {
+                'mista': 'Malha Mista (3 Resistores)',
+                'mista2': 'Malha Mista Dupla (4 Resistores)',
+                'serie': 'Série (3 Resistores)',
+                'paralelo': 'Paralelo (3 Ramos)',
+                'serie2': 'Série Simples',
+                'paralelo2': 'Paralelo Simples'
+            };
+            badge.innerText = nomes[circuitoAtual];
+
+            animMain = 0; animB1 = 0; animB2 = 0;
+            drawStatic();
+        }
+
+        function sync(type, source) {
+            const range = document.getElementById('range' + type);
+            const num = document.getElementById('num' + type);
+            if (source === 'range') { num.value = range.value; } 
+            else { range.value = num.value; }
+            drawStatic();
+        }
+
+        function toggleSimulation() {
+            isRunning = !isRunning;
+            document.getElementById('textSim').innerText = isRunning ? "Pausar Simulação" : "Iniciar Simulação";
+            document.getElementById('iconSim').className = isRunning ? "fa-solid fa-pause" : "fa-solid fa-play";
+            document.getElementById('btnSim').className = isRunning 
+                ? "bg-teal-600 text-white py-4 rounded-xl font-black uppercase tracking-wider hover:bg-teal-700 transition-all shadow-md flex items-center justify-center gap-2"
+                : "bg-slate-800 text-white py-4 rounded-xl font-black uppercase tracking-wider hover:bg-black transition-all shadow-md flex items-center justify-center gap-2";
+            
+            drawStatic(); 
+            if(isRunning) animate();
+        }
+
+        function animate() {
+            if(!isRunning) return;
+            draw();
+            requestAnimationFrame(animate);
+        }
+
+        function drawStatic() { draw(); }
+
+        function getResistorOffset(dist, length, numZigs, width) {
+            const step = length / (numZigs + 1);
+            if (dist < step/2 || dist > length - step/2) return 0;
+            const pts = [{x: 0, y: 0}, {x: step/2, y: 0}];
+            for(let i=1; i<=numZigs; i++) pts.push({x: i*step, y: (i%2===1) ? width : -width});
+            pts.push({x: length - step/2, y: 0}, {x: length, y: 0});
+            for (let k = 0; k < pts.length - 1; k++) {
+                if (dist >= pts[k].x && dist <= pts[k+1].x) {
+                    let fraction = (dist - pts[k].x) / (pts[k+1].x - pts[k].x);
+                    return pts[k].y + (pts[k+1].y - pts[k].y) * fraction;
+                }
+            }
+            return 0;
+        }
+
+        function drawPathDots(ctx, path, animOffset, dotSpacing, resistorInfos = []) {
+            let totalLength = 0;
+            let segments = [];
+            for (let i = 0; i < path.length - 1; i++) {
+                let dx = path[i+1].x - path[i].x;
+                let dy = path[i+1].y - path[i].y;
+                let len = Math.sqrt(dx*dx + dy*dy);
+                segments.push({
+                    x1: path[i].x, y1: path[i].y, dx: dx/len, dy: dy/len, len: len, accLen: totalLength
+                });
+                totalLength += len;
+            }
+
+            ctx.fillStyle = '#0d9488'; 
+            for (let d = animOffset; d <= totalLength; d += dotSpacing) {
+                if (d < 0) continue;
+                for (let seg of segments) {
+                    if (d >= seg.accLen && d <= seg.accLen + seg.len) {
+                        let localDist = d - seg.accLen;
+                        let ex = seg.x1 + seg.dx * localDist;
+                        let ey = seg.y1 + seg.dy * localDist;
+                        for (let res of resistorInfos) {
+                            if (d >= res.startDist && d <= res.startDist + res.length) {
+                                let offset = getResistorOffset(d - res.startDist, res.length, 6, 14);
+                                ex += -seg.dy * offset; ey += seg.dx * offset;
+                            }
+                        }
+                        ctx.beginPath(); ctx.arc(ex, ey, 4, 0, Math.PI * 2); ctx.fill();
+                        break;
+                    }
+                }
+            }
+        }
+
+        function drawUniversalResistor(ctx, startX, startY, endX, endY, power, overrideColor = null) {
+            const numZigs = 6; const width = 14;
+            const dx = endX - startX; const dy = endY - startY;
+            const length = Math.sqrt(dx*dx + dy*dy);
+            const angle = Math.atan2(dy, dx);
+            const step = length / (numZigs + 1);
+            
+            let color = overrideColor || "#334155"; 
+            if (!overrideColor) {
+                if (power > 0.5) color = "#b45309"; 
+                if (power > 2) color = "#ea580c"; 
+                if (power > 5) color = "#ef4444"; 
+            }
+
+            ctx.save(); ctx.translate(startX, startY); ctx.rotate(angle);
+
+            const traceZigZag = () => {
+                ctx.moveTo(0, 0); ctx.lineTo(step/2, 0);
+                for (let i = 1; i <= numZigs; i++) ctx.lineTo(i * step, (i % 2 === 1) ? width : -width);
+                ctx.lineTo(length - step/2, 0); ctx.lineTo(length, 0);
+            };
+
+            ctx.beginPath(); ctx.strokeStyle = color; ctx.lineWidth = 3; ctx.lineJoin = 'miter'; 
+            traceZigZag(); ctx.stroke();
+            
+            if (power > 1) {
+                ctx.beginPath(); ctx.shadowBlur = 12; ctx.shadowColor = color;
+                ctx.strokeStyle = color; ctx.globalAlpha = 0.4; ctx.lineWidth = 4;
+                traceZigZag(); ctx.stroke();
+            }
+            ctx.restore();
+        }
+
+        function drawBattery(ctx, x, y) {
+            ctx.strokeStyle = '#1e293b'; ctx.lineWidth = 3;
+            ctx.beginPath(); ctx.moveTo(x, y - 40); ctx.lineTo(x, y - 20); ctx.stroke();
+            ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(x - 22, y - 20); ctx.lineTo(x + 22, y - 20); ctx.stroke();
+            ctx.lineWidth = 5; ctx.beginPath(); ctx.moveTo(x - 12, y - 5); ctx.lineTo(x + 12, y - 5); ctx.stroke(); 
+            ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(x, y - 5); ctx.lineTo(x, y + 5); ctx.stroke();
+            ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(x - 22, y + 5); ctx.lineTo(x + 22, y + 5); ctx.stroke();
+            ctx.lineWidth = 5; ctx.beginPath(); ctx.moveTo(x - 12, y + 20); ctx.lineTo(x + 12, y + 20); ctx.stroke(); 
+            ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(x, y + 20); ctx.lineTo(x, y + 40); ctx.stroke();
+            ctx.fillStyle = '#ef4444'; ctx.font = 'bold 16px Inter'; ctx.fillText('+', x + 35, y - 10);
+            ctx.fillStyle = '#3b82f6'; ctx.font = 'bold 20px Inter'; ctx.fillText('-', x + 35, y + 22);
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            const v = parseFloat(document.getElementById('numVolt').value);
+            const r1 = parseFloat(document.getElementById('numR1').value);
+            const r2 = parseFloat(document.getElementById('numR2').value);
+            const r3 = parseFloat(document.getElementById('numR3').value);
+            const r4 = parseFloat(document.getElementById('numR4').value);
+            const SPEED = 15;
+
+            let req=0, it=0, i1=0, i2=0, i3=0, p1=0, p2=0, p3=0, p4=0;
+            let v1=0, v2=0, v3=0, v4=0;
+
+            ctx.strokeStyle = '#94a3b8'; ctx.lineWidth = 3;
+            ctx.beginPath();
+
+            if (circuitoAtual === 'mista' || circuitoAtual === 'mista2') {
+                const rp = (r2 * r3) / (r2 + r3);
+                req = r1 + rp + (circuitoAtual === 'mista2' ? r4 : 0);
+                it = v / req; i1 = it; 
+                v1 = r1 * it;
+                v4 = (circuitoAtual === 'mista2') ? (r4 * it) : 0;
+                let va = v - v1 - v4; 
+                i2 = va / r2; i3 = va / r3;
+                p1 = v1 * i1; p2 = va * i2; p3 = va * i3; p4 = v4 * it;
+
+                ctx.moveTo(150, 100); ctx.lineTo(650, 100); ctx.moveTo(150, 300); ctx.lineTo(650, 300);
+                ctx.moveTo(150, 100); ctx.lineTo(150, 300); ctx.moveTo(400, 100); ctx.lineTo(400, 300);
+                ctx.moveTo(650, 100); ctx.lineTo(650, 300); ctx.stroke();
+                
+                ctx.clearRect(120, 160, 60, 80); ctx.clearRect(225, 85, 100, 30);
+                ctx.clearRect(385, 150, 30, 100); ctx.clearRect(635, 150, 30, 100);
+                
+                if (circuitoAtual === 'mista2') {
+                    ctx.clearRect(225, 285, 100, 30); 
+                    drawUniversalResistor(ctx, 325, 300, 225, 300, p4, "#10b981");
+                }
+                
+                drawBattery(ctx, 150, 200);
+                drawUniversalResistor(ctx, 225, 100, 325, 100, p1, "#0d9488");
+                drawUniversalResistor(ctx, 400, 150, 400, 250, p2, "#3b82f6");
+                drawUniversalResistor(ctx, 650, 150, 650, 250, p3, "#9333ea");
+
+                ctx.fillStyle = '#1e293b'; ctx.font = 'bold 14px Inter'; ctx.textAlign = 'center';
+                ctx.fillText(`R₁: ${r1} Ω`, 275, 75); ctx.fillText(`R₂: ${r2} Ω`, 450, 205); ctx.fillText(`R₃: ${r3} Ω`, 700, 205);
+                ctx.fillText(`${v} V`, 95, 205); 
+                if (circuitoAtual === 'mista2') ctx.fillText(`R₄: ${r4} Ω`, 275, 345);
+
+                if(isRunning && v>0) { 
+                    ctx.fillText(`It: ${(it*1000).toFixed(1)} mA`, 275, 130); 
+                    ctx.fillText(`I₂: ${(i2*1000).toFixed(1)} mA`, 450, 150); 
+                    ctx.fillText(`I₃: ${(i3*1000).toFixed(1)} mA`, 700, 150); 
+                }
+
+                if (isRunning && v>0) {
+                    animMain = (animMain + Math.min(it*SPEED, 8)) % DOT_SPACING;
+                    animB1 = (animB1 + Math.min(i2*SPEED, 6)) % DOT_SPACING;
+                    animB2 = (animB2 + Math.min(i3*SPEED, 6)) % DOT_SPACING;
+
+                    drawPathDots(ctx, [{x:150,y:160},{x:150,y:100},{x:400,y:100}], animMain, DOT_SPACING, [{startDist:135, length:100}]);
+                    drawPathDots(ctx, [{x:400,y:100},{x:400,y:300}], animB1, DOT_SPACING, [{startDist:50, length:100}]);
+                    drawPathDots(ctx, [{x:400,y:100},{x:650,y:100},{x:650,y:300},{x:400,y:300}], animB2, DOT_SPACING, [{startDist:300, length:100}]);
+                    
+                    let returnResistors = (circuitoAtual === 'mista2') ? [{startDist:75, length:100}] : [];
+                    drawPathDots(ctx, [{x:400,y:300},{x:150,y:300},{x:150,y:240}], animMain, DOT_SPACING, returnResistors);
+                }
+            }
+            
+            else if (circuitoAtual === 'serie' || circuitoAtual === 'serie2') {
+                const numR = circuitoAtual === 'serie' ? 3 : 2;
+                req = r1 + r2 + (numR === 3 ? r3 : 0);
+                it = v / req; i1 = it; i2 = it; i3 = it;
+                p1 = (r1*it)*it; p2 = (r2*it)*it; p3 = numR===3 ? (r3*it)*it : 0;
+                v1 = r1 * it; v2 = r2 * it; v3 = numR === 3 ? r3 * it : 0;
+
+                ctx.moveTo(150, 100); ctx.lineTo(650, 100); ctx.moveTo(650, 100); ctx.lineTo(650, 300);
+                ctx.moveTo(650, 300); ctx.lineTo(150, 300); ctx.moveTo(150, 300); ctx.lineTo(150, 100); ctx.stroke();
+                
+                ctx.clearRect(120, 160, 60, 80); ctx.clearRect(250, 85, 100, 30); ctx.clearRect(450, 85, 100, 30);
+                drawBattery(ctx, 150, 200);
+                drawUniversalResistor(ctx, 250, 100, 350, 100, p1, "#0d9488");
+                drawUniversalResistor(ctx, 450, 100, 550, 100, p2, "#3b82f6");
+                
+                ctx.fillStyle = '#1e293b'; ctx.font = 'bold 14px Inter'; ctx.textAlign = 'center';
+                ctx.fillText(`${v} V`, 95, 205);
+                ctx.fillText(`R₁: ${r1} Ω`, 300, 75); ctx.fillText(`R₂: ${r2} Ω`, 500, 75);
+
+                let resArray = [{startDist: 160, length: 100}, {startDist: 360, length: 100}];
+
+                if (numR === 3) {
+                    ctx.clearRect(635, 150, 30, 100);
+                    drawUniversalResistor(ctx, 650, 150, 650, 250, p3, "#9333ea");
+                    ctx.fillText(`R₃: ${r3} Ω`, 700, 205);
+                    resArray.push({startDist: 610, length: 100}); 
+                }
+
+                if(isRunning && v>0) ctx.fillText(`It: ${(it*1000).toFixed(1)} mA`, 400, 200);
+
+                if (isRunning && v>0) {
+                    animMain = (animMain + Math.min(it*SPEED, 8)) % DOT_SPACING;
+                    drawPathDots(ctx, [{x:150,y:160},{x:150,y:100},{x:650,y:100},{x:650,y:300},{x:150,y:300},{x:150,y:240}], animMain, DOT_SPACING, resArray);
+                }
+            }
+
+            else if (circuitoAtual === 'paralelo' || circuitoAtual === 'paralelo2') {
+                const numR = circuitoAtual === 'paralelo' ? 3 : 2;
+                let invReq = (1/r1) + (1/r2) + (numR===3 ? 1/r3 : 0);
+                req = 1 / invReq;
+                it = v / req; i1 = v/r1; i2 = v/r2; i3 = numR===3 ? v/r3 : 0;
+                p1 = v*i1; p2 = v*i2; p3 = numR===3 ? v*i3 : 0;
+
+                ctx.moveTo(150, 100); ctx.lineTo(numR===3?600:450, 100); ctx.moveTo(150, 300); ctx.lineTo(numR===3?600:450, 300);
+                ctx.moveTo(150, 100); ctx.lineTo(150, 300); 
+                ctx.moveTo(300, 100); ctx.lineTo(300, 300); ctx.moveTo(450, 100); ctx.lineTo(450, 300);
+                if(numR===3) { ctx.moveTo(600, 100); ctx.lineTo(600, 300); }
+                ctx.stroke();
+
+                ctx.clearRect(120, 160, 60, 80); ctx.clearRect(285, 150, 30, 100); ctx.clearRect(435, 150, 30, 100);
+                drawBattery(ctx, 150, 200);
+                drawUniversalResistor(ctx, 300, 150, 300, 250, p1, "#0d9488");
+                drawUniversalResistor(ctx, 450, 150, 450, 250, p2, "#3b82f6");
+
+                ctx.fillStyle = '#1e293b'; ctx.font = 'bold 14px Inter'; ctx.textAlign = 'center';
+                ctx.fillText(`${v} V`, 95, 205);
+                ctx.fillText(`R₁: ${r1} Ω`, 350, 205); ctx.fillText(`R₂: ${r2} Ω`, 500, 205);
+
+                if (numR===3) {
+                    ctx.clearRect(585, 150, 30, 100);
+                    drawUniversalResistor(ctx, 600, 150, 600, 250, p3, "#9333ea");
+                    ctx.fillText(`R₃: ${r3} Ω`, 650, 205);
+                }
+
+                if (isRunning && v>0) {
+                    ctx.fillText(`It: ${(it*1000).toFixed(1)} mA`, 225, 80);
+                    ctx.fillText(`I₁: ${(i1*1000).toFixed(1)} mA`, 350, 130);
+                    ctx.fillText(`I₂: ${(i2*1000).toFixed(1)} mA`, 500, 130);
+                    if(numR===3) ctx.fillText(`I₃: ${(i3*1000).toFixed(1)} mA`, 650, 130);
+
+                    animMain = (animMain + Math.min(i1*SPEED, 8)) % DOT_SPACING;
+                    animB1 = (animB1 + Math.min(i2*SPEED, 8)) % DOT_SPACING;
+                    if(numR===3) animB2 = (animB2 + Math.min(i3*SPEED, 8)) % DOT_SPACING;
+
+                    drawPathDots(ctx, [{x:150,y:160},{x:150,y:100},{x:300,y:100},{x:300,y:300},{x:150,y:300},{x:150,y:240}], animMain, DOT_SPACING, [{startDist:260, length:100}]);
+                    drawPathDots(ctx, [{x:300,y:100},{x:450,y:100},{x:450,y:300},{x:300,y:300}], animB1, DOT_SPACING, [{startDist:200, length:100}]);
+                    if(numR===3) drawPathDots(ctx, [{x:450,y:100},{x:600,y:100},{x:600,y:300},{x:450,y:300}], animB2, DOT_SPACING, [{startDist:200, length:100}]);
+                }
+            }
+
+            const eqBox = document.getElementById('equationBox');
+            
+            // Renderiza as equações apenas se o quadro estiver visível
+            if (!equacoesVisiveis) return; 
+
+            let innerEquationsHtml = '';
+
+            if (circuitoAtual === 'mista' || circuitoAtual === 'mista2') {
+                let formulaMalha = circuitoAtual === 'mista2' 
+                    ? `V<sub>fonte</sub> - R<sub>1</sub> · I<sub>t</sub> - V<sub>paralelo</sub> - R<sub>4</sub> · I<sub>t</sub> = 0`
+                    : `V<sub>fonte</sub> - R<sub>1</sub> · I<sub>t</sub> - V<sub>paralelo</sub> = 0`;
+
+                let quedaRetornoHtml = circuitoAtual === 'mista2' 
+                    ? `<div class="flex justify-between items-center text-xs text-emerald-600 font-mono"><span class="font-bold">V<sub>R4</sub> = R<sub>4</sub> · I<sub>t</sub></span><span>${v4.toFixed(2)} V</span></div>` 
+                    : '';
+                
+                innerEquationsHtml = `
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 divide-y md:divide-y-0 md:divide-x divide-slate-200">
+                        <div class="space-y-3">
+                            <div class="flex justify-between items-center mb-2"><span class="font-black text-slate-800 uppercase text-xs tracking-wider"><i class="fa-solid fa-code-branch text-teal-500 mr-1"></i> Lei dos Nós (LKC)</span><span class="bg-teal-100 text-teal-800 text-[10px] font-bold px-1.5 py-0.5 rounded">ΣI = 0</span></div>
+                            <div class="bg-slate-50 p-2.5 rounded-lg border border-slate-200 text-center font-mono font-bold text-sm text-slate-700 mb-2">
+                                I<sub>t</sub> = I<sub>2</sub> + I<sub>3</sub>
+                            </div>
+                            <div class="flex justify-between items-center text-xs text-teal-600 font-mono"><span class="font-bold">I<sub>t</sub> (Malha Principal)</span><span>${(it*1000).toFixed(1)} mA</span></div>
+                            <div class="flex justify-between items-center text-xs text-blue-600 font-mono"><span class="font-bold">I<sub>2</sub> = V<sub>paralelo</sub> / R<sub>2</sub></span><span>${(i2*1000).toFixed(1)} mA</span></div>
+                            <div class="flex justify-between items-center text-xs text-purple-600 font-mono"><span class="font-bold">I<sub>3</sub> = V<sub>paralelo</sub> / R<sub>3</sub></span><span>${(i3*1000).toFixed(1)} mA</span></div>
+                        </div>
+                        <div class="space-y-3 md:pl-8">
+                            <div class="flex justify-between items-center mb-2"><span class="font-black text-slate-800 uppercase text-xs tracking-wider"><i class="fa-solid fa-route text-teal-500 mr-1"></i> Lei das Malhas (LKT)</span><span class="bg-blue-100 text-blue-800 text-[10px] font-bold px-1.5 py-0.5 rounded">ΣV = 0</span></div>
+                            <div class="bg-slate-50 p-2.5 rounded-lg border border-slate-200 text-center font-mono font-bold text-xs text-slate-700 mb-2 whitespace-normal break-all">
+                                ${formulaMalha}
+                            </div>
+                            <div class="flex justify-between items-center text-xs text-slate-600 font-mono"><span class="font-bold">V<sub>fonte</sub></span><span>+ ${v.toFixed(1)} V</span></div>
+                            <div class="flex justify-between items-center text-xs text-teal-600 font-mono"><span class="font-bold">V<sub>R1</sub> = R<sub>1</sub> · I<sub>t</sub></span><span>- ${v1.toFixed(2)} V</span></div>
+                            <div class="flex justify-between items-center text-xs text-blue-600 font-mono"><span class="font-bold">V<sub>paralelo</sub> = (R<sub>2</sub>||R<sub>3</sub>) · I<sub>t</sub></span><span>- ${(v-v1-v4).toFixed(2)} V</span></div>
+                            ${quedaRetornoHtml}
+                        </div>
+                    </div>`;
+            } else if (circuitoAtual === 'serie' || circuitoAtual === 'serie2') {
+                const numR = circuitoAtual === 'serie' ? 3 : 2;
+                let formulaMalha = numR === 3 
+                    ? `V<sub>fonte</sub> - R<sub>1</sub> · I<sub>t</sub> - R<sub>2</sub> · I<sub>t</sub> - R<sub>3</sub> · I<sub>t</sub> = 0`
+                    : `V<sub>fonte</sub> - R<sub>1</sub> · I<sub>t</sub> - R<sub>2</sub> · I<sub>t</sub> = 0`;
+
+                innerEquationsHtml = `
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 divide-y md:divide-y-0 md:divide-x divide-slate-200">
+                        <div class="space-y-3">
+                            <div class="flex justify-between items-center mb-2"><span class="font-black text-slate-800 uppercase text-xs tracking-wider"><i class="fa-solid fa-wave-square text-teal-500 mr-1"></i> Ramo Único (Série)</span><span class="bg-teal-100 text-teal-800 text-[10px] font-bold px-1.5 py-0.5 rounded">Série</span></div>
+                            <div class="bg-slate-50 p-2.5 rounded-lg border border-slate-200 text-center font-mono font-bold text-sm text-slate-700 mb-2">
+                                I<sub>t</sub> = I<sub>1</sub> = I<sub>2</sub> ${numR===3 ? '= I<sub>3</sub>' : ''}
+                            </div>
+                            <div class="flex justify-between items-center text-xs text-teal-600 font-mono"><span class="font-bold">I<sub>t</sub> = V<sub>fonte</sub> / R<sub>eq</sub></span><span>${(it*1000).toFixed(1)} mA</span></div>
+                            <div class="flex justify-between items-center text-xs text-slate-500 font-mono"><span class="font-bold">R<sub>eq</sub> Total</span><span>${req.toFixed(1)} Ω</span></div>
+                        </div>
+                        <div class="space-y-3 md:pl-8">
+                            <div class="flex justify-between items-center mb-2"><span class="font-black text-slate-800 uppercase text-xs tracking-wider"><i class="fa-solid fa-route text-blue-500 mr-1"></i> Lei das Malhas (LKT)</span><span class="bg-blue-100 text-blue-800 text-[10px] font-bold px-1.5 py-0.5 rounded">ΣV = 0</span></div>
+                            <div class="bg-slate-50 p-2.5 rounded-lg border border-slate-200 text-center font-mono font-bold text-xs text-slate-700 mb-2">
+                                ${formulaMalha}
+                            </div>
+                            <div class="flex justify-between items-center text-xs text-teal-600 font-mono"><span class="font-bold">V<sub>R1</sub> = R<sub>1</sub> · I<sub>t</sub></span><span>- ${v1.toFixed(2)} V</span></div>
+                            <div class="flex justify-between items-center text-xs text-blue-600 font-mono"><span class="font-bold">V<sub>R2</sub> = R<sub>2</sub> · I<sub>t</sub></span><span>- ${v2.toFixed(2)} V</span></div>
+                            ${numR===3 ? `<div class="flex justify-between items-center text-xs text-purple-600 font-mono"><span class="font-bold">V<sub>R3</sub> = R<sub>3</sub> · I<sub>t</sub></span><span>- ${v3.toFixed(2)} V</span></div>` : ''}
+                        </div>
+                    </div>`;
+            } else {
+                const numR = circuitoAtual === 'paralelo' ? 3 : 2;
+                innerEquationsHtml = `
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 divide-y md:divide-y-0 md:divide-x divide-slate-200">
+                        <div class="space-y-3">
+                            <div class="flex justify-between items-center mb-2"><span class="font-black text-slate-800 uppercase text-xs tracking-wider"><i class="fa-solid fa-code-branch text-teal-500 mr-1"></i> Lei dos Nós (LKC)</span><span class="bg-teal-100 text-teal-800 text-[10px] font-bold px-1.5 py-0.5 rounded">ΣI = 0</span></div>
+                            <div class="bg-slate-50 p-2.5 rounded-lg border border-slate-200 text-center font-mono font-bold text-sm text-slate-700 mb-2">
+                                I<sub>t</sub> = I<sub>1</sub> + I<sub>2</sub> ${numR===3 ? '+ I<sub>3</sub>' : ''}
+                            </div>
+                            <div class="flex justify-between items-center text-xs text-teal-600 font-mono"><span class="font-bold">I<sub>1</sub> = V<sub>fonte</sub> / R<sub>1</sub></span><span>${(i1*1000).toFixed(1)} mA</span></div>
+                            <div class="flex justify-between items-center text-xs text-blue-600 font-mono"><span class="font-bold">I<sub>2</sub> = V<sub>fonte</sub> / R<sub>2</sub></span><span>${(i2*1000).toFixed(1)} mA</span></div>
+                            ${numR===3 ? `<div class="flex justify-between items-center text-xs text-purple-600 font-mono"><span class="font-bold">I<sub>3</sub> = V<sub>fonte</sub> / R<sub>3</sub></span><span>${(i3*1000).toFixed(1)} mA</span></div>` : ''}
+                        </div>
+                        <div class="space-y-3 md:pl-8">
+                            <div class="flex justify-between items-center mb-2"><span class="font-black text-slate-800 uppercase text-xs tracking-wider"><i class="fa-solid fa-route text-blue-500 mr-1"></i> Nós de Tensão Constante</span><span class="bg-blue-100 text-blue-800 text-[10px] font-bold px-1.5 py-0.5 rounded">Paralelo</span></div>
+                            <div class="bg-slate-50 p-2.5 rounded-lg border border-slate-200 text-center font-mono font-bold text-sm text-slate-700 mb-2">
+                                V<sub>fonte</sub> = V<sub>1</sub> = V<sub>2</sub> ${numR===3 ? '= V<sub>3</sub>' : ''}
+                            </div>
+                            <div class="flex justify-between items-center text-xs text-slate-600 font-mono"><span class="font-bold">V<sub>fonte</sub> Eficaz</span><span>${v.toFixed(1)} V</span></div>
+                            <div class="flex justify-between items-center text-xs text-slate-500 font-mono"><span class="font-bold">Corrente Total (I<sub>t</sub>)</span><span>${(it*1000).toFixed(1)} mA</span></div>
+                        </div>
+                    </div>`;
+            }
+
+            eqBox.innerHTML = `
+                <div class="flex justify-between items-center mb-5 pb-2 border-b border-slate-100 w-full">
+                    <span class="text-[10px] font-black text-teal-600 uppercase tracking-widest"><i class="fa-solid fa-square-poll-vertical"></i> Resolução Algébrica em Tempo Real</span>
+                </div>
+                ${innerEquationsHtml}
+            `;
+        }
+
+        drawStatic();
+    </script>
+</body>
+</html>

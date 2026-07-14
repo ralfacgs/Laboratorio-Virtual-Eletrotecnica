@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lei de Ohm e Potência - Lab AC Pro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&family=Fira+Code:wght@500&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
+        .timer-font { font-family: 'Fira Code', monospace; }
+        canvas { cursor: crosshair; }
+    </style>
+</head>
+<body class="text-slate-800 min-h-screen flex flex-col">
+
+    <header class="bg-red-600 text-white shadow-md py-4 px-6 relative z-10">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="flex items-center gap-4">
+                <div class="bg-white p-2 rounded shadow-sm text-red-600 font-bold text-xl flex items-center justify-center h-12 w-12">
+                    <i class="fa-solid fa-plug"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold tracking-wide">MÓDULO: LEI DE OHM E POTÊNCIA</h1>
+                    <p class="text-xs text-red-100 font-medium">Análise de Malha Fechada e Dissipação</p>
+                </div>
+            </div>
+            <a href="../dic_circuitos_eletricos.html" class="text-sm font-semibold text-red-50 hover:text-white bg-red-700 hover:bg-red-800 border border-red-500 px-4 py-2 rounded transition-colors">
+                <i class="fa-solid fa-house"></i> Voltar ao Portal
+            </a>
+        </div>
+    </header>
+
+    <main class="flex-grow w-full max-w-6xl mx-auto p-4 md:p-6">
+        
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            
+            <div class="lg:col-span-4 space-y-6 self-start">
+                
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-6">
+                    <h3 class="font-black text-slate-800 text-sm uppercase tracking-wider border-b border-slate-100 pb-2">
+                        <i class="fa-solid fa-sliders text-red-500"></i> Parâmetros da Fonte
+                    </h3>
+
+                    <div class="space-y-6 pt-2">
+                        <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
+                            <div class="flex justify-between items-end mb-3">
+                                <label class="block text-sm font-bold text-slate-700"><i class="fa-solid fa-battery-full text-green-600 mr-1"></i> Tensão da Fonte (V)</label>
+                            </div>
+                            <div class="flex gap-3 items-center">
+                                <input type="range" id="rangeVolt" min="0" max="30" value="12" step="1" class="flex-grow accent-red-600 h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer" oninput="sync('Volt', 'range')">
+                                <div class="flex items-center bg-white border border-slate-300 rounded px-2 py-1 shadow-sm">
+                                    <input type="number" id="numVolt" value="12" min="0" max="30" step="1" class="w-12 text-center font-bold text-sm outline-none text-red-700" oninput="sync('Volt', 'num')">
+                                    <span class="text-xs font-bold text-slate-500 ml-1">V</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
+                            <div class="flex justify-between items-end mb-3">
+                                <label class="block text-sm font-bold text-slate-700"><i class="fa-solid fa-wave-square text-orange-600 mr-1"></i> Resistência (R)</label>
+                            </div>
+                            <div class="flex gap-3 items-center">
+                                <input type="range" id="rangeRes" min="10" max="1000" value="100" step="10" class="flex-grow accent-red-600 h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer" oninput="sync('Res', 'range')">
+                                <div class="flex items-center bg-white border border-slate-300 rounded px-2 py-1 shadow-sm">
+                                    <input type="number" id="numRes" value="100" min="10" max="1000" step="10" class="w-14 text-center font-bold text-sm outline-none text-red-700" oninput="sync('Res', 'num')">
+                                    <span class="text-xs font-bold text-slate-500 ml-1">Ω</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 gap-2 mt-4">
+                        <button onclick="toggleSimulation()" id="btnSim" class="bg-slate-800 text-white py-4 rounded-xl font-black uppercase tracking-wider hover:bg-black transition-all shadow-md flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-play" id="iconSim"></i> <span id="textSim">Iniciar Simulação</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                    <div class="flex items-center justify-between border-b border-slate-100 pb-2 mb-6">
+                        <h3 class="font-black text-slate-800 text-sm uppercase tracking-wider">
+                            <i class="fa-solid fa-triangle-exclamation text-blue-500 mr-1"></i> Triângulo Mágico
+                        </h3>
+                    </div>
+                    
+                    <p class="text-xs text-slate-500 mb-6 text-center">Clique na variável que deseja descobrir (ocultar) para revelar a fórmula matemática.</p>
+                    
+                    <div class="relative w-full flex justify-center mb-4 select-none">
+                        <svg viewBox="0 0 200 180" class="w-48 h-48 drop-shadow-md">
+                            
+                            <text x="100" y="136" text-anchor="middle" font-size="16" font-weight="900" fill="#cbd5e1" class="pointer-events-none">×</text>
+                            <text x="69" y="106" text-anchor="middle" font-size="16" font-weight="900" fill="#cbd5e1" class="pointer-events-none">÷</text>
+                            <text x="131" y="106" text-anchor="middle" font-size="16" font-weight="900" fill="#cbd5e1" class="pointer-events-none">÷</text>
+
+                            <g onclick="selectTriangle('V')" class="cursor-pointer group">
+                                <polygon id="pathV" points="100,25 139,88 61,88" fill="#ffffff" stroke="#ffffff" stroke-width="12" stroke-linejoin="round" class="transition-colors group-hover:brightness-95"/>
+                                <text id="textV" x="100" y="80" text-anchor="middle" font-size="36" font-weight="900" fill="#16a34a" class="pointer-events-none transition-colors">V</text>
+                            </g>
+
+                            <g onclick="selectTriangle('R')" class="cursor-pointer group">
+                                <polygon id="pathR" points="47,112 92,112 92,150 26,150" fill="#ffffff" stroke="#ffffff" stroke-width="12" stroke-linejoin="round" class="transition-colors group-hover:brightness-95"/>
+                                <text id="textR" x="65" y="146" text-anchor="middle" font-size="36" font-weight="900" fill="#f97316" class="pointer-events-none transition-colors">R</text>
+                            </g>
+
+                            <g onclick="selectTriangle('I')" class="cursor-pointer group">
+                                <polygon id="pathI" points="108,112 153,112 174,150 108,150" fill="#ffffff" stroke="#ffffff" stroke-width="12" stroke-linejoin="round" class="transition-colors group-hover:brightness-95"/>
+                                <text id="textI" x="135" y="146" text-anchor="middle" font-size="36" font-weight="900" fill="#dc2626" class="pointer-events-none transition-colors">I</text>
+                            </g>
+
+                        </svg>
+                    </div>
+
+                    <div id="triangleFormula" class="text-center font-mono text-xl font-bold text-slate-800 bg-slate-50 py-4 rounded-xl border border-slate-200 shadow-inner">
+                        </div>
+                </div>
+
+            </div>
+
+            <div class="lg:col-span-8 space-y-4">
+                
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 relative overflow-hidden">
+                    <div class="absolute top-4 left-4 flex gap-2">
+                        <span class="bg-slate-100 text-slate-500 text-[10px] font-bold px-2 py-1 rounded border border-slate-200">Circuito Fechado</span>
+                        <span class="bg-slate-100 text-slate-500 text-[10px] font-bold px-2 py-1 rounded border border-slate-200">Malha Única</span>
+                    </div>
+                    <canvas id="canvas" width="800" height="400" class="w-full bg-slate-50 rounded-xl border border-slate-100"></canvas>
+                </div>
+                
+                <div id="equationBox" class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex flex-col md:flex-row justify-around items-center gap-6">
+                </div>
+                
+                <div class="bg-red-50 text-red-800 p-4 rounded-xl border border-red-100 text-xs font-medium text-justify">
+                    <i class="fa-solid fa-circle-info mb-2 block text-red-600 text-base"></i>
+                    A velocidade do fluxo de elétrons na simulação é proporcional à corrente elétrica (I). Observe o aumento da temperatura do resistor (cor) com a elevação da potência dissipada.
+                </div>
+
+            </div>
+            
+        </div> 
+
+        <div class="mt-8 bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col sm:flex-row justify-between items-center gap-4">
+            <div class="flex items-center gap-3">
+                <div class="bg-red-50 p-2 rounded-lg flex-shrink-0">
+                    <i class="fa-solid fa-book text-red-600 text-lg"></i>
+                </div>
+                <div>
+                    <h4 class="text-sm font-bold text-slate-800">Memorial Técnico do Módulo</h4>
+                    <p class="text-xs text-slate-500">Consulte as notas de engenharia e os modelos matemáticos deste simulador.</p>
+                </div>
+            </div>
+            <a href="devnotes-mod1.html" class="whitespace-nowrap inline-flex items-center gap-2 text-xs text-red-700 hover:text-white font-bold transition-colors py-2.5 px-4 bg-red-50 hover:bg-red-600 rounded-lg border border-red-200 hover:border-red-600">
+                Acessar Dev Notes <i class="fa-solid fa-arrow-right"></i>
+            </a>
+        </div>
+
+    </main>
+
+    <footer class="bg-slate-900 text-slate-400 text-center py-4 text-xs border-t border-slate-800 mt-auto w-full">
+        Material de Apoio Didático — Desenvolvido para o Curso Técnico em Eletrotécnica IFRN
+    </footer>
+
+    <script>
+        // ==========================================
+        // LÓGICA DO TRIÂNGULO MÁGICO DE OHM (SVG)
+        // ==========================================
+        function selectTriangle(variable) {
+            const pathV = document.getElementById('pathV');
+            const textV = document.getElementById('textV');
+            const pathR = document.getElementById('pathR');
+            const textR = document.getElementById('textR');
+            const pathI = document.getElementById('pathI');
+            const textI = document.getElementById('textI');
+            const formulaBox = document.getElementById('triangleFormula');
+
+            // 1. Resetar todos para as cores vibrantes e fundo branco
+            pathV.setAttribute('fill', '#ffffff'); pathV.setAttribute('stroke', '#ffffff');
+            textV.setAttribute('fill', '#16a34a'); // green-600
+            
+            pathR.setAttribute('fill', '#ffffff'); pathR.setAttribute('stroke', '#ffffff');
+            textR.setAttribute('fill', '#f97316'); // orange-500
+            
+            pathI.setAttribute('fill', '#ffffff'); pathI.setAttribute('stroke', '#ffffff');
+            textI.setAttribute('fill', '#dc2626'); // red-600
+
+            // 2. Aplicar estado "oculto" (escurecido) na variável selecionada e exibir fórmula
+            if (variable === 'V') {
+                pathV.setAttribute('fill', '#1e293b'); pathV.setAttribute('stroke', '#1e293b'); // slate-800
+                textV.setAttribute('fill', '#64748b'); // slate-500
+                formulaBox.innerHTML = "V = <span class='text-orange-500'>R</span> × <span class='text-red-600'>I</span>";
+            } 
+            else if (variable === 'R') {
+                pathR.setAttribute('fill', '#1e293b'); pathR.setAttribute('stroke', '#1e293b');
+                textR.setAttribute('fill', '#64748b');
+                formulaBox.innerHTML = "R = <span class='text-green-600'>V</span> ÷ <span class='text-red-600'>I</span>";
+            } 
+            else if (variable === 'I') {
+                pathI.setAttribute('fill', '#1e293b'); pathI.setAttribute('stroke', '#1e293b');
+                textI.setAttribute('fill', '#64748b');
+                formulaBox.innerHTML = "I = <span class='text-green-600'>V</span> ÷ <span class='text-orange-500'>R</span>";
+            }
+        }
+
+        // ==========================================
+        // LÓGICA DO SIMULADOR E CANVAS
+        // ==========================================
+        let isRunning = false;
+        let animationProgress = 0; 
+        
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+
+        function sync(type, source) {
+            const range = document.getElementById('range' + type);
+            const num = document.getElementById('num' + type);
+            if (source === 'range') { num.value = range.value; } 
+            else { range.value = num.value; }
+            drawStatic();
+        }
+
+        function toggleSimulation() {
+            isRunning = !isRunning;
+            document.getElementById('textSim').innerText = isRunning ? "Pausar Simulação" : "Iniciar Simulação";
+            document.getElementById('iconSim').className = isRunning ? "fa-solid fa-pause" : "fa-solid fa-play";
+            document.getElementById('btnSim').className = isRunning 
+                ? "bg-red-600 text-white py-4 rounded-xl font-black uppercase tracking-wider hover:bg-red-700 transition-all shadow-md flex items-center justify-center gap-2"
+                : "bg-slate-800 text-white py-4 rounded-xl font-black uppercase tracking-wider hover:bg-black transition-all shadow-md flex items-center justify-center gap-2";
+            if(isRunning) animate();
+        }
+
+        function animate() {
+            if(!isRunning) return;
+            
+            const v = parseFloat(document.getElementById('numVolt').value);
+            const r = parseFloat(document.getElementById('numRes').value);
+            const i = v / r; 
+            
+            let speed = (i * 20); 
+            if (speed > 5) speed = 5; 
+            
+            animationProgress += speed;
+            if (animationProgress > 1200) animationProgress = 0;
+            
+            draw();
+            requestAnimationFrame(animate);
+        }
+
+        function drawStatic() { 
+            if(!isRunning) draw(); 
+        }
+
+        function drawResistor(ctx, startX, startY, endX, endY, power) {
+            const numZigs = 6; 
+            const width = 14;
+            const length = endY - startY;
+            const stepY = length / (numZigs + 1);
+            
+            let color = "#334155"; 
+            if (power > 0.5) color = "#b45309"; 
+            if (power > 2) color = "#ea580c"; 
+            if (power > 5) color = "#ef4444"; 
+            
+            const traceZigZag = () => {
+                ctx.moveTo(startX, startY);
+                ctx.lineTo(startX, startY + stepY/2);
+                for (let i = 1; i <= numZigs; i++) {
+                    let xOffset = (i % 2 === 1) ? width : -width;
+                    ctx.lineTo(startX + xOffset, startY + (i * stepY));
+                }
+                ctx.lineTo(startX, startY + length - stepY/2);
+                ctx.lineTo(endX, endY);
+            };
+
+            ctx.beginPath();
+            ctx.strokeStyle = color;
+            ctx.lineWidth = 3;
+            ctx.lineJoin = 'miter'; 
+            traceZigZag();
+            ctx.stroke();
+            
+            if (power > 1) {
+                ctx.beginPath();
+                ctx.shadowBlur = 12;
+                ctx.shadowColor = color;
+                ctx.strokeStyle = color;
+                ctx.globalAlpha = 0.4;
+                ctx.lineWidth = 4;
+                traceZigZag();
+                ctx.stroke();
+                ctx.shadowBlur = 0;
+                ctx.globalAlpha = 1.0;
+            }
+        }
+
+        function drawBattery(ctx, x, y) {
+            ctx.strokeStyle = '#1e293b';
+            
+            ctx.lineWidth = 3;
+            ctx.beginPath(); ctx.moveTo(x, y - 40); ctx.lineTo(x, y - 20); ctx.stroke();
+            
+            ctx.lineWidth = 2; 
+            ctx.beginPath(); ctx.moveTo(x - 22, y - 20); ctx.lineTo(x + 22, y - 20); ctx.stroke();
+            ctx.lineWidth = 5; 
+            ctx.beginPath(); ctx.moveTo(x - 12, y - 5); ctx.lineTo(x + 12, y - 5); ctx.stroke();
+            
+            ctx.lineWidth = 2;
+            ctx.beginPath(); ctx.moveTo(x, y - 5); ctx.lineTo(x, y + 5); ctx.stroke();
+
+            ctx.lineWidth = 2; 
+            ctx.beginPath(); ctx.moveTo(x - 22, y + 5); ctx.lineTo(x + 22, y + 5); ctx.stroke();
+            ctx.lineWidth = 5; 
+            ctx.beginPath(); ctx.moveTo(x - 12, y + 20); ctx.lineTo(x + 12, y + 20); ctx.stroke();
+
+            ctx.lineWidth = 3;
+            ctx.beginPath(); ctx.moveTo(x, y + 20); ctx.lineTo(x, y + 40); ctx.stroke();
+
+            ctx.fillStyle = '#ef4444'; ctx.font = 'bold 16px Inter'; ctx.fillText('+', x + 35, y - 10);
+            ctx.fillStyle = '#3b82f6'; ctx.font = 'bold 20px Inter'; ctx.fillText('-', x + 35, y + 22);
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            const v = parseFloat(document.getElementById('numVolt').value);
+            const r = parseFloat(document.getElementById('numRes').value);
+            
+            const i = v / r; 
+            const i_ma = i * 1000; 
+            const p = v * i; 
+
+            ctx.strokeStyle = '#94a3b8';
+            ctx.lineWidth = 3;
+            ctx.strokeRect(200, 100, 400, 200);
+
+            ctx.clearRect(170, 160, 60, 80); 
+            ctx.clearRect(570, 148, 60, 104); 
+
+            drawBattery(ctx, 200, 200);
+            drawResistor(ctx, 600, 150, 600, 250, p);
+
+            ctx.fillStyle = '#1e293b'; ctx.font = 'bold 18px Inter'; ctx.textAlign = 'center';
+            ctx.fillText(`${v} V`, 145, 205);
+            ctx.fillText(`${r} Ω`, 655, 205);
+            
+            if (i > 0) {
+                ctx.fillStyle = '#ef4444';
+                ctx.font = 'italic bold 20px Inter';
+                ctx.fillText(`I`, 400, 65);
+                
+                ctx.beginPath();
+                ctx.lineWidth = 2;
+                ctx.strokeStyle = '#ef4444';
+                ctx.moveTo(380, 75); ctx.lineTo(420, 75); 
+                ctx.lineTo(410, 68); 
+                ctx.moveTo(420, 75); ctx.lineTo(410, 82);
+                ctx.stroke();
+            }
+
+            if (isRunning && v > 0) {
+                const totalLength = 1200; 
+                const numElectrons = 15;
+                const spacing = totalLength / numElectrons;
+                
+                ctx.fillStyle = '#3b82f6'; 
+                
+                for (let j = 0; j < numElectrons; j++) {
+                    let pos = (animationProgress + j * spacing) % totalLength;
+                    let ex = 0, ey = 0;
+
+                    if (pos < 400) { 
+                        ex = 600 - pos; ey = 300; 
+                    } else if (pos < 600) { 
+                        ex = 200; ey = 300 - (pos - 400); 
+                    } else if (pos < 1000) { 
+                        ex = 200 + (pos - 600); ey = 100; 
+                    } else { 
+                        ex = 600; ey = 100 + (pos - 1000); 
+                        
+                        if (ey >= 150 && ey <= 250) {
+                            const stepY = 100 / 7;
+                            const pts = [
+                                {x: 600, y: 0},
+                                {x: 600, y: 0.5 * stepY},
+                                {x: 614, y: 1.0 * stepY},
+                                {x: 586, y: 2.0 * stepY},
+                                {x: 614, y: 3.0 * stepY},
+                                {x: 586, y: 4.0 * stepY},
+                                {x: 614, y: 5.0 * stepY},
+                                {x: 586, y: 6.0 * stepY},
+                                {x: 600, y: 6.5 * stepY},
+                                {x: 600, y: 7.0 * stepY}
+                            ];
+                            
+                            let yLocal = Math.max(0, Math.min(100, ey - 150));
+                            
+                            for (let k = 0; k < pts.length - 1; k++) {
+                                if (yLocal >= pts[k].y && yLocal <= pts[k+1].y) {
+                                    let fraction = (yLocal - pts[k].y) / (pts[k+1].y - pts[k].y);
+                                    ex = pts[k].x + (pts[k+1].x - pts[k].x) * fraction;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+
+                    ctx.beginPath();
+                    ctx.arc(ex, ey, 4, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+
+            const htmlEquacoes = `
+                <div class="text-center">
+                    <div class="text-slate-400 text-xs font-bold uppercase tracking-widest mb-1">Lei de Ohm (Corrente)</div>
+                    <div class="font-mono text-xl md:text-2xl font-bold text-slate-800">
+                        I = <span class="text-green-600">${v}</span> / <span class="text-orange-600">${r}</span>
+                    </div>
+                    <div class="font-bold text-red-600 text-lg mt-1">
+                        I = ${i_ma >= 10 ? i_ma.toFixed(1) + ' mA' : i.toFixed(3) + ' A'}
+                    </div>
+                </div>
+                <div class="hidden md:block w-px h-16 bg-slate-200"></div>
+                <div class="text-center">
+                    <div class="text-slate-400 text-xs font-bold uppercase tracking-widest mb-1">Lei de Joule (Potência)</div>
+                    <div class="font-mono text-xl md:text-2xl font-bold text-slate-800">
+                        P = <span class="text-green-600">${v}</span> × <span class="text-red-600">${i.toFixed(3)}</span>
+                    </div>
+                    <div class="font-bold text-orange-600 text-lg mt-1">
+                        P = ${(p >= 1 ? p.toFixed(2) + ' W' : (p*1000).toFixed(1) + ' mW')}
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('equationBox').innerHTML = htmlEquacoes;
+        }
+        
+        window.onload = () => {
+            selectTriangle('I'); // Inicia com a corrente oculta por padrão revelando a fórmula V/R
+            drawStatic();
+        };
+    </script>
+</body>
+</html>

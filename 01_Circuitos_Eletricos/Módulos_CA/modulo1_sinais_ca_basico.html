@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Módulo: Sinais CA Básico - Lab AC Pro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&family=Fira+Code:wght@400;500&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+        }
+        input[type=number]::-webkit-inner-spin-button, 
+        input[type=number]::-webkit-outer-spin-button { 
+            -webkit-appearance: none; 
+            margin: 0; 
+        }
+        input[type=number] {
+            -moz-appearance: textfield;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
+
+    <header class="bg-blue-700 text-white shadow-md py-4 px-6 compact">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="flex items-center gap-4">
+                <div class="bg-white p-2 rounded shadow-sm text-blue-700 font-bold text-xl flex items-center justify-center h-12 w-12">
+                    <i class="fa-solid fa-wave-square"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold tracking-wide">MÓDULO: SINAIS CA BÁSICO</h1>
+                    <p class="text-xs text-blue-100 font-medium">Análise de Sinais em CA</p>
+                </div>
+            </div>
+            <a href="../dic_circuitos_eletricos.html" class="text-sm font-semibold text-blue-50 hover:text-white bg-blue-800 hover:bg-blue-900 px-4 py-2 rounded transition-colors">
+                <i class="fa-solid fa-house"></i> Voltar ao Portal
+            </a>
+        </div>
+    </header>
+
+    <main class="flex-grow max-w-7xl w-full mx-auto p-4 md:p-6">
+        
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div class="lg:col-span-1 flex flex-col gap-6">
+                
+                <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200">
+                    <h2 class="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
+                        <i class="fa-solid fa-sliders text-blue-600"></i> Parâmetros do Sinal
+                    </h2>
+                    
+                    <div class="mb-5">
+                        <div class="flex justify-between items-center mb-2">
+                            <label for="vpInput" class="text-sm font-semibold text-slate-700">Tensão de Pico (V<sub>p</sub>):</label>
+                            <div class="flex items-center gap-1">
+                                <input type="number" id="vpInput" min="1" max="1000" value="311.13" step="0.01" 
+                                       class="w-24 text-right text-sm font-bold bg-slate-50 border border-slate-300 px-2 py-1 rounded text-slate-700 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all">
+                                <span class="text-sm font-bold text-slate-500">V</span>
+                            </div>
+                        </div>
+                        <input type="range" id="vpSlider" min="1" max="1000" value="311.13" step="1" 
+                               class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600">
+                    </div>
+
+                    <div class="mb-5">
+                        <div class="flex justify-between items-center mb-2">
+                            <label for="freqInput" class="text-sm font-semibold text-slate-700">Frequência (f):</label>
+                            <div class="flex items-center gap-1">
+                                <input type="number" id="freqInput" min="1" max="200" value="60" step="0.1" 
+                                       class="w-24 text-right text-sm font-bold bg-slate-50 border border-slate-300 px-2 py-1 rounded text-slate-700 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all">
+                                <span class="text-sm font-bold text-slate-500">Hz</span>
+                            </div>
+                        </div>
+                        <input type="range" id="freqSlider" min="1" max="200" value="60" step="1" 
+                               class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600">
+                    </div>
+
+                    <div class="mb-6">
+                        <div class="flex justify-between items-center mb-2">
+                            <label for="cyclesInput" class="text-sm font-semibold text-slate-700">Ciclos Visíveis na Tela:</label>
+                            <div class="flex items-center gap-1">
+                                <input type="number" id="cyclesInput" min="0.5" max="1000" value="2" step="0.5" 
+                                       class="w-24 text-right text-sm font-bold bg-slate-50 border border-slate-300 px-2 py-1 rounded text-slate-700 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all">
+                                <span class="text-sm font-bold text-slate-500">ciclos</span>
+                            </div>
+                        </div>
+                        <input type="range" id="cyclesSlider" min="0.5" max="1000" value="2" step="0.5" 
+                               class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600">
+                    </div>
+
+                    <button id="btnAnimate" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 px-4 rounded-lg shadow-sm transition-all flex items-center justify-center gap-2 cursor-pointer">
+                        <i id="btnIcon" class="fa-solid fa-play"></i>
+                        <span id="btnText">Simular Fluxo de Tempo</span>
+                    </button>
+                </div>
+
+                <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 flex-grow">
+                    <h2 class="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
+                        <i class="fa-solid fa-calculator text-blue-600"></i> Grandezas Calculadas
+                    </h2>
+                    
+                    <div class="grid grid-cols-1 gap-3">
+                        <div class="flex justify-between items-center p-3 bg-slate-50 rounded-lg border border-slate-200">
+                            <div>
+                                <p class="text-xs text-slate-500 font-bold uppercase tracking-wider mb-1">Tensão Máxima</p>
+                                <p class="text-sm font-serif italic font-semibold text-slate-700">V<sub>p</sub></p>
+                            </div>
+                            <p class="text-xl font-black text-blue-600" id="mVp">311.00 V</p>
+                        </div>
+
+                        <div class="flex justify-between items-center p-3 bg-slate-50 rounded-lg border border-slate-200">
+                            <div>
+                                <p class="text-xs text-slate-500 font-bold uppercase tracking-wider mb-1">Amplitude Total</p>
+                                <p class="text-sm font-serif italic font-semibold text-slate-700">V<sub>pp</sub> = 2 &times; V<sub>p</sub></p>
+                            </div>
+                            <p class="text-xl font-black text-slate-700" id="mVpp">622.00 V</p>
+                        </div>
+
+                        <div class="flex justify-between items-center p-3 bg-blue-50 rounded-lg border border-blue-300 shadow-sm">
+                            <div>
+                                <p class="text-xs text-blue-700 font-bold uppercase tracking-wider mb-1">Tensão Eficaz (True RMS)</p>
+                                <p class="text-sm font-serif italic font-semibold text-blue-900">V<sub>rms</sub> = V<sub>p</sub> / &radic;2</p>
+                            </div>
+                            <p class="text-xl font-black text-blue-600" id="mVrms">220.00 V</p>
+                        </div>
+
+                        <div class="flex justify-between items-center p-3 bg-slate-50 rounded-lg border border-slate-200">
+                            <div>
+                                <p class="text-xs text-slate-500 font-bold uppercase tracking-wider mb-1">Período de um Ciclo</p>
+                                <p class="text-sm font-serif italic font-semibold text-slate-700">T = 1 / f</p>
+                            </div>
+                            <p class="text-md font-bold text-slate-700" id="mT">16.67 ms</p>
+                        </div>
+
+                        <div class="flex justify-between items-center p-3 bg-slate-50 rounded-lg border border-slate-200">
+                            <div>
+                                <p class="text-xs text-slate-500 font-bold uppercase tracking-wider mb-1">Velocidade Angular</p>
+                                <p class="text-sm font-serif italic font-semibold text-slate-700">&omega; = 2&pi;f</p>
+                            </div>
+                            <p class="text-md font-bold text-slate-700" id="mOmega">377.0 rad/s</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="lg:col-span-2 bg-white p-5 rounded-xl shadow-sm border border-slate-200 flex flex-col justify-between">
+                <div>
+                    <h2 class="text-lg font-bold text-slate-900 mb-1 flex items-center gap-2">
+                        <i class="fa-solid fa-chart-line text-blue-600"></i> Tela do Osciloscópio Didático
+                    </h2>
+                    <p class="text-xs text-slate-500 mb-4" id="scopeDesc">O gráfico exibe 2 ciclo(s) com base na frequência selecionada.</p>
+                </div>
+                
+                <div class="relative flex-grow min-h-[350px] flex items-center justify-center">
+                    <canvas id="oscilloChart"></canvas>
+                </div>
+
+                <div class="mt-4 p-3 bg-amber-50 rounded-lg border border-amber-200 text-xs text-amber-800 flex gap-2 items-start">
+                    <i class="fa-solid fa-circle-info mt-0.5 text-amber-600"></i>
+                    <div>
+                        <span class="font-bold">Uso em Aula:</span> A linha azul representa o valor instantâneo v(t) flutuando no tempo. A linha vermelha tracejada indica o trabalho térmico contínuo equivalente (Vrms). O multímetro de bancada ignora as oscilações azuis e exibe o valor Eficaz constante! Pouse o mouse sobre o gráfico para inspecionar os valores numéricos em cada ponto.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-8 bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col sm:flex-row justify-between items-center gap-4">
+            <div class="flex items-center gap-3">
+                <div class="bg-blue-50 p-2 rounded-lg flex-shrink-0">
+                    <i class="fa-solid fa-book text-blue-600 text-lg"></i>
+                </div>
+                <div>
+                    <h4 class="text-sm font-bold text-slate-800">Memorial Técnico do Módulo</h4>
+                    <p class="text-xs text-slate-500">Consulte as notas de engenharia e os modelos matemáticos deste simulador.</p>
+                </div>
+            </div>
+            <a href="devnotes_modulo1.html" class="whitespace-nowrap inline-flex items-center gap-2 text-xs text-blue-700 hover:text-white font-bold transition-colors py-2.5 px-4 bg-blue-50 hover:bg-blue-600 rounded-lg border border-blue-200 hover:border-blue-600">
+                Acessar Dev Notes <i class="fa-solid fa-arrow-right"></i>
+            </a>
+        </div>
+
+    </main>
+
+    <footer class="bg-slate-900 text-slate-400 text-center py-4 text-xs border-t border-slate-800 mt-auto">
+        Material de Apoio Didático — Desenvolvido para o Curso Técnico em Eletrotécnica IFRN
+    </footer>
+
+    <script>
+        const vpSlider = document.getElementById('vpSlider');
+        const vpInput = document.getElementById('vpInput');
+        const freqSlider = document.getElementById('freqSlider');
+        const freqInput = document.getElementById('freqInput');
+        const cyclesSlider = document.getElementById('cyclesSlider');
+        const cyclesInput = document.getElementById('cyclesInput');
+        const scopeDesc = document.getElementById('scopeDesc');
+        
+        const mVp = document.getElementById('mVp');
+        const mVpp = document.getElementById('mVpp');
+        const mVrms = document.getElementById('mVrms');
+        const mT = document.getElementById('mT');
+        const mOmega = document.getElementById('mOmega');
+        
+        const btnAnimate = document.getElementById('btnAnimate');
+        const btnIcon = document.getElementById('btnIcon');
+        const btnText = document.getElementById('btnText');
+        
+        let chart;
+        let isAnimating = false;
+        let phaseShift = 0;
+        let animationFrameId;
+
+        function initChart() {
+            const ctx = document.getElementById('oscilloChart').getContext('2d');
+            
+            chart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [
+                        {
+                            label: 'v(t) Instantâneo',
+                            data: [],
+                            borderColor: '#2563eb',
+                            borderWidth: 3,
+                            pointRadius: 0,
+                            tension: 0.1
+                        },
+                        {
+                            label: 'Vrms [Valor Eficaz]',
+                            data: [],
+                            borderColor: '#dc2626',
+                            borderWidth: 2,
+                            borderDash: [6, 6],
+                            pointRadius: 0,
+                            fill: false
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'dic_circuitos_eletricos',
+                        intersect: false,
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: { font: { weight: 'bold', size: 12 } }
+                        },
+                        tooltip: {
+                            enabled: true,
+                            backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                            titleFont: { family: 'Inter', size: 13 },
+                            bodyFont: { family: 'Fira Code', size: 12 },
+                            padding: 10,
+                            callbacks: {
+                                title: function(tooltipItems) {
+                                    return 'Tempo: ' + tooltipItems[0].label + ' ms';
+                                },
+                                label: function(context) {
+                                    return context.dataset.label + ': ' + context.parsed.y.toFixed(2) + ' V';
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            title: { display: true, text: 'Tempo (milissegundos)', font: { weight: 'bold' } },
+                            grid: { color: '#e2e8f0' },
+                            ticks: { font: { family: 'Fira Code' } }
+                        },
+                        y: {
+                            title: { display: true, text: 'Tensão (Volts)', font: { weight: 'bold' } },
+                            min: -550,
+                            max: 550,
+                            grid: { color: '#e2e8f0' }
+                        }
+                    },
+                    animation: false
+                }
+            });
+        }
+
+        function updateLayout() {
+            let Vp = parseFloat(vpInput.value) || 0;
+            let f = parseFloat(freqInput.value) || 1; 
+            let cycles = parseFloat(cyclesInput.value) || 2; 
+            
+            scopeDesc.innerText = `A tela (eixo de tempo) está ajustada para exibir ${cycles} ciclo(s) elétrico(s).`;
+
+            const Vpp = 2 * Vp;
+            const Vrms = Vp / Math.sqrt(2);
+            const T = 1 / f; 
+            const omega = 2 * Math.PI * f;
+
+            mVp.innerText = `${Vp.toFixed(2)} V`;
+            mVpp.innerText = `${Vpp.toFixed(2)} V`;
+            mVrms.innerText = `${Vrms.toFixed(2)} V`;
+            mT.innerText = `${(T * 1000).toFixed(2)} ms`;
+            mOmega.innerText = `${omega.toFixed(1)} rad/s`;
+
+            const totalDurationMs = cycles * T * 1000; 
+            
+            // Lógica de Amostragem Dinâmica (Proteção de Memória)
+            const samples = Math.min(5000, Math.max(150, Math.round(cycles * 50))); 
+
+            const labels = [];
+            const sineData = [];
+            const rmsData = [];
+
+            for (let i = 0; i <= samples; i++) {
+                const tMs = (totalDurationMs / samples) * i;
+                const tSec = tMs / 1000;
+                
+                const v_t = Vp * Math.sin(2 * Math.PI * f * tSec - phaseShift);
+                
+                labels.push(tMs.toFixed(2));
+                sineData.push(v_t);
+                rmsData.push(Vrms);
+            }
+
+            chart.data.labels = labels;
+            chart.data.datasets[0].data = sineData;
+            chart.data.datasets[1].data = rmsData;
+            
+            const margin = Vp < 50 ? 20 : Vp * 0.25;
+            chart.options.scales.y.max = Math.ceil(Vp + margin);
+            chart.options.scales.y.min = Math.floor(-Vp - margin);
+            
+            chart.update();
+        }
+
+        vpSlider.addEventListener('input', (e) => { vpInput.value = e.target.value; updateLayout(); });
+        vpInput.addEventListener('input', (e) => { vpSlider.value = e.target.value; updateLayout(); });
+
+        freqSlider.addEventListener('input', (e) => { freqInput.value = e.target.value; updateLayout(); });
+        freqInput.addEventListener('input', (e) => { freqSlider.value = e.target.value; updateLayout(); });
+
+        cyclesSlider.addEventListener('input', (e) => { cyclesInput.value = e.target.value; updateLayout(); });
+        cyclesInput.addEventListener('input', (e) => { cyclesSlider.value = e.target.value; updateLayout(); });
+
+        function animationLoop() {
+            if (!isAnimating) return;
+            const f = parseFloat(freqInput.value) || 60;
+            phaseShift += 0.08 * (f / 60); 
+            updateLayout();
+            animationFrameId = requestAnimationFrame(animationLoop);
+        }
+
+        btnAnimate.addEventListener('click', () => {
+            isAnimating = !isAnimating;
+            if (isAnimating) {
+                btnIcon.className = "fa-solid fa-pause";
+                btnText.innerText = "Pausar Simulação";
+                btnAnimate.classList.remove('bg-blue-600', 'hover:bg-blue-700');
+                btnAnimate.classList.add('bg-amber-500', 'hover:bg-amber-600');
+                animationLoop();
+            } else {
+                btnIcon.className = "fa-solid fa-play";
+                btnText.innerText = "Simular Fluxo de Tempo";
+                btnAnimate.classList.remove('bg-amber-500', 'hover:bg-amber-600');
+                btnAnimate.classList.add('bg-blue-600', 'hover:bg-blue-700');
+                cancelAnimationFrame(animationFrameId);
+            }
+        });
+
+        window.onload = () => {
+            initChart();
+            updateLayout();
+        };
+    </script>
+</body>
+</html>

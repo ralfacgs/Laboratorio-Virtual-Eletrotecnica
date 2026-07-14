@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dev Notes - Plotador Gráfico IFRN Lab</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&family=Fira+Code:wght@400;500&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+        }
+        .code-font {
+            font-family: 'Fira Code', monospace;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
+
+    <header class="bg-emerald-700 text-white shadow-md py-4 px-6 relative z-10">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="flex items-center gap-4">
+                <div class="bg-white p-2 rounded shadow-sm text-emerald-700 font-bold text-xl flex items-center justify-center h-12 w-12">
+                    <i class="fa-solid fa-bolt-lightning"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold tracking-wide">INSTITUTO FEDERAL DO RIO GRANDE DO NORTE</h1>
+                    <p class="text-xs text-emerald-100 font-medium">Campus João Câmara | Curso Técnico em Eletrotécnica</p>
+                </div>
+            </div>
+            <div class="text-center md:text-right">
+                <p class="text-sm font-semibold text-emerald-50">Documentação do Sistema</p>
+                <p class="text-xs text-emerald-200">Prof. Rafael Cândido Gomes da Silva</p>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-grow w-full max-w-3xl mx-auto p-4 md:p-6 flex flex-col">
+
+        <div class="mb-6">
+            <a href="plotador.html" class="inline-flex items-center gap-2 text-indigo-600 hover:text-indigo-800 font-semibold transition-colors bg-indigo-50 hover:bg-indigo-100 px-4 py-2 rounded-lg border border-indigo-200 shadow-sm">
+                <i class="fa-solid fa-arrow-left"></i> Voltar para o Plotador
+            </a>
+        </div>
+
+        <div class="mb-8">
+            <h2 class="text-3xl font-black text-slate-900 tracking-tight flex items-center gap-3">
+                <i class="fa-solid fa-code-branch text-indigo-600"></i> Histórico de Atualizações
+            </h2>
+            <p class="text-slate-500 mt-1">Notas de desenvolvimento, novas funcionalidades e correções do Plotador Gráfico IFRN Lab.</p>
+        </div>
+
+        <div class="space-y-8 relative before:absolute before:inset-0 before:left-4 before:h-full before:w-0.5 before:bg-slate-200">
+
+            <div class="relative pl-10 group">
+                <div class="absolute left-2.5 top-1.5 w-3 h-3 rounded-full bg-indigo-600 border-4 border-white shadow group-hover:scale-125 transition-transform"></div>
+                <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-3">
+                    <div class="flex flex-wrap items-center justify-between gap-2">
+                        <span class="bg-indigo-100 text-indigo-800 text-xs font-bold px-2.5 py-1 rounded-md code-font">v2.4.0</span>
+                        <span class="text-xs font-semibold text-slate-400"><i class="fa-regular fa-calendar-days"></i> Junho de 2026</span>
+                    </div>
+                    <h3 class="text-lg font-bold text-slate-800">Interação Precisa com Curvas e Tooltip Alternável</h3>
+                    <ul class="text-sm text-slate-600 space-y-2 list-disc pl-4">
+                        <li><strong class="text-slate-800">Marcador de Hover Contínuo:</strong> inclusão de uma bolinha-guia que acompanha o mouse ao longo da curva, inclusive entre pontos amostrados, sem exibir automaticamente a caixa de valores.</li>
+                        <li><strong class="text-slate-800">Detecção por Segmento:</strong> substituição da busca apenas por pontos discretos por cálculo de distância até os segmentos da curva, tornando o marcador mais suave e fiel ao traçado.</li>
+                        <li><strong class="text-slate-800">Tooltip Sob Demanda:</strong> os valores só aparecem quando o usuário clica diretamente sobre a bolinha-guia.</li>
+                        <li><strong class="text-slate-800">Clique Alternável:</strong> primeiro clique exibe o valor; segundo clique na mesma bolinha oculta a informação.</li>
+                        <li><strong class="text-slate-800">Fechamento ao Clicar Fora:</strong> qualquer clique em área vazia do gráfico remove imediatamente o tooltip ativo.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="relative pl-10 group">
+                <div class="absolute left-2.5 top-1.5 w-3 h-3 rounded-full bg-slate-400 border-4 border-white shadow group-hover:scale-125 transition-transform"></div>
+                <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-3">
+                    <div class="flex flex-wrap items-center justify-between gap-2">
+                        <span class="bg-slate-100 text-slate-800 text-xs font-bold px-2.5 py-1 rounded-md code-font">v2.3.0</span>
+                    </div>
+                    <h3 class="text-lg font-bold text-slate-800">Cursores Horizontais e Sistema de Medição Completo</h3>
+                    <ul class="text-sm text-slate-600 space-y-2 list-disc pl-4">
+                        <li><strong class="text-slate-800">Cursores H1 e H2:</strong> adição de duas linhas horizontais arrastáveis para medições de amplitude diretamente sobre o gráfico.</li>
+                        <li><strong class="text-slate-800">Cálculo de ΔY:</strong> leitura automática da diferença vertical entre os cursores horizontais.</li>
+                        <li><strong class="text-slate-800">Operação Conjunta:</strong> cursores verticais e horizontais podem ser utilizados simultaneamente.</li>
+                        <li><strong class="text-slate-800">Reposicionamento Inteligente:</strong> o botão de reposição passa a distribuir os quatro cursores dentro da área visível do gráfico.</li>
+                        <li><strong class="text-slate-800">Proteção contra Conflitos:</strong> arrastar cursores não dispara tooltips nem interfere na seleção de pontos da curva.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="relative pl-10 group">
+                <div class="absolute left-2.5 top-1.5 w-3 h-3 rounded-full bg-slate-400 border-4 border-white shadow group-hover:scale-125 transition-transform"></div>
+                <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-3">
+                    <div class="flex flex-wrap items-center justify-between gap-2">
+                        <span class="bg-slate-100 text-slate-800 text-xs font-bold px-2.5 py-1 rounded-md code-font">v2.2.0</span>
+                    </div>
+                    <h3 class="text-lg font-bold text-slate-800">Aprimoramentos de Visualização e Navegação</h3>
+                    <ul class="text-sm text-slate-600 space-y-2 list-disc pl-4">
+                        <li><strong class="text-slate-800">Altura Otimizada:</strong> redução da altura do plano cartesiano para recuperar uma proporção visual mais equilibrada e próxima da versão original.</li>
+                        <li><strong class="text-slate-800">Painel Acompanhando a Rolagem:</strong> em telas grandes, o gráfico utiliza posicionamento fixo por rolagem para permanecer visível enquanto o usuário acessa os controles laterais.</li>
+                        <li><strong class="text-slate-800">Responsividade Preservada:</strong> em telas menores, o comportamento volta automaticamente ao fluxo normal para evitar sobreposição de conteúdo.</li>
+                        <li><strong class="text-slate-800">Animação Restaurada:</strong> retorno da animação progressiva de desenho das curvas ao inserir ou atualizar uma função.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="relative pl-10 group">
+                <div class="absolute left-2.5 top-1.5 w-3 h-3 rounded-full bg-slate-400 border-4 border-white shadow group-hover:scale-125 transition-transform"></div>
+                <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-3">
+                    <div class="flex flex-wrap items-center justify-between gap-2">
+                        <span class="bg-slate-100 text-slate-800 text-xs font-bold px-2.5 py-1 rounded-md code-font">v2.1.0</span>
+                    </div>
+                    <h3 class="text-lg font-bold text-slate-800">Cursores Verticais e Medições Temporais</h3>
+                    <ul class="text-sm text-slate-600 space-y-2 list-disc pl-4">
+                        <li><strong class="text-slate-800">Cursores C1 e C2:</strong> implementação de duas linhas verticais arrastáveis sobre o plano cartesiano.</li>
+                        <li><strong class="text-slate-800">Leitura de Coordenadas:</strong> exibição dos valores de <code class="code-font">x</code> e <code class="code-font">y</code> em cada cursor.</li>
+                        <li><strong class="text-slate-800">Cálculo de ΔX:</strong> diferença automática entre as posições dos cursores para medições de intervalo de tempo.</li>
+                        <li><strong class="text-slate-800">Seleção da Curva:</strong> escolha da função utilizada para calcular os valores de amplitude associados aos cursores.</li>
+                        <li><strong class="text-slate-800">Interpolação Numérica:</strong> cálculo de valores intermediários entre os pontos amostrados do gráfico.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="relative pl-10 group">
+                <div class="absolute left-2.5 top-1.5 w-3 h-3 rounded-full bg-slate-400 border-4 border-white shadow group-hover:scale-125 transition-transform"></div>
+                <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-3">
+                    <div class="flex flex-wrap items-center justify-between gap-2">
+                        <span class="bg-slate-100 text-slate-800 text-xs font-bold px-2.5 py-1 rounded-md code-font">v2.0.0</span>
+                    </div>
+                    <h3 class="text-lg font-bold text-slate-800">Variáveis Dinâmicas, Análise Matemática e Modo Osciloscópio</h3>
+                    <ul class="text-sm text-slate-600 space-y-2 list-disc pl-4">
+                        <li><strong class="text-slate-800">Sliders de Variáveis:</strong> criação de variáveis globais configuráveis, como <code class="code-font">A</code>, <code class="code-font">w</code> e <code class="code-font">phi</code>, com valor, mínimo, máximo e passo.</li>
+                        <li><strong class="text-slate-800">Atualização em Tempo Real:</strong> as curvas são recalculadas automaticamente durante o movimento dos controles deslizantes.</li>
+                        <li><strong class="text-slate-800">Referência entre Funções:</strong> suporte a expressões como <code class="code-font">f1</code>, permitindo que funções posteriores reutilizem resultados anteriores.</li>
+                        <li><strong class="text-slate-800">Derivadas Numéricas:</strong> sintaxe especial <code class="code-font">der(f1)</code>, calculada por diferenças finitas centrais.</li>
+                        <li><strong class="text-slate-800">Integrais Numéricas:</strong> sintaxe <code class="code-font">int(f1)</code>, calculada pelo método dos trapézios.</li>
+                        <li><strong class="text-slate-800">Modo X-Y:</strong> representação de <code class="code-font">f1</code> no eixo X e <code class="code-font">f2</code> no eixo Y para construção de figuras de Lissajous.</li>
+                        <li><strong class="text-slate-800">Exportação para LaTeX:</strong> geração automática de código <code class="code-font">TikZ/PGFPlots</code> com as coordenadas das curvas visíveis.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="relative pl-10 group">
+                <div class="absolute left-2.5 top-1.5 w-3 h-3 rounded-full bg-slate-400 border-4 border-white shadow group-hover:scale-125 transition-transform"></div>
+                <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-3">
+                    <div class="flex flex-wrap items-center justify-between gap-2">
+                        <span class="bg-slate-100 text-slate-800 text-xs font-bold px-2.5 py-1 rounded-md code-font">v1.1.0</span>
+                    </div>
+                    <h3 class="text-lg font-bold text-slate-800">Múltiplas Funções e Validação de Entrada</h3>
+                    <ul class="text-sm text-slate-600 space-y-2 list-disc pl-4">
+                        <li><strong class="text-slate-800">Curvas Múltiplas:</strong> possibilidade de adicionar e remover diversas funções no mesmo plano cartesiano.</li>
+                        <li><strong class="text-slate-800">Paleta de Cores:</strong> atribuição automática de cores distintas para facilitar a leitura das curvas.</li>
+                        <li><strong class="text-slate-800">Legenda Dinâmica:</strong> identificação automática de cada função plotada.</li>
+                        <li><strong class="text-slate-800">Validação de Sintaxe:</strong> destaque visual das expressões inválidas e mensagem de erro contextual.</li>
+                        <li><strong class="text-slate-800">Tratamento de Domínio:</strong> valores não reais, infinitos ou indefinidos são ignorados ou convertidos em interrupções de linha.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="relative pl-10 group">
+                <div class="absolute left-2.5 top-1.5 w-3 h-3 rounded-full bg-slate-400 border-4 border-white shadow group-hover:scale-125 transition-transform"></div>
+                <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-3">
+                    <div class="flex flex-wrap items-center justify-between gap-2">
+                        <span class="bg-slate-100 text-slate-800 text-xs font-bold px-2.5 py-1 rounded-md code-font">v1.0.0</span>
+                    </div>
+                    <h3 class="text-lg font-bold text-slate-800">Lançamento Base do Plotador Gráfico</h3>
+                    <ul class="text-sm text-slate-600 space-y-2 list-disc pl-4">
+                        <li><strong class="text-slate-800">Interface IFRN Lab:</strong> layout responsivo com identidade visual institucional e painel de funções.</li>
+                        <li><strong class="text-slate-800">Chart.js:</strong> integração inicial para renderização de curvas em plano cartesiano responsivo.</li>
+                        <li><strong class="text-slate-800">Math.js:</strong> motor matemático para compilação e avaliação de expressões digitadas pelo usuário.</li>
+                        <li><strong class="text-slate-800">Intervalo Configurável:</strong> definição de valores mínimo e máximo do eixo X.</li>
+                        <li><strong class="text-slate-800">Plotagem Animada:</strong> desenho progressivo das curvas ao atualizar o gráfico.</li>
+                    </ul>
+                </div>
+            </div>
+
+        </div>
+
+    </main>
+
+    <footer class="bg-slate-900 text-slate-400 text-center py-4 text-xs border-t border-slate-800 mt-12 w-full">
+        Material de Apoio Didático — Desenvolvido para o Curso Técnico em Eletrotécnica IFRN
+    </footer>
+
+</body>
+</html>

@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Memorial Técnico - Diagramas Fasoriais</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&family=Fira+Code:wght@400;500&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
+        .code-font { font-family: 'Fira Code', monospace; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
+
+    <header class="bg-emerald-700 text-white shadow-md py-4 px-6 relative z-10">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="flex items-center gap-4">
+                <div class="bg-white p-2 rounded shadow-sm text-emerald-700 font-bold text-xl flex items-center justify-center h-12 w-12">
+                    <i class="fa-solid fa-compass"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold tracking-wide">INSTITUTO FEDERAL DO RIO GRANDE DO NORTE</h1>
+                    <p class="text-xs text-emerald-100 font-medium">Campus João Câmara | Curso Técnico em Eletrotécnica</p>
+                </div>
+            </div>
+            <div class="text-center md:text-right">
+                <p class="text-sm font-semibold text-emerald-50">Memorial Técnico do Módulo Fasorial</p>
+                <p class="text-xs text-emerald-200">Prof. Rafael Cândido Gomes da Silva</p>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-grow w-full max-w-4xl mx-auto p-4 md:p-6 flex flex-col">
+        
+        <div class="mb-6 flex gap-3">
+            <a href="diagramas_fasoriais.html" class="inline-flex items-center gap-2 text-amber-600 hover:text-amber-800 font-semibold transition-colors bg-white hover:bg-amber-50 px-4 py-2 rounded-lg border border-slate-200 hover:border-amber-200 shadow-sm">
+                <i class="fa-solid fa-arrow-left"></i> Voltar aos Diagramas
+            </a>
+
+        </div>
+
+        <div class="mb-8 bg-white p-6 rounded-xl border border-slate-200 shadow-sm border-l-4 border-l-amber-500 relative overflow-hidden">
+            <div class="absolute right-0 top-0 opacity-5 p-4 pointer-events-none">
+                <i class="fa-solid fa-compass text-8xl text-amber-500"></i>
+            </div>
+            <div class="relative z-10">
+                <h2 class="text-2xl font-black text-slate-900 tracking-tight">Notas de Engenharia: Análise Vetorial CA</h2>
+                <p class="text-slate-500 text-sm mt-1">Este documento detalha a arquitetura matemática base implementada nos arquivos <code class="code-font bg-slate-100 px-1 rounded text-amber-600">diagramas_fasoriais.html</code> e <code class="code-font bg-slate-100 px-1 rounded text-indigo-600">soma_fasores.html</code>.</p>
+            </div>
+        </div>
+
+        <div class="bg-white p-6 md:p-8 rounded-xl border border-slate-200 shadow-sm space-y-8">
+            
+            <section class="space-y-3">
+                <h3 class="text-lg font-bold text-slate-900 border-b border-slate-100 pb-2 flex items-center gap-2">
+                    <i class="fa-solid fa-square-root-variable text-amber-500"></i> 1. Modelagem Vetorial e Conversão de Coordenadas
+                </h3>
+                <p class="text-sm text-slate-600 leading-relaxed">
+                    O simulador gera representações gráficas de grandezas senoidais no domínio dos fasores. O cálculo das componentes retangulares (Real e Imaginária) a partir da forma polar é feito através de trigonometria básica, permitindo a transição rigorosa em tempo real entre módulo/fase e o plano cartesiano.
+                </p>
+                <div class="bg-slate-950 text-amber-400 p-4 rounded-lg code-font text-xs space-y-1 shadow-inner">
+                    <p>// Conversão de Polar (Amplitude, θ) para Retangular (a + bj)</p>
+                    <p>const rad = phase * Math.PI / 180;</p>
+                    <p>const real = amplitude * Math.cos(rad);</p>
+                    <p>const imag = amplitude * Math.sin(rad);</p>
+                </div>
+            </section>
+
+            <section class="space-y-3">
+                <h3 class="text-lg font-bold text-slate-900 border-b border-slate-100 pb-2 flex items-center gap-2">
+                    <i class="fa-solid fa-stopwatch text-emerald-500"></i> 2. Rotação Temporal Sincronizada
+                </h3>
+                <p class="text-sm text-slate-600 leading-relaxed">
+                    Para conectar o conceito de ciclo trigonométrico com a evolução no tempo da senoide, o sistema utiliza a API nativa do navegador para incrementar o tempo <code class="code-font text-slate-800">t</code>. O vetor (fasor) gira com velocidade angular ω, e sua ponta é perfeitamente alinhada com o eixo Y da senoide renderizada simultaneamente.
+                </p>
+                <div class="bg-slate-950 text-emerald-400 p-4 rounded-lg code-font text-xs space-y-1 shadow-inner">
+                    <p>// Cálculo do ângulo instantâneo e seu valor na senoide</p>
+                    <p>const currentAngle = phase0 + (freqAngular * t);</p>
+                    <p>const valorInstantaneo = Vp * Math.sin(currentAngle);</p>
+                </div>
+            </section>
+
+            <section class="space-y-3">
+                <h3 class="text-lg font-bold text-slate-900 border-b border-slate-100 pb-2 flex items-center gap-2">
+                    <i class="fa-solid fa-maximize text-purple-500"></i> 3. Escalonamento Dinâmico Inteligente (Auto-Zoom)
+                </h3>
+                <p class="text-sm text-slate-600 leading-relaxed">
+                    Para evitar que os vetores ultrapassem os limites visíveis do Canvas — especialmente durante a soma vetorial, onde a Resultante pode ser substancialmente maior —, o algoritmo implementa um fator de escala dinâmico. O sistema detecta a maior grandeza presente na tela (V₁, V₂ ou V<sub>R</sub>) e adapta o "zoom" para que todos se encaixem perfeitamente.
+                </p>
+                <div class="bg-slate-950 text-purple-400 p-4 rounded-lg code-font text-xs space-y-1 shadow-inner">
+                    <p>// Fator de proporção para renderização vetorial</p>
+                    <p>const maxVal = Math.max(a1, a2, aR);</p>
+                    <p>const scale = (canvas.width / 2 - 60) / maxVal;</p>
+                </div>
+            </section>
+
+            <section class="space-y-3">
+                <h3 class="text-lg font-bold text-slate-900 border-b border-slate-100 pb-2 flex items-center gap-2">
+                    <i class="fa-solid fa-vector-square text-blue-500"></i> 4. Regra do Paralelogramo e Interatividade
+                </h3>
+                <p class="text-sm text-slate-600 leading-relaxed">
+                    No módulo de Soma Vetorial, as projeções tracejadas são calculadas geometricamente espelhando as componentes de cada fasor. Além disso, a interatividade "Click & Drag" permite ao usuário arrastar a ponta do vetor. O código capta a coordenada do mouse no Canvas, inverte o eixo Y (que cresce para baixo em computação gráfica) e usa o Arco-Tangente bidimensional (<code class="code-font text-slate-800">Math.atan2</code>) para recalcular a fase.
+                </p>
+                <div class="bg-slate-950 text-blue-400 p-4 rounded-lg code-font text-xs space-y-1 shadow-inner">
+                    <p>// Interação do Mouse para girar o vetor manualmente</p>
+                    <p>let angle = Math.atan2(-y, x) * (180 / Math.PI);</p>
+                    <p>document.getElementById('numPhase').value = Math.round(angle);</p>
+                </div>
+            </section>
+
+            <section class="space-y-3">
+                <h3 class="text-lg font-bold text-slate-900 border-b border-slate-100 pb-2 flex items-center gap-2">
+                    <i class="fa-solid fa-user-lock text-rose-500"></i> 5. Ocultação Pedagógica (Cadeado do Professor)
+                </h3>
+                <p class="text-sm text-slate-600 leading-relaxed">
+                    Alinhado à filosofia didática do Lab AC Pro, o painel com o "Passo a Passo da Soma" (que realiza toda a mecânica matemática da transformação para retangular e soma algorítmica) é bloqueado por padrão. O sistema de autenticação, ancorado ao <code class="code-font text-slate-800">logins.js</code>, exige as credenciais do professor para exibir a resolução em tela, incentivando que a turma resolva o problema analiticamente em caderno primeiro.
+                </p>
+            </section>
+
+        </div>
+    </main>
+
+    <footer class="bg-slate-900 text-slate-400 text-center py-4 text-xs border-t border-slate-800 mt-12 w-full">
+        Material de Apoio Didático — Desenvolvido para o Curso Técnico em Eletrotécnica IFRN
+    </footer>
+
+</body>
+</html>

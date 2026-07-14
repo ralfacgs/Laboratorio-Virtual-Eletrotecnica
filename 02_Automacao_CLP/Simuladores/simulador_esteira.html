@@ -1,0 +1,808 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulador: Esteira Seletora - Lab CLP</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        
+        .draggable { cursor: grab; }
+        .draggable:active { cursor: grabbing; }
+        .dropzone.dragover { background-color: #fef3c7; border-color: #f59e0b; border-style: dashed; }
+        
+        /* LADDER */
+        .v-wire { position: absolute; left: -2px; top: 50%; width: 4px; height: 7rem; background-color: black; z-index: 30; border-radius: 2px; }
+        .v-wire-energized { background-color: #f59e0b !important; box-shadow: 0 0 8px #fcd34d; }
+        .wire-unpowered { background-color: black; }
+        .wire-powered { background-color: #f59e0b !important; }
+        .coil-energized { border-color: #f59e0b !important; background-color: #f59e0b !important; color: white !important; box-shadow: 0 0 15px #fde68a; }
+
+        /* Componentes Planta Visual (A Esteira) */
+        .conveyor-belt {
+            background-image: repeating-linear-gradient(90deg, #334155 0px, #334155 15px, #1e293b 15px, #1e293b 30px);
+        }
+        @keyframes moveBelt {
+            from { background-position: 0 0; }
+            to { background-position: 30px 0; }
+        }
+        .belt-running { animation: moveBelt 0.4s linear infinite; }
+        
+        .box { transition: top 0.3s ease-in-out, opacity 0.3s; }
+        
+        /* Laser */
+        .laser-beam { width: 2px; background-color: rgba(239, 68, 68, 0.4); box-shadow: 0 0 5px red; transition: background-color 0.1s; }
+        .laser-blocked { background-color: rgba(239, 68, 68, 1); box-shadow: 0 0 15px red; }
+
+        /* Pistão */
+        .piston-rod { transition: height 0.1s ease-in-out; }
+        .piston-extended { height: 40px !important; }
+
+        .push-btn { transition: all 0.1s; border-bottom-width: 6px; }
+        .push-btn:active { border-bottom-width: 2px; transform: translateY(4px); }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
+
+    <!-- MODAL DE PROPRIEDADES (Adaptado para Timer e Counter) -->
+    <div id="edit-modal" class="hidden fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center backdrop-blur-sm">
+        <div class="bg-white p-6 rounded-xl shadow-xl border border-slate-200 w-80 transform transition-all">
+            <h3 class="font-bold text-slate-800 mb-2"><i class="fa-solid fa-pen-to-square text-amber-500 mr-2"></i>Propriedades</h3>
+            <label class="text-xs font-bold text-slate-500 mb-1 block">Endereço (Ex: I1, Q1, T1, C1):</label>
+            <input type="text" id="edit-input" class="w-full border-2 border-slate-300 rounded-lg px-4 py-2 mb-2 focus:outline-none focus:border-amber-500 font-bold uppercase text-slate-700" autocomplete="off">
+            
+            <div id="block-settings" class="hidden flex-col gap-2 mt-2 p-3 bg-slate-50 border border-slate-200 rounded-lg mb-4">
+                <div id="timer-mode-container">
+                    <label class="text-xs font-bold text-slate-700">Modo de Operação:</label>
+                    <select id="edit-timer-mode" class="border-2 border-slate-300 rounded-md p-1.5 text-sm font-bold text-slate-600 focus:border-amber-500 outline-none w-full">
+                        <option value="TON">TON (Atraso ao Ligar)</option>
+                        <option value="TOF">TOF (Atraso ao Desligar)</option>
+                        <option value="TP">TP (Pulso de Tempo)</option>
+                    </select>
+                </div>
+                <label id="preset-label" class="text-xs font-bold text-slate-700 mt-2">Valor (Segundos ou Contagens):</label>
+                <input type="number" id="edit-block-preset" class="border-2 border-slate-300 rounded-md p-1.5 text-sm font-bold text-slate-600 focus:border-amber-500 outline-none w-full" value="3" min="1" max="999">
+            </div>
+
+            <div class="flex justify-end gap-2 mt-4">
+                <button onclick="closeModal()" class="px-4 py-2 text-sm font-bold text-slate-500 hover:bg-slate-100 rounded-lg transition-colors">Cancelar</button>
+                <button onclick="saveVarName()" class="px-4 py-2 text-sm font-bold text-white bg-amber-500 hover:bg-amber-600 rounded-lg transition-colors shadow-md shadow-amber-500/30">Salvar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- CABEÇALHO -->
+    <header class="bg-amber-800 text-white shadow-md py-4 px-6 relative z-10">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="flex items-center gap-4">
+                <div class="bg-white p-2 rounded shadow-sm text-amber-800 font-bold text-xl flex items-center justify-center h-12 w-12">
+                    <i class="fa-solid fa-box-open"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold tracking-wide">SIMULADOR PRÁTICO: Esteira de Separação</h1>
+                    <p class="text-xs text-amber-200 font-medium">Contagem e Separação</p>
+                </div>
+            </div>
+            <a href="../dic_automacao_clp.html" class="text-sm font-semibold text-amber-100 hover:text-white bg-amber-700 hover:bg-amber-600 px-4 py-2 rounded transition-colors border border-amber-600">
+                <i class="fa-solid fa-arrow-left mr-2"></i> Sair do Simulador
+            </a>
+        </div>
+    </header>
+
+    <main class="flex-grow max-w-7xl w-full mx-auto p-4 flex flex-col lg:flex-row gap-6 mt-4">
+        
+        <!-- COLUNA ESQUERDA: GÊMEO DIGITAL (PLANTA) -->
+        <aside class="w-full lg:w-[460px] flex flex-col gap-6">
+            
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 text-center flex gap-4">
+                <button id="btn-power" onclick="togglePower()" class="flex-grow py-3 rounded-lg font-black text-lg transition-all duration-300 bg-emerald-500 text-white shadow-lg shadow-emerald-500/30 hover:bg-emerald-600">
+                    <i class="fa-solid fa-play mt-1 mr-2"></i> INICIAR (RUN)
+                </button>
+                <div class="bg-slate-100 border border-slate-300 rounded-lg p-2 w-24 flex flex-col items-center justify-center">
+                    <span class="text-[8px] font-bold text-slate-500 uppercase">Lote Grande</span>
+                    <span id="digital-counter" class="font-mono text-xl font-black text-amber-600">0</span>
+                </div>
+            </div>
+
+            <!-- FÍSICA E ANIMAÇÃO DA ESTEIRA -->
+            <div class="bg-slate-800 rounded-xl shadow-lg border border-slate-700 p-6 flex flex-col relative overflow-hidden h-64">
+                <div class="absolute inset-0 opacity-10 bg-[radial-gradient(#fff_1px,transparent_1px)] [background-size:16px_16px]"></div>
+                
+                <h3 class="font-black text-slate-300 uppercase text-[11px] mb-2 tracking-widest z-10 text-center">Linha de Separação Óptica</h3>
+                
+                <div class="flex-grow relative mt-4">
+                    
+                    <!-- Cilindro Pneumático (Pistão Q2) -->
+                    <div class="absolute right-[120px] top-0 flex flex-col items-center z-30">
+                        <div class="w-8 h-6 bg-slate-400 rounded-t border-2 border-slate-500 flex items-center justify-center text-[8px] font-bold">Q2</div>
+                        <div id="piston-rod" class="w-2 h-2 bg-slate-300 piston-rod"></div>
+                        <div class="w-10 h-2 bg-slate-500 rounded-sm"></div>
+                    </div>
+
+                    <!-- Sensores (I1 e I2) -->
+                    <div class="absolute right-[135px] top-[40px] flex flex-col items-center z-20">
+                        <span class="text-[8px] font-bold text-rose-300 mb-1 bg-slate-900 px-1 rounded border border-rose-500">I2 (Alto)</span>
+                        <div id="laser-i2" class="laser-beam h-[20px]"></div>
+                    </div>
+                    <div class="absolute right-[165px] top-[40px] flex flex-col items-center z-20">
+                        <span class="text-[8px] font-bold text-emerald-300 mb-1 bg-slate-900 px-1 rounded border border-emerald-500">I1 (Base)</span>
+                        <div id="laser-i1" class="laser-beam h-[50px]"></div>
+                    </div>
+
+                    <!-- Lixeira (Descarte de Caixas Grandes) -->
+                    <div class="absolute right-[100px] bottom-0 w-16 h-12 border-x-2 border-b-2 border-slate-500 bg-slate-900/80 rounded-b flex items-end justify-center z-10">
+                        <span class="text-[8px] font-bold text-slate-500 mb-1">DESCARTE</span>
+                    </div>
+
+                    <!-- A Esteira (Q1) -->
+                    <div class="absolute top-[90px] w-full z-20 flex flex-col">
+                        <div class="flex justify-between px-2 w-full absolute -top-3">
+                            <i class="fa-solid fa-circle-notch text-slate-500 text-[10px]"></i>
+                            <span class="text-[8px] font-bold text-amber-300 bg-slate-900 px-1 rounded border border-amber-500">Q1 Motor</span>
+                            <i class="fa-solid fa-circle-notch text-slate-500 text-[10px]"></i>
+                        </div>
+                        <div id="conveyor" class="w-full h-4 conveyor-belt border-y border-slate-900 shadow-lg"></div>
+                        <div class="w-full h-1 bg-slate-600"></div>
+                    </div>
+
+                    <!-- Container onde as caixas são renderizadas via JS -->
+                    <div id="boxes-container" class="absolute inset-0 z-20 pointer-events-none"></div>
+
+                    <!-- Luz de Lote Completo (Q3) -->
+                    <div class="absolute top-2 left-2 flex items-center gap-2 bg-slate-900 p-1.5 rounded border border-slate-700 z-30">
+                        <div id="led-q3" class="w-4 h-4 rounded-full light-off border border-slate-800"></div>
+                        <span class="text-[9px] font-bold text-slate-300">Q3 (Lote OK)</span>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- PAINEL DE COMANDO FÍSICO (Usuário) -->
+            <div class="bg-slate-200 rounded-xl shadow-inner border border-slate-300 p-5 relative overflow-hidden flex flex-col gap-4">
+                <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-transparent via-white/50 to-transparent"></div>
+                <h3 class="font-black text-slate-600 text-center uppercase text-sm"><i class="fa-solid fa-hand-pointer mr-2"></i>Painel do Operador</h3>
+
+                <div class="flex justify-around items-end">
+                    
+                    <!-- I3 (Liga) -->
+                    <div class="flex flex-col items-center gap-2">
+                        <button id="btn-I3" onmousedown="pressBtn('I3', true)" onmouseup="pressBtn('I3', false)" onmouseleave="pressBtn('I3', false)" ontouchstart="pressBtn('I3', true)" ontouchend="pressBtn('I3', false)" class="push-btn w-12 h-12 bg-emerald-500 hover:bg-emerald-400 border-emerald-700 rounded-full shadow-lg text-white font-black focus:outline-none" disabled>
+                            <i class="fa-solid fa-power-off"></i>
+                        </button>
+                        <span class="text-[9px] font-bold text-slate-700 bg-white px-2 py-0.5 rounded shadow-sm border border-slate-300">I3 LIGA (NA)</span>
+                    </div>
+
+                    <!-- I4 (Desliga) -->
+                    <div class="flex flex-col items-center gap-2 mb-2">
+                        <button id="btn-I4" onmousedown="pressBtn('I4', false)" onmouseup="pressBtn('I4', true)" onmouseleave="pressBtn('I4', true)" ontouchstart="pressBtn('I4', false)" ontouchend="pressBtn('I4', true)" class="push-btn w-14 h-14 bg-rose-600 hover:bg-rose-500 border-rose-800 rounded-full shadow-lg text-white font-black text-xl focus:outline-none flex items-center justify-center" disabled>
+                            <i class="fa-solid fa-stop"></i>
+                        </button>
+                        <span class="text-[9px] font-bold text-slate-700 bg-white px-2 py-0.5 rounded shadow-sm border border-slate-300">I4 DESL (NF)</span>
+                    </div>
+
+                    <!-- Spawners de Caixas (Física Externa) -->
+                    <div class="flex flex-col gap-2 border-l-2 border-slate-300 pl-4">
+                        <button onclick="spawnBox('small')" class="bg-amber-600 hover:bg-amber-500 text-white text-[10px] font-bold py-2 px-3 rounded shadow transition-colors active:scale-95 flex items-center justify-between gap-2 disabled:opacity-50" id="btn-spawn1" disabled>
+                            <i class="fa-solid fa-box text-xs"></i> Add Pequena
+                        </button>
+                        <button onclick="spawnBox('large')" class="bg-orange-700 hover:bg-orange-600 text-white text-[10px] font-bold py-2 px-3 rounded shadow transition-colors active:scale-95 flex items-center justify-between gap-2 disabled:opacity-50" id="btn-spawn2" disabled>
+                            <i class="fa-solid fa-box-open text-sm"></i> Add Grande
+                        </button>
+                    </div>
+
+                </div>
+            </div>
+        </aside>
+
+        <!-- COLUNA DIREITA: AMBIENTE LADDER -->
+        <section class="flex-grow flex flex-col gap-6">
+            
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4" id="toolbox">
+                <div class="flex flex-wrap gap-2 items-center justify-center">
+                    <span class="text-xs font-bold text-slate-400 uppercase mr-2 border-r pr-4">Arraste:</span>
+                    
+                    <div class="draggable bg-emerald-50 border border-emerald-200 p-2 rounded flex flex-col items-center hover:bg-emerald-100 cursor-grab w-12" draggable="true" ondragstart="dragStart(event, 'NA')">
+                        <div class="flex items-center justify-center w-full h-5 mb-1 pointer-events-none"><div class="h-1 bg-black w-full"></div><div class="h-5 w-1 bg-black flex-shrink-0"></div><div class="w-2 flex-shrink-0"></div><div class="h-5 w-1 bg-black flex-shrink-0"></div><div class="h-1 bg-black w-full"></div></div>
+                        <span class="text-[8px] font-bold pointer-events-none">NA</span>
+                    </div>
+                    
+                    <div class="draggable bg-rose-50 border border-rose-200 p-2 rounded flex flex-col items-center hover:bg-rose-100 cursor-grab w-12" draggable="true" ondragstart="dragStart(event, 'NF')">
+                        <div class="flex items-center justify-center w-full h-5 mb-1 pointer-events-none"><div class="h-1 bg-black w-full"></div><div class="h-5 w-1 bg-black flex-shrink-0"></div><div class="w-2 flex-shrink-0 relative"><div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-5 w-1 bg-black rotate-[45deg]"></div></div><div class="h-5 w-1 bg-black flex-shrink-0"></div><div class="h-1 bg-black w-full"></div></div>
+                        <span class="text-[8px] font-bold pointer-events-none">NF</span>
+                    </div>
+
+                    <div class="draggable bg-blue-50 border border-blue-200 p-2 rounded flex flex-col items-center hover:bg-blue-100 cursor-grab w-12" draggable="true" ondragstart="dragStart(event, 'COIL')">
+                        <div class="flex items-center justify-center w-full h-5 mb-1 pointer-events-none"><div class="h-1 bg-black w-full"></div><div class="h-5 w-5 rounded-full border-[2px] border-black flex items-center justify-center text-[8px] font-black flex-shrink-0">Q</div><div class="h-1 bg-black w-full"></div></div>
+                        <span class="text-[8px] font-bold pointer-events-none">BOBINA</span>
+                    </div>
+
+                    <div class="draggable bg-cyan-50 border border-cyan-200 p-2 rounded flex flex-col items-center hover:bg-cyan-100 cursor-grab w-12" draggable="true" ondragstart="dragStart(event, 'SET')">
+                        <div class="flex items-center justify-center w-full h-5 mb-1 pointer-events-none"><div class="h-1 bg-black w-full"></div><div class="h-5 w-5 rounded-full border-[2px] border-black flex items-center justify-center text-[8px] font-black flex-shrink-0">S</div><div class="h-1 bg-black w-full"></div></div>
+                        <span class="text-[8px] font-bold pointer-events-none">SET</span>
+                    </div>
+
+                    <div class="draggable bg-orange-50 border border-orange-200 p-2 rounded flex flex-col items-center hover:bg-orange-100 cursor-grab w-12" draggable="true" ondragstart="dragStart(event, 'RESET')">
+                        <div class="flex items-center justify-center w-full h-5 mb-1 pointer-events-none"><div class="h-1 bg-black w-full"></div><div class="h-5 w-5 rounded-full border-[2px] border-black flex items-center justify-center text-[8px] font-black flex-shrink-0">R</div><div class="h-1 bg-black w-full"></div></div>
+                        <span class="text-[8px] font-bold pointer-events-none">RESET</span>
+                    </div>
+
+                    <div class="draggable bg-indigo-50 border border-indigo-200 p-2 rounded flex flex-col items-center hover:bg-indigo-100 cursor-grab w-12" draggable="true" ondragstart="dragStart(event, 'COUNTER')">
+                        <div class="flex items-center justify-center w-full h-5 mb-1 pointer-events-none"><div class="h-1 bg-black w-full"></div><div class="h-5 w-6 rounded border-[2px] border-black flex items-center justify-center text-[8px] font-black flex-shrink-0">C</div><div class="h-1 bg-black w-full"></div></div>
+                        <span class="text-[8px] font-bold pointer-events-none uppercase">CONTAR</span>
+                    </div>
+
+                    <div class="draggable bg-fuchsia-50 border border-fuchsia-200 p-2 rounded flex flex-col items-center hover:bg-fuchsia-100 cursor-grab w-12" draggable="true" ondragstart="dragStart(event, 'TIMER')">
+                        <div class="flex items-center justify-center w-full h-5 mb-1 pointer-events-none"><div class="h-1 bg-black w-full"></div><div class="h-5 w-6 rounded border-[2px] border-black flex items-center justify-center text-[8px] font-black flex-shrink-0">T</div><div class="h-1 bg-black w-full"></div></div>
+                        <span class="text-[8px] font-bold pointer-events-none uppercase">TIMER</span>
+                    </div>
+
+                    <!-- Auxiliares -->
+                    <div class="draggable bg-slate-100 border border-slate-300 p-2 rounded flex flex-col items-center hover:bg-slate-200 cursor-grab w-12 ml-1 border-l-4" draggable="true" ondragstart="dragStart(event, 'WIRE')">
+                        <i class="fa-solid fa-minus text-xs mb-1 pointer-events-none"></i><span class="text-[8px] font-bold pointer-events-none">FIO</span>
+                    </div>
+                    <div class="draggable bg-amber-50 border border-amber-300 p-2 rounded flex flex-col items-center hover:bg-amber-100 cursor-grab w-12" draggable="true" ondragstart="dragStart(event, 'VWIRE')">
+                        <i class="fa-solid fa-arrows-up-down text-xs mb-1 pointer-events-none"></i><span class="text-[8px] font-bold pointer-events-none">NÓ</span>
+                    </div>
+                    <div class="draggable bg-slate-50 border border-dashed border-slate-300 p-2 rounded flex flex-col items-center hover:bg-slate-100 cursor-grab w-12" draggable="true" ondragstart="dragStart(event, 'ERASER')">
+                        <i class="fa-solid fa-eraser text-xs mb-1 pointer-events-none"></i><span class="text-[8px] font-bold pointer-events-none">LIXO</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex-grow bg-white rounded-xl shadow-sm border border-slate-200 p-6 flex flex-col">
+                <div class="flex flex-col mb-6">
+                    <div class="flex justify-between items-center mb-3">
+                        <h3 class="font-bold text-slate-800 text-xl"><i class="fa-solid fa-sitemap text-amber-600 mr-2"></i> Lógica do CLP (LADDER)</h3>
+                    </div>
+                    <div class="flex gap-2 flex-wrap text-[10px] font-bold">
+                        <span class="bg-emerald-100 text-emerald-800 px-2 py-1 rounded border border-emerald-200">I1: Presença</span>
+                        <span class="bg-rose-100 text-rose-800 px-2 py-1 rounded border border-rose-200">I2: Altura (Gde)</span>
+                        <span class="bg-amber-100 text-amber-800 px-2 py-1 rounded border border-amber-200">Q1: Motor</span>
+                        <span class="bg-slate-100 text-slate-800 px-2 py-1 rounded border border-slate-300">Q2: Pistão</span>
+                        <span class="bg-yellow-100 text-yellow-800 px-2 py-1 rounded border border-yellow-300">Q3: Lote OK</span>
+                        <span class="bg-indigo-100 text-indigo-800 px-2 py-1 rounded border border-indigo-200">C1: Contador</span>
+                    </div>
+                </div>
+                
+                <div class="flex-grow bg-slate-50 border border-slate-200 rounded-lg p-4 overflow-x-auto relative min-h-[450px]">
+                    <div class="absolute left-4 top-4 bottom-4 w-1 bg-rose-500 rounded z-0"></div>
+                    <div class="absolute right-16 top-4 bottom-4 w-1 bg-blue-500 rounded z-0"></div>
+
+                    <div class="ml-4 mr-16 mt-8 flex flex-col gap-8 relative z-10" id="ladder-grid"></div>
+
+                    <div class="mt-8 ml-4 mr-16 flex gap-4 relative z-10">
+                        <button onclick="addRung()" class="flex-grow border-2 border-dashed border-slate-300 text-slate-500 hover:text-amber-600 hover:border-amber-500 hover:bg-amber-50 py-3 rounded-lg transition-colors font-bold text-sm">
+                            <i class="fa-solid fa-plus mr-2"></i> Nova Linha
+                        </button>
+                        <button onclick="clearAll()" class="px-6 border-2 border-dashed border-slate-300 text-slate-500 hover:text-rose-600 hover:border-rose-500 hover:bg-rose-50 py-3 rounded-lg transition-colors font-bold text-sm">
+                            <i class="fa-solid fa-trash-can mr-2"></i> Limpar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <script>
+        let isRunning = false;
+        let grid = [];
+        const COLS = 5;
+        let nodePower = []; 
+        
+        const memory = { 
+            inputs: { 'I1': false, 'I2': false, 'I3': false, 'I4': true }, // I4 é Botão Desliga Físico NF
+            outputs: { 'Q1': false, 'Q2': false, 'Q3': false },
+            markers: {}
+        };
+        const timersConfig = {}; 
+        const countersConfig = {}; // Memória para o Bloco Contador
+
+        // Física das Caixas
+        let boxes = [];
+        let boxIdCounter = 0;
+
+        const ladderGrid = document.getElementById('ladder-grid');
+
+        let editingCell = null;
+        function openEditModal(r, c) {
+            if (isRunning) return alert("Desligue o MODO RUN para programar.");
+            editingCell = { r, c };
+            const cellData = grid[r][c];
+            document.getElementById('edit-input').value = cellData.varName;
+            
+            const blockSettings = document.getElementById('block-settings');
+            const timerMode = document.getElementById('timer-mode-container');
+            const presetLabel = document.getElementById('preset-label');
+            const presetInput = document.getElementById('edit-block-preset');
+
+            if (cellData.type === 'TIMER') {
+                blockSettings.classList.replace('hidden', 'flex');
+                timerMode.classList.replace('hidden', 'block');
+                presetLabel.innerHTML = "Tempo (Segundos):";
+                let tConf = timersConfig[cellData.varName] || { mode: 'TON', preset: 3000 };
+                document.getElementById('edit-timer-mode').value = tConf.mode;
+                presetInput.value = tConf.preset / 1000;
+            } else if (cellData.type === 'COUNTER') {
+                blockSettings.classList.replace('hidden', 'flex');
+                timerMode.classList.replace('block', 'hidden'); // Contador não tem TON/TOF
+                presetLabel.innerHTML = "Contagem (Qtd de Pulsos):";
+                let cConf = countersConfig[cellData.varName] || { preset: 3 };
+                presetInput.value = cConf.preset;
+            } else {
+                blockSettings.classList.replace('flex', 'hidden');
+            }
+
+            document.getElementById('edit-modal').classList.remove('hidden');
+            document.getElementById('edit-input').focus();
+        }
+
+        function closeModal() {
+            document.getElementById('edit-modal').classList.add('hidden');
+            editingCell = null;
+        }
+
+        function saveVarName() {
+            if (!editingCell) return;
+            const cellData = grid[editingCell.r][editingCell.c];
+            const newName = document.getElementById('edit-input').value.trim().toUpperCase();
+            
+            if (newName !== "") {
+                if (cellData.type === 'TIMER') {
+                    const mode = document.getElementById('edit-timer-mode').value;
+                    const secs = parseInt(document.getElementById('edit-block-preset').value) || 1;
+                    timersConfig[newName] = { mode: mode, preset: secs * 1000, startTime: null, q: false, lastIn: false };
+                } else if (cellData.type === 'COUNTER') {
+                    const pulses = parseInt(document.getElementById('edit-block-preset').value) || 1;
+                    // Mantém a contagem atual se já existir, apenas atualiza o limite
+                    let currentVal = countersConfig[newName] ? countersConfig[newName].current : 0;
+                    let lastInVal = countersConfig[newName] ? countersConfig[newName].lastIn : false;
+                    countersConfig[newName] = { preset: pulses, current: currentVal, q: false, lastIn: lastInVal };
+                }
+
+                grid[editingCell.r][editingCell.c].varName = newName;
+                
+                if (newName.startsWith('I') && memory.inputs[newName] === undefined) memory.inputs[newName] = false;
+                if (newName.startsWith('Q') && memory.outputs[newName] === undefined) memory.outputs[newName] = false;
+                if (newName.startsWith('M') && memory.markers[newName] === undefined) memory.markers[newName] = false;
+                if (newName === 'I4') memory.inputs['I4'] = true; // Força I4 a nascer como NF
+                
+                renderGrid();
+            }
+            closeModal();
+        }
+
+        document.getElementById('edit-input').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') saveVarName();
+        });
+
+        function clearAll() {
+            if (isRunning) return alert("Pare a simulação para limpar.");
+            if (confirm("Tem certeza que deseja apagar a lógica?")) {
+                grid = [];
+                for (let k in memory.outputs) memory.outputs[k] = false;
+                for (let k in memory.markers) memory.markers[k] = false;
+                for (let k in timersConfig) delete timersConfig[k];
+                for (let k in countersConfig) delete countersConfig[k];
+                addRung(); addRung(); addRung();
+            }
+        }
+
+        function initSystem() { addRung(); addRung(); addRung(); }
+
+        function addRung() {
+            if (isRunning) return;
+            grid.push(Array(COLS).fill().map(() => ({ type: 'EMPTY', varName: '', vWire: false })));
+            renderGrid();
+        }
+
+        function deleteRung(rowIndex) {
+            if (isRunning) return;
+            if (grid.length <= 1) return;
+            grid.splice(rowIndex, 1);
+            renderGrid();
+        }
+
+        function dragStart(e, type) { if (isRunning) { e.preventDefault(); return; } e.dataTransfer.setData('text/plain', type); }
+        function dragOver(e) { if (isRunning) return; e.preventDefault(); const d = e.target.closest('.dropzone'); if(d) d.classList.add('dragover'); }
+        function dragLeave(e) { const d = e.target.closest('.dropzone'); if(d) d.classList.remove('dragover'); }
+        
+        function drop(e) {
+            if (isRunning) return;
+            e.preventDefault();
+            const d = e.target.closest('.dropzone'); if (!d) return; d.classList.remove('dragover');
+            const r = parseInt(d.dataset.row); const c = parseInt(d.dataset.col);
+            const type = e.dataTransfer.getData('text/plain'); if (!type) return; 
+
+            if (type === 'VWIRE') {
+                if (c === 0) return alert("Nó inválido no barramento principal.");
+                if (r === grid.length - 1) return alert("Adicione uma linha abaixo.");
+                grid[r][c].vWire = !grid[r][c].vWire;
+                renderGrid(); return;
+            }
+
+            const coilTypes = ['COIL', 'SET', 'RESET', 'TIMER', 'COUNTER'];
+            if (c === COLS - 1 && !coilTypes.includes(type) && type !== 'ERASER') return alert("Coluna restrita para Bobinas e Blocos.");
+            if (c < COLS - 1 && coilTypes.includes(type)) return alert("Bobinas e Blocos ficam na última coluna.");
+
+            let varName = '';
+            if (type === 'NA' || type === 'NF') varName = 'I1';
+            if (type === 'COIL') varName = 'Q1';
+            if (type === 'SET' || type === 'RESET') varName = 'M1';
+            if (type === 'TIMER') {
+                varName = 'T1';
+                timersConfig[varName] = { mode: 'TON', preset: 3000, startTime: null, q: false, lastIn: false };
+            }
+            if (type === 'COUNTER') {
+                varName = 'C1';
+                countersConfig[varName] = { preset: 3, current: 0, q: false, lastIn: false };
+            }
+
+            if (type === 'ERASER') grid[r][c] = { type: 'EMPTY', varName: '', vWire: false };
+            else grid[r][c] = { type, varName, vWire: grid[r][c].vWire };
+            
+            renderGrid();
+        }
+
+        // --- RENDERIZAÇÃO DA GRELHA (HITBOX BLINDADA) ---
+        function renderGrid() {
+            ladderGrid.innerHTML = '';
+            for (let r = 0; r < grid.length; r++) {
+                const rowDiv = document.createElement('div');
+                rowDiv.className = 'flex items-center gap-0 h-20 relative before:content-[""] before:absolute before:left-0 before:-ml-4 before:w-4 before:h-1 before:bg-rose-500';
+                
+                for (let c = 0; c < COLS; c++) {
+                    const cellData = grid[r][c];
+                    const isLast = c === COLS - 1;
+                    const cell = document.createElement('div');
+                    cell.className = `dropzone flex-1 h-full relative border-y-2 border-r-2 ${c===0?'border-l-2':''} ${cellData.type === 'EMPTY' ? 'border-dashed border-slate-200 text-slate-300' : 'border-solid border-slate-200 text-slate-700 bg-white'} flex flex-col items-center justify-center transition-all group`;
+                    cell.dataset.row = r; cell.dataset.col = c;
+                    cell.addEventListener('dragover', dragOver); cell.addEventListener('dragleave', dragLeave); cell.addEventListener('drop', drop);
+
+                    // HITBOX CAMADA 1: A própria célula inteira reage ao clique
+                    if (cellData.type !== 'EMPTY' && cellData.type !== 'WIRE') {
+                        cell.classList.add('cursor-pointer', 'hover:bg-slate-100');
+                        cell.onclick = () => openEditModal(r, c);
+                    }
+
+                    let innerContent = ''; let tagContent = '';
+                    let tagColor = 'bg-blue-50 border-blue-200 text-blue-800 group-hover:bg-blue-100';
+                    if (cellData.varName.startsWith('I')) tagColor = 'bg-emerald-50 border-emerald-200 text-emerald-800 group-hover:bg-emerald-100';
+                    if (cellData.varName.startsWith('M')) tagColor = 'bg-amber-50 border-amber-200 text-amber-800 group-hover:bg-amber-100';
+                    if (cellData.varName.startsWith('T')) tagColor = 'bg-fuchsia-50 border-fuchsia-200 text-fuchsia-800 group-hover:bg-fuchsia-100';
+                    if (cellData.varName.startsWith('C')) tagColor = 'bg-indigo-50 border-indigo-200 text-indigo-800 group-hover:bg-indigo-100';
+
+                    // ATENÇÃO NA HITBOX CAMADA 2: A Tag recebe um onclick explícito + stopPropagation para não bugar
+                    // O ícone do lápis ganha 'pointer-events-none' para o clique passar livre por ele
+                    if (cellData.type === 'NA') {
+                        innerContent = `<div class="flex items-center justify-center w-full h-full pointer-events-none"><div id="wireL-${r}-${c}" class="h-1 flex-grow wire-unpowered transition-colors"></div><div class="h-8 w-1 bg-black flex-shrink-0 rounded-full"></div><div class="w-6 flex-shrink-0"></div><div class="h-8 w-1 bg-black flex-shrink-0 rounded-full"></div><div id="wireR-${r}-${c}" class="h-1 flex-grow wire-unpowered transition-colors"></div></div>`;
+                        tagContent = `<div onclick="event.stopPropagation(); openEditModal(${r}, ${c})" class="absolute top-0 left-1/2 -translate-x-1/2 flex items-center gap-1 ${tagColor} border px-2 py-0.5 rounded text-[10px] font-bold z-20 shadow-sm whitespace-nowrap transition-colors cursor-pointer">${cellData.varName} <i class="fa-solid fa-pen text-[8px] pointer-events-none"></i></div>`;
+                    } else if (cellData.type === 'NF') {
+                        innerContent = `<div class="flex items-center justify-center w-full h-full pointer-events-none"><div id="wireL-${r}-${c}" class="h-1 flex-grow wire-unpowered transition-colors"></div><div class="h-8 w-1 bg-black flex-shrink-0 rounded-full"></div><div class="w-6 flex-shrink-0 relative"><div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-10 w-1 bg-black rotate-[45deg] rounded-full"></div></div><div class="h-8 w-1 bg-black flex-shrink-0 rounded-full"></div><div id="wireR-${r}-${c}" class="h-1 flex-grow wire-unpowered transition-colors"></div></div>`;
+                        tagContent = `<div onclick="event.stopPropagation(); openEditModal(${r}, ${c})" class="absolute top-0 left-1/2 -translate-x-1/2 flex items-center gap-1 ${tagColor} border px-2 py-0.5 rounded text-[10px] font-bold z-20 shadow-sm whitespace-nowrap transition-colors cursor-pointer">${cellData.varName} <i class="fa-solid fa-pen text-[8px] pointer-events-none"></i></div>`;
+                    } else if (cellData.type === 'WIRE') {
+                        innerContent = `<div class="flex items-center justify-center w-full h-full pointer-events-none"><div id="wireMain-${r}-${c}" class="h-1 w-full wire-unpowered transition-colors"></div></div>`;
+                    } else if (['COIL', 'SET', 'RESET'].includes(cellData.type)) {
+                        let letter = cellData.type === 'SET' ? 'S' : (cellData.type === 'RESET' ? 'R' : 'Q');
+                        innerContent = `<div class="flex items-center justify-center w-full h-full pointer-events-none"><div id="wireL-${r}-${c}" class="h-1 flex-grow wire-unpowered transition-colors"></div><div class="h-8 w-8 rounded-full border-4 border-black flex items-center justify-center font-black text-xs bg-white flex-shrink-0 transition-colors z-10" id="coil-${r}-${c}">${letter}</div><div id="wireR-${r}-${c}" class="h-1 flex-grow wire-unpowered transition-colors"></div></div>`;
+                        let label = cellData.type === 'SET' ? `S:${cellData.varName}` : (cellData.type === 'RESET' ? `R:${cellData.varName}` : cellData.varName);
+                        tagContent = `<div onclick="event.stopPropagation(); openEditModal(${r}, ${c})" class="absolute top-0 left-1/2 -translate-x-1/2 flex items-center gap-1 ${tagColor} border px-2 py-0.5 rounded text-[10px] font-bold z-20 shadow-sm whitespace-nowrap transition-colors cursor-pointer">${label} <i class="fa-solid fa-pen text-[8px] pointer-events-none"></i></div>`;
+                    } else if (cellData.type === 'TIMER') {
+                        innerContent = `<div class="flex items-center justify-center w-full h-full pointer-events-none"><div id="wireL-${r}-${c}" class="h-1 flex-grow wire-unpowered transition-colors"></div><div class="h-10 w-12 rounded border-4 border-black flex flex-col items-center justify-center font-black text-[10px] bg-white flex-shrink-0 transition-colors z-10" id="coil-${r}-${c}">T</div><div id="wireR-${r}-${c}" class="h-1 flex-grow wire-unpowered transition-colors"></div></div>`;
+                        let tConf = timersConfig[cellData.varName] || { mode: 'TON', preset: 3000 };
+                        let displayInfo = `${cellData.varName} (${tConf.mode} ${tConf.preset/1000}s)`;
+                        tagContent = `<div onclick="event.stopPropagation(); openEditModal(${r}, ${c})" class="absolute top-0 left-1/2 -translate-x-1/2 flex items-center gap-1 ${tagColor} border px-2 py-0.5 rounded text-[10px] font-bold z-20 shadow-sm whitespace-nowrap transition-colors cursor-pointer">${displayInfo} <i class="fa-solid fa-pen text-[8px] pointer-events-none"></i></div>`;
+                    } else if (cellData.type === 'COUNTER') {
+                        innerContent = `<div class="flex items-center justify-center w-full h-full pointer-events-none"><div id="wireL-${r}-${c}" class="h-1 flex-grow wire-unpowered transition-colors"></div><div class="h-10 w-12 rounded border-4 border-black flex flex-col items-center justify-center font-black text-[10px] bg-white flex-shrink-0 transition-colors z-10" id="coil-${r}-${c}">C</div><div id="wireR-${r}-${c}" class="h-1 flex-grow wire-unpowered transition-colors"></div></div>`;
+                        let cConf = countersConfig[cellData.varName] || { preset: 3, current: 0 };
+                        let displayInfo = `${cellData.varName} (${cConf.current}/${cConf.preset})`;
+                        tagContent = `<div onclick="event.stopPropagation(); openEditModal(${r}, ${c})" class="absolute top-0 left-1/2 -translate-x-1/2 flex items-center gap-1 ${tagColor} border px-2 py-0.5 rounded text-[10px] font-bold z-20 shadow-sm whitespace-nowrap transition-colors cursor-pointer">${displayInfo} <i class="fa-solid fa-pen text-[8px] pointer-events-none"></i></div>`;
+                    }
+
+                    cell.innerHTML = innerContent + tagContent;
+
+                    if (cellData.vWire && r < grid.length - 1) {
+                        const vWireEl = document.createElement('div'); vWireEl.className = 'v-wire transition-colors pointer-events-none';
+                        vWireEl.id = `vwire-${r}-${c}`; cell.appendChild(vWireEl);
+                    }
+                    rowDiv.appendChild(cell);
+
+                    if (!isLast) {
+                        const connector = document.createElement('div'); connector.className = 'w-4 h-1 bg-black transition-colors pointer-events-none';
+                        connector.id = `hconn-${r}-${c}`; rowDiv.appendChild(connector);
+                    }
+                }
+
+                const deleteBtn = document.createElement('button');
+                deleteBtn.className = 'absolute -right-12 w-8 h-8 flex items-center justify-center rounded-full text-slate-300 hover:text-rose-500 hover:bg-rose-50 transition-colors z-10';
+                deleteBtn.innerHTML = '<i class="fa-solid fa-trash text-sm"></i>';
+                deleteBtn.onclick = () => deleteRung(r); rowDiv.appendChild(deleteBtn);
+                ladderGrid.appendChild(rowDiv);
+            }
+        }
+
+        // --- SISTEMA DE FÍSICA DAS CAIXAS ---
+        function spawnBox(type) {
+            if (!isRunning) return;
+            boxes.push({
+                id: boxIdCounter++,
+                type: type,
+                x: 0, 
+                y: 0, 
+                status: 'belt' 
+            });
+        }
+
+        function updatePlantUI() {
+            const q1 = memory.outputs['Q1']; 
+            const q2 = memory.outputs['Q2']; 
+            const q3 = memory.outputs['Q3']; 
+
+            const conveyor = document.getElementById('conveyor');
+            if (q1) conveyor.classList.add('belt-running');
+            else conveyor.classList.remove('belt-running');
+
+            const piston = document.getElementById('piston-rod');
+            if (q2) piston.classList.add('piston-extended');
+            else piston.classList.remove('piston-extended');
+
+            const ledQ3 = document.getElementById('led-q3');
+            if (q3) ledQ3.className = "w-4 h-4 rounded-full border border-slate-800 bg-yellow-400 shadow-[0_0_15px_yellow]";
+            else ledQ3.className = "w-4 h-4 rounded-full border border-slate-800 light-off";
+
+            const c1Val = countersConfig['C1'] ? countersConfig['C1'].current : 0;
+            document.getElementById('digital-counter').innerText = c1Val;
+
+            memory.inputs['I1'] = false;
+            memory.inputs['I2'] = false;
+
+            const boxContainer = document.getElementById('boxes-container');
+            boxContainer.innerHTML = '';
+
+            for (let i = 0; i < boxes.length; i++) {
+                let box = boxes[i];
+
+                if (box.status === 'done') continue;
+
+                if (q1 && box.status === 'belt') {
+                    box.x += 1.5; 
+                }
+
+                if (box.x > 65 && box.x < 75 && box.status === 'belt') {
+                    memory.inputs['I1'] = true; 
+                    if (box.type === 'large') {
+                        memory.inputs['I2'] = true; 
+                    }
+
+                    if (q2) box.status = 'pushed';
+                }
+
+                if (box.status === 'pushed') {
+                    box.y += 4; 
+                    if (box.y > 60) box.status = 'done';
+                }
+
+                if (box.x > 110) box.status = 'done';
+
+                if (box.status !== 'done') {
+                    const el = document.createElement('div');
+                    el.className = `absolute bg-amber-600 border-2 border-amber-800 rounded flex items-center justify-center shadow-lg transition-transform ${box.status==='pushed'?'rotate-[20deg] opacity-50':''}`;
+                    
+                    if (box.type === 'small') {
+                        el.style.width = '30px'; el.style.height = '30px';
+                        el.style.left = `${box.x}%`; el.style.top = `${60 + box.y}px`;
+                    } else {
+                        el.style.width = '45px'; el.style.height = '45px';
+                        el.style.left = `${box.x}%`; el.style.top = `${45 + box.y}px`;
+                    }
+                    
+                    el.innerHTML = '<div class="w-full h-0.5 bg-amber-800/30 absolute"></div><i class="fa-solid fa-box text-amber-800/50 text-[10px]"></i>';
+                    boxContainer.appendChild(el);
+                }
+            }
+
+            document.getElementById('laser-i1').className = `laser-beam h-[50px] ${memory.inputs['I1'] ? 'laser-blocked' : ''}`;
+            document.getElementById('laser-i2').className = `laser-beam h-[20px] ${memory.inputs['I2'] ? 'laser-blocked' : ''}`;
+
+            boxes = boxes.filter(b => b.status !== 'done');
+        }
+
+        // --- PAINEL FÍSICO DO USUÁRIO ---
+        function pressBtn(inputName, state) {
+            if (!isRunning) return;
+            memory.inputs[inputName] = state;
+        }
+
+        function togglePower() {
+            isRunning = !isRunning;
+            const btn = document.getElementById('btn-power');
+            
+            document.getElementById('btn-I3').disabled = !isRunning;
+            document.getElementById('btn-I4').disabled = !isRunning;
+            document.getElementById('btn-spawn1').disabled = !isRunning;
+            document.getElementById('btn-spawn2').disabled = !isRunning;
+            
+            memory.inputs['I4'] = true; 
+
+            if (isRunning) {
+                document.getElementById('toolbox').style.opacity = '0.5';
+                btn.innerHTML = '<i class="fa-solid fa-stop mt-1 mr-2"></i> PARAR (STOP)';
+                btn.className = "flex-grow py-3 rounded-lg font-black text-lg bg-rose-500 text-white shadow-lg shadow-rose-500/30 hover:bg-rose-600 transition-colors";
+                
+                boxes = []; 
+                for (let key in timersConfig) { timersConfig[key].startTime = null; timersConfig[key].q = false; timersConfig[key].lastIn = false; }
+                for (let key in countersConfig) { countersConfig[key].current = 0; countersConfig[key].q = false; countersConfig[key].lastIn = false; }
+                
+                runScanCycle();
+            } else {
+                document.getElementById('toolbox').style.opacity = '1';
+                btn.innerHTML = '<i class="fa-solid fa-play mt-1 mr-2"></i> INICIAR (RUN)';
+                btn.className = "flex-grow py-3 rounded-lg font-black text-lg bg-emerald-500 text-white shadow-lg shadow-emerald-500/30 hover:bg-emerald-600 transition-colors";
+                
+                for (let k in memory.outputs) memory.outputs[k] = false;
+                for (let k in memory.markers) memory.markers[k] = false;
+                boxes = [];
+                
+                updatePlantUI();
+                renderGrid(); 
+            }
+        }
+
+        function getVarState(name) {
+            if (name.startsWith('I')) return !!memory.inputs[name];
+            if (name.startsWith('Q')) return !!memory.outputs[name];
+            if (name.startsWith('M')) return !!memory.markers[name];
+            if (name.startsWith('T')) return timersConfig[name] ? timersConfig[name].q : false;
+            if (name.startsWith('C')) return countersConfig[name] ? countersConfig[name].q : false;
+            return false;
+        }
+
+        function evalComponent(cell) {
+            if (cell.type === 'EMPTY') return false;
+            if (cell.type === 'WIRE') return true;
+            let state = getVarState(cell.varName);
+            if (cell.type === 'NA') return !!state;
+            if (cell.type === 'NF') return !state;
+            if (['COIL', 'SET', 'RESET', 'TIMER', 'COUNTER'].includes(cell.type)) return true; 
+            return false;
+        }
+
+        function colorWire(id, isPowered) {
+            const el = document.getElementById(id);
+            if(el) el.className = `h-1 flex-grow transition-colors ${isPowered ? 'wire-powered' : 'wire-unpowered'}`;
+        }
+
+        // --- SCAN CYCLE E PROCESSAMENTO DE BLOCOS ---
+        function runScanCycle() {
+            if (!isRunning) return;
+            const ROWS = grid.length;
+            const now = Date.now();
+            
+            updatePlantUI(); 
+
+            nodePower = Array(ROWS).fill().map(() => Array(COLS + 1).fill(false));
+            for (let r = 0; r < ROWS; r++) nodePower[r][0] = true;
+
+            for (let c = 0; c < COLS; c++) {
+                let changed = true, limit = 0;
+                while(changed && limit < ROWS) {
+                    changed = false;
+                    for (let r = 0; r < ROWS - 1; r++) {
+                        if (grid[r][c].vWire) {
+                            const shared = nodePower[r][c] || nodePower[r+1][c];
+                            if (nodePower[r][c] !== shared || nodePower[r+1][c] !== shared) {
+                                nodePower[r][c] = shared; nodePower[r+1][c] = shared; changed = true;
+                            }
+                            const vWireEl = document.getElementById(`vwire-${r}-${c}`);
+                            if (vWireEl) vWireEl.className = `v-wire transition-colors pointer-events-none ${shared ? 'v-wire-energized' : ''}`;
+                        }
+                    }
+                    limit++;
+                }
+
+                for (let r = 0; r < ROWS; r++) {
+                    const cell = grid[r][c];
+                    const powerIn = nodePower[r][c];
+                    
+                    if (c < COLS - 1) {
+                        const passes = powerIn && evalComponent(cell);
+                        nodePower[r][c+1] = passes;
+                        
+                        const elMain = document.getElementById(`wireMain-${r}-${c}`);
+                        if (elMain) elMain.className = `h-1 w-full transition-colors pointer-events-none ${powerIn ? 'wire-powered' : 'wire-unpowered'}`;
+                        else {
+                            colorWire(`wireL-${r}-${c}`, powerIn);
+                            colorWire(`wireR-${r}-${c}`, passes);
+                        }
+                        
+                        const hConn = document.getElementById(`hconn-${r}-${c}`);
+                        if(hConn) hConn.style.backgroundColor = passes ? '#f59e0b' : 'black';
+                    } else {
+                        if (['COIL', 'SET', 'RESET', 'TIMER', 'COUNTER'].includes(cell.type)) {
+                            const elL = document.getElementById(`wireL-${r}-${c}`);
+                            const elR = document.getElementById(`wireR-${r}-${c}`);
+                            if (elL) elL.className = `h-1 flex-grow pointer-events-none ${powerIn ? 'wire-powered' : 'wire-unpowered'}`;
+                            if (elR) elR.className = `h-1 flex-grow pointer-events-none ${powerIn ? 'wire-powered' : 'wire-unpowered'}`;
+
+                            let isEnergized = powerIn;
+
+                            if (cell.type === 'COIL') {
+                                if (cell.varName.startsWith('Q')) memory.outputs[cell.varName] = powerIn;
+                                if (cell.varName.startsWith('M')) memory.markers[cell.varName] = powerIn;
+                            } 
+                            else if (cell.type === 'SET' && powerIn) {
+                                if (cell.varName.startsWith('Q')) memory.outputs[cell.varName] = true;
+                                if (cell.varName.startsWith('M')) memory.markers[cell.varName] = true;
+                            } 
+                            else if (cell.type === 'RESET' && powerIn) {
+                                if (cell.varName.startsWith('Q')) memory.outputs[cell.varName] = false;
+                                else if (cell.varName.startsWith('M')) memory.markers[cell.varName] = false;
+                                else if (cell.varName.startsWith('T') && timersConfig[cell.varName]) {
+                                    timersConfig[cell.varName].startTime = null;
+                                    timersConfig[cell.varName].q = false;
+                                }
+                                else if (cell.varName.startsWith('C') && countersConfig[cell.varName]) {
+                                    countersConfig[cell.varName].current = 0;
+                                    countersConfig[cell.varName].q = false;
+                                }
+                            }
+                            else if (cell.type === 'TIMER') {
+                                let t = timersConfig[cell.varName];
+                                if(t) {
+                                    if (t.mode === 'TON') {
+                                        if (powerIn) {
+                                            if (!t.lastIn) t.startTime = now; 
+                                            if (t.startTime && (now - t.startTime) >= t.preset) t.q = true;
+                                        } else { t.startTime = null; t.q = false; }
+                                    } 
+                                    t.lastIn = powerIn;
+                                    isEnergized = t.q; 
+                                }
+                            }
+                            else if (cell.type === 'COUNTER') {
+                                let cConf = countersConfig[cell.varName];
+                                if(cConf) {
+                                    if (powerIn && !cConf.lastIn) {
+                                        cConf.current++;
+                                        if (cConf.current >= cConf.preset) cConf.q = true;
+                                        renderGrid(); 
+                                    }
+                                    cConf.lastIn = powerIn;
+                                    isEnergized = cConf.q;
+                                }
+                            }
+
+                            let drawState = false;
+                            if(['COIL', 'SET', 'RESET'].includes(cell.type)) {
+                                if (cell.varName.startsWith('Q')) drawState = memory.outputs[cell.varName];
+                                else if (cell.varName.startsWith('M')) drawState = memory.markers[cell.varName];
+                            }
+                            else drawState = isEnergized;
+
+                            const coilEl = document.getElementById(`coil-${r}-${c}`);
+                            if (coilEl) {
+                                if (drawState) coilEl.classList.add('coil-energized');
+                                else coilEl.classList.remove('coil-energized');
+                            }
+                        }
+                    }
+                }
+            }
+
+            setTimeout(runScanCycle, 100);
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const btn = document.getElementById('btn-power');
+            btn.innerHTML = '<i class="fa-solid fa-play mt-1 mr-2"></i> INICIAR (RUN)';
+            btn.className = "flex-grow py-3 rounded-lg font-black text-lg bg-emerald-500 text-white shadow-lg shadow-emerald-500/30 hover:bg-emerald-600 transition-colors";
+            updatePlantUI();
+        });
+
+        initSystem();
+    </script>
+</body>
+</html>

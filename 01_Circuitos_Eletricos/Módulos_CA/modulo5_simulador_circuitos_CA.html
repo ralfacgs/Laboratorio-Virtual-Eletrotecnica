@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Módulo 5: Minissimulador CA - Lab AC Pro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.8.0/math.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script src="js/logins.js"></script>
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&family=Fira+Code:wght@400;500&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
+        input[type=number]::-webkit-inner-spin-button, 
+        input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+        input[type=number] { -moz-appearance: textfield; }
+        canvas { border-radius: 0.75rem; cursor: grab; touch-action: none; }
+        canvas:active { cursor: grabbing; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
+
+    <header class="bg-indigo-700 text-white shadow-md py-4 px-6 relative z-10">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="flex items-center gap-4">
+                <div class="bg-white text-indigo-700 p-2 rounded shadow-sm text-xl flex items-center justify-center h-12 w-12 font-bold">
+                    <i class="fa-solid fa-wave-square"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold tracking-wide">MÓDULO: SIMULADOR DE CIRCUITOS EM CORRENTE ALTERNADA</h1>
+                    <p class="text-xs text-indigo-100 font-medium">Análise Fasorial de Circuitos em Corrente Alternada</p>
+                </div>
+            </div>
+            <a href="../dic_circuitos_eletricos.html" class="text-sm font-semibold text-indigo-50 hover:text-white bg-indigo-800 hover:bg-indigo-900 px-4 py-2 rounded transition-colors">
+                <i class="fa-solid fa-house"></i> Voltar ao Portal
+            </a>
+        </div>
+    </header>
+
+    <main class="flex-grow w-full max-w-7xl mx-auto p-4 md:p-6">
+        
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            
+            <div class="lg:col-span-5 flex flex-col gap-6">
+                
+                <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200">
+                    <div class="flex justify-between items-center border-b border-slate-100 pb-2 mb-3">
+                        <h3 class="font-black text-slate-900 text-sm uppercase tracking-wider flex items-center gap-2">
+                            <i class="fa-solid fa-globe text-indigo-600"></i> Parâmetros e Nós
+                        </h3>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label class="block text-xs font-bold text-slate-600 mb-1">Frequência Global da Rede (f):</label>
+                        <div class="relative">
+                            <input type="number" id="globalFreq" value="60" class="w-full border rounded p-2 pl-3 pr-8 font-mono bg-indigo-50 focus:border-indigo-500 outline-none">
+                            <span class="absolute right-3 top-2 text-xs font-bold text-slate-400">Hz</span>
+                        </div>
+                    </div>
+
+                    <button onclick="addNewNode()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2 rounded-lg font-bold text-xs uppercase tracking-wider transition-all shadow-sm flex items-center justify-center gap-2 mb-3">
+                        <i class="fa-solid fa-plus"></i> + Criar Novo Nó
+                    </button>
+                    
+                    <div id="nodesListContainer" class="flex flex-wrap gap-2 pt-2 border-t border-slate-100">
+                    </div>
+                </div>
+                
+                <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200">
+                    <h3 class="font-black text-slate-900 text-sm uppercase tracking-wider border-b border-slate-100 pb-2 mb-4 flex items-center gap-2">
+                        <i class="fa-solid fa-plus text-indigo-600"></i> Conectar Componente
+                    </h3>
+                    
+                    <div class="grid grid-cols-2 gap-4 text-xs font-bold text-slate-600">
+                        <div class="col-span-2">
+                            <label class="block mb-1">Tipo de Elemento:</label>
+                            <select id="compType" class="w-full border rounded p-2 bg-slate-50 font-medium focus:border-indigo-500 focus:outline-none">
+                                <option value="R">Resistor (R)</option>
+                                <option value="L">Indutor (L)</option>
+                                <option value="C">Capacitor (C)</option>
+                                <option value="V">Fonte de Tensão CA (V)</option>
+                                <option value="W">Fio Ideal (W)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block mb-1">Origem (+):</label>
+                            <select id="nodeFrom" class="w-full border rounded p-2 bg-slate-50 font-mono focus:border-indigo-500 focus:outline-none"></select>
+                        </div>
+                        <div>
+                            <label class="block mb-1">Destino (-):</label>
+                            <select id="nodeTo" class="w-full border rounded p-2 bg-slate-50 font-mono focus:border-indigo-500 focus:outline-none"></select>
+                        </div>
+                        
+                        <div id="valContainer" class="col-span-2 flex gap-3">
+                            <div class="flex-1">
+                                <label class="block mb-1">Valor Nominal (<span id="unitLabel">Ω</span>):</label>
+                                <input type="number" id="compValue" value="100" step="any" class="w-full border rounded p-2 font-bold focus:border-indigo-500 focus:outline-none">
+                            </div>
+                            <div class="flex-1" id="phaseContainer" style="display: none;">
+                                <label class="block mb-1">Fase (°):</label>
+                                <input type="number" id="compPhase" value="0" step="any" class="w-full border rounded p-2 font-bold focus:border-indigo-500 focus:outline-none">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <button onclick="addComponent()" class="w-full mt-4 bg-indigo-600 hover:bg-indigo-700 text-white py-2.5 rounded-lg font-bold text-xs uppercase tracking-wider transition-all shadow-sm flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-circle-plus"></i> Inserir no Ramo
+                    </button>
+                </div>
+
+                <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 flex-grow">
+                    <div class="flex justify-between items-center border-b border-slate-100 pb-2 mb-3">
+                        <h3 class="font-black text-slate-900 text-sm uppercase tracking-wider flex items-center gap-2">
+                            <i class="fa-solid fa-network-wired text-slate-400"></i> Malha de Conexões
+                        </h3>
+                        <button onclick="clearCircuit()" class="text-[10px] bg-slate-100 text-slate-700 hover:bg-slate-200 px-2 py-1 rounded font-bold uppercase transition-all border border-slate-200">
+                            Limpar Tudo
+                        </button>
+                    </div>
+
+                    <div class="overflow-x-auto max-h-[150px] overflow-y-auto">
+                        <table class="w-full text-left text-xs">
+                            <thead>
+                                <tr class="border-b border-slate-200 text-slate-400 font-bold uppercase text-[10px]">
+                                    <th class="py-2">Ref</th>
+                                    <th>Conexão</th>
+                                    <th class="text-right">Parâmetro</th>
+                                    <th class="text-center">Ação</th>
+                                </tr>
+                            </thead>
+                            <tbody id="componentTableBody" class="font-medium text-slate-700 divide-y divide-slate-100">
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <button onclick="solveCircuit()" class="w-full mt-4 bg-slate-800 hover:bg-black text-white py-3 rounded-xl font-black uppercase tracking-wider text-xs transition-all shadow flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-bolt"></i> Executar Solver Fasorial
+                    </button>
+                </div>
+            </div>
+
+            <div class="lg:col-span-7 flex flex-col gap-6">
+                
+                <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 flex flex-col">
+                    <div class="flex justify-between items-center border-b border-slate-100 pb-2 mb-3">
+                        <h2 class="text-sm font-bold text-slate-900 flex items-center gap-2">
+                            <i class="fa-solid fa-diagram-project text-indigo-600"></i> Vista Gráfica do Circuito CA
+                        </h2>
+                        <span class="text-[10px] bg-slate-100 border text-slate-500 font-bold px-2 py-0.5 rounded flex items-center gap-1">
+                            <i class="fa-solid fa-magnifying-glass"></i> scroll p/ zoom | arraste p/ mover
+                        </span>
+                    </div>
+                    <div class="bg-slate-200 p-2 rounded-xl shadow-inner flex justify-center items-center overflow-hidden">
+                        <canvas id="schematicCanvas" width="560" height="320" class="w-full bg-white shadow-sm border border-slate-300"></canvas>
+                    </div>
+                </div>
+
+                <div id="errorAlert" class="hidden p-4 bg-rose-50 border border-rose-200 rounded-xl text-xs text-rose-800 gap-3 items-start shadow-sm">
+                    <i class="fa-solid fa-triangle-exclamation text-rose-500 text-lg flex-shrink-0 mt-0.5"></i>
+                    <div>
+                        <span class="font-bold">Erro de Matriz Singular:</span>
+                        <p id="errorText" class="mt-1 text-slate-600"></p>
+                    </div>
+                </div>
+
+                <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200">
+                    <h2 class="text-sm font-bold text-slate-900 flex items-center gap-2 border-b border-slate-100 pb-2 mb-4">
+                        <i class="fa-solid fa-location-crosshairs text-indigo-600"></i> Potenciais de Nó (Referência: Nó 0)
+                    </h2>
+                    <div id="nodeResultsGrid" class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                    </div>
+                </div>
+
+                <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 flex-grow">
+                    <h2 class="text-sm font-bold text-slate-900 flex items-center gap-2 border-b border-slate-100 pb-2 mb-4">
+                        <i class="fa-solid fa-arrow-trend-up text-indigo-600"></i> Correntes de Ramo e Potência Complexa
+                    </h2>
+                    <div class="overflow-x-auto max-h-[180px] overflow-y-auto">
+                        <table class="w-full text-left text-xs">
+                            <thead>
+                                <tr class="border-b border-slate-200 text-slate-400 font-bold uppercase text-[10px]">
+                                    <th class="py-2">Comp.</th>
+                                    <th>Tensão (V)</th>
+                                    <th>Corrente (A)</th>
+                                    <th class="text-right">Potência (S)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="branchResultsBody" class="font-mono text-[11px] text-slate-700 divide-y divide-slate-100">
+                                <tr>
+                                    <td colspan="4" class="py-4 text-center font-sans text-slate-400 italic">Aguardando a execução do solver fasorial...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="mt-4 pt-4 border-t border-slate-100 flex flex-col sm:flex-row gap-3">
+                        <button onclick="requireAuth(exportCircuitTikz)" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 py-2.5 rounded-lg font-bold text-[11px] uppercase tracking-wider transition-all border border-slate-300 flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-code"></i> Exportar Esquemático (TikZ)
+                        </button>
+                        <button onclick="requireAuth(exportResultsLatex)" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 py-2.5 rounded-lg font-bold text-[11px] uppercase tracking-wider transition-all border border-slate-300 flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-table"></i> Exportar Gabarito (LaTeX)
+                        </button>
+                    </div>
+
+                </div>
+            </div>
+            
+        </div>
+    </main>
+
+    <div id="authModal" class="fixed inset-0 bg-slate-900/80 hidden flex items-center justify-center z-[60] backdrop-blur-sm">
+        <div class="bg-white p-6 rounded-2xl w-[90%] max-w-sm shadow-2xl border border-slate-200 text-center">
+            <div class="mx-auto bg-rose-100 text-rose-600 w-12 h-12 flex items-center justify-center rounded-full mb-4 text-xl">
+                <i class="fa-solid fa-user-shield"></i>
+            </div>
+            <h3 class="font-black text-lg text-slate-800 mb-1">Área Restrita</h3>
+            <p class="text-xs text-slate-500 mb-4">Insira as credenciais de docente para liberar a exportação.</p>
+            
+            <div class="space-y-3 mb-5">
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <i class="fa-solid fa-user text-slate-400"></i>
+                    </div>
+                    <input type="text" id="profUser" placeholder="Usuário" class="w-full border rounded-lg py-2.5 pl-10 pr-3 text-sm focus:border-rose-500 outline-none">
+                </div>
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <i class="fa-solid fa-lock text-slate-400"></i>
+                    </div>
+                    <input type="password" id="profPassword" placeholder="Senha" class="w-full border rounded-lg py-2.5 pl-10 pr-3 text-sm tracking-widest focus:border-rose-500 outline-none">
+                </div>
+            </div>
+
+            <div class="flex gap-2">
+                <button onclick="closeAuthModal()" class="flex-1 py-2 rounded-lg font-bold text-sm text-slate-500 hover:bg-slate-100 transition-colors">Cancelar</button>
+                <button onclick="verifyAuth()" class="flex-1 py-2 rounded-lg font-bold text-sm bg-rose-600 hover:bg-rose-700 text-white shadow transition-colors">Autenticar</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // -------------------------------------------------------------------------
+        // SISTEMA GLOBAL DE AUTENTICAÇÃO
+        // -------------------------------------------------------------------------
+        let pendingAction = null;
+        let sessionUnlocked = false; 
+
+        function requireAuth(actionFunction) {
+            if (sessionUnlocked) {
+                actionFunction();
+                return;
+            }
+            pendingAction = actionFunction;
+            document.getElementById('authModal').classList.remove('hidden');
+            document.getElementById('profUser').value = '';
+            document.getElementById('profPassword').value = '';
+            setTimeout(() => document.getElementById('profUser').focus(), 100);
+        }
+
+        function closeAuthModal() {
+            document.getElementById('authModal').classList.add('hidden');
+            pendingAction = null;
+        }
+
+        function verifyAuth() {
+            const user = document.getElementById('profUser').value.trim();
+            const pass = document.getElementById('profPassword').value;
+
+            try {
+                if (typeof AuthProfessor !== "undefined") {
+                    const auth = AuthProfessor.validarDetalhado(user, pass);
+                    if (auth.sucesso) {
+                        sessionUnlocked = true;
+                        closeAuthModal();
+                        if (pendingAction) pendingAction();
+                    } else {
+                        alert(auth.erro);
+                    }
+                } 
+                else if (btoa(user) === "cmFmYWVsLnNpbHZh" && btoa(pass) === "aWZybmpj") {
+                    sessionUnlocked = true;
+                    closeAuthModal();
+                    if (pendingAction) pendingAction();
+                } else {
+                    alert("Credenciais inválidas. Acesso negado.");
+                }
+            } catch(e) {
+                alert("Erro na validação das credenciais.");
+            }
+        }
+
+        document.getElementById('profPassword')?.addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') verifyAuth();
+        });
+
+
+        // -------------------------------------------------------------------------
+        // SIMULADOR ESQUEMÁTICO (MNA CA)
+        // -------------------------------------------------------------------------
+        let nodes = [
+            { id: "0", x: 280, y: 250 },
+            { id: "1", x: 120, y: 100 }
+        ];
+
+        let circuit = [
+            { id: "V1", type: "V", nodeFrom: "1", nodeTo: "0", value: 127, phase: 0, x: 120, y: 175, rotation: 90 },
+            { id: "R1", type: "R", nodeFrom: "1", nodeTo: "0", value: 100, phase: 0, x: 280, y: 100, rotation: 0 }
+        ];
+
+        const sCanvas = document.getElementById('schematicCanvas');
+        const sCtx = sCanvas.getContext('2d');
+        
+        let scale = 1; let offsetX = 0; let offsetY = 0;
+        let isPanning = false; let startPanX = 0; let startPanY = 0;
+        let draggedNode = null; let draggedComponent = null;
+
+        let lastVoltages = null;
+        let lastSourceCurrents = null;
+        let lastBranchData = null;
+
+        // UI Updates for Component Types
+        document.getElementById('compType').addEventListener('change', (e) => {
+            const valInput = document.getElementById('compValue');
+            const unitLabel = document.getElementById('unitLabel');
+            const phaseDiv = document.getElementById('phaseContainer');
+            
+            phaseDiv.style.display = 'none';
+            valInput.disabled = false;
+
+            if (e.target.value === 'W') {
+                valInput.value = 0;
+                valInput.disabled = true;
+                unitLabel.innerText = '-';
+            } else if (e.target.value === 'R') {
+                valInput.value = '100'; unitLabel.innerText = 'Ω';
+            } else if (e.target.value === 'L') {
+                valInput.value = '100'; unitLabel.innerText = 'mH';
+            } else if (e.target.value === 'C') {
+                valInput.value = '10'; unitLabel.innerText = 'μF';
+            } else if (e.target.value === 'V') {
+                valInput.value = '127'; unitLabel.innerText = 'V';
+                phaseDiv.style.display = 'block';
+            }
+        });
+
+        function addNewNode() {
+            let idCandidate = 1;
+            while (nodes.some(n => n.id === String(idCandidate))) idCandidate++;
+            const spawnX = (280 - offsetX) / scale; const spawnY = (160 - offsetY) / scale;
+            nodes.push({ id: String(idCandidate), x: spawnX, y: spawnY });
+            updateNodeDropdowns(); renderNodesList(); drawSchematic();
+        }
+
+        function renderNodesList() {
+            const container = document.getElementById('nodesListContainer');
+            container.innerHTML = "";
+            nodes.forEach(n => {
+                if (n.id === "0") {
+                    container.innerHTML += `<span class="inline-flex items-center gap-1 bg-slate-100 border text-slate-600 text-xs font-bold px-2.5 py-1 rounded-md shadow-sm">Nó 0 (GND)</span>`;
+                } else {
+                    container.innerHTML += `
+                        <span class="inline-flex items-center gap-1.5 bg-indigo-50 border border-indigo-200 text-indigo-800 text-xs font-bold px-2.5 py-1 rounded-md shadow-sm">
+                            Nó ${n.id}
+                            <button onclick="removeNode('${n.id}')" class="text-indigo-500 hover:text-rose-600 font-black transition-colors ml-1" title="Apagar este nó">
+                                <i class="fa-solid fa-xmark text-[11px]"></i>
+                            </button>
+                        </span>`;
+                }
+            });
+        }
+
+        function removeNode(id) {
+            if (id === "0") return;
+            const connectedComps = circuit.filter(c => c.nodeFrom === id || c.nodeTo === id);
+            if (connectedComps.length > 0) {
+                const confirmDelete = confirm(`O Nó ${id} possui ${connectedComps.length} ramo(s). Apagá-lo removerá as conexões. Prosseguir?`);
+                if (!confirmDelete) return;
+            }
+            nodes = nodes.filter(n => n.id !== id);
+            circuit = circuit.filter(c => c.nodeFrom !== id && c.nodeTo !== id);
+            updateNodeDropdowns(); renderCircuitTable(); renderNodesList(); drawSchematic();
+        }
+
+        function updateNodeDropdowns() {
+            const fromSelect = document.getElementById('nodeFrom'); const toSelect = document.getElementById('nodeTo');
+            const prevFrom = fromSelect.value; const prevTo = toSelect.value;
+            fromSelect.innerHTML = ""; toSelect.innerHTML = "";
+            nodes.forEach(n => {
+                const label = n.id === "0" ? "Nó 0 (GND)" : `Nó ${n.id}`;
+                fromSelect.innerHTML += `<option value="${n.id}">${label}</option>`;
+                toSelect.innerHTML += `<option value="${n.id}">${label}</option>`;
+            });
+            if (prevFrom && [...fromSelect.options].some(o => o.value === prevFrom)) fromSelect.value = prevFrom;
+            if (prevTo && [...toSelect.options].some(o => o.value === prevTo)) toSelect.value = prevTo;
+        }
+
+        function addComponent() {
+            const type = document.getElementById('compType').value;
+            const from = document.getElementById('nodeFrom').value;
+            const to = document.getElementById('nodeTo').value;
+            const value = parseFloat(document.getElementById('compValue').value);
+            const phase = parseFloat(document.getElementById('compPhase').value) || 0;
+
+            if (from === to) { alert("Curto-circuito direto no mesmo nó!"); return; }
+            let numCandidate = 1;
+            while (circuit.some(c => c.id === (type + numCandidate))) numCandidate++;
+            
+            const spawnX = (220 + Math.random() * 80 - offsetX) / scale;
+            const spawnY = (120 + Math.random() * 50 - offsetY) / scale;
+            circuit.push({ id: type + numCandidate, type: type, nodeFrom: from, nodeTo: to, value: value, phase: phase, x: spawnX, y: spawnY, rotation: 0 });
+            renderCircuitTable(); drawSchematic();
+        }
+
+        function removeComponent(id) {
+            circuit = circuit.filter(c => c.id !== id);
+            renderCircuitTable(); drawSchematic();
+        }
+
+        function clearCircuit() {
+            circuit = []; nodes = [{ id: "0", x: 280, y: 250 }, { id: "1", x: 120, y: 100 }];
+            scale = 1; offsetX = 0; offsetY = 0; lastVoltages = null; lastSourceCurrents = null;
+            updateNodeDropdowns(); renderCircuitTable(); renderNodesList(); drawSchematic();
+        }
+
+        function renderCircuitTable() {
+            const tbody = document.getElementById('componentTableBody');
+            tbody.innerHTML = "";
+            if (circuit.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" class="py-4 text-center text-slate-400 italic">Vazio.</td></tr>`; return;
+            }
+            circuit.forEach(c => {
+                let unit = '', valText = '';
+                if(c.type === 'R') { unit = 'Ω'; valText = `${c.value} ${unit}`; }
+                else if(c.type === 'L') { unit = 'mH'; valText = `${c.value} ${unit}`; }
+                else if(c.type === 'C') { unit = 'μF'; valText = `${c.value} ${unit}`; }
+                else if(c.type === 'V') { valText = `${c.value}V ∠${c.phase}°`; }
+                else if(c.type === 'W') { valText = 'Fio Ideal'; }
+
+                tbody.innerHTML += `
+                    <tr class="border-b border-slate-50 hover:bg-slate-50/80">
+                        <td class="py-2.5 font-bold text-indigo-600">${c.id}</td>
+                        <td class="font-mono text-slate-500">Nó ${c.nodeFrom} <i class="fa-solid fa-arrow-right text-[9px] mx-1"></i> Nó ${c.nodeTo}</td>
+                        <td class="text-right font-bold text-slate-700">${valText}</td>
+                        <td class="text-center">
+                            <button onclick="removeComponent('${c.id}')" class="text-slate-400 hover:text-rose-600 transition-colors"><i class="fa-regular fa-trash-can"></i></button>
+                        </td>
+                    </tr>`;
+            });
+        }
+
+        // Interações do Canvas
+        function getMouseWorldPos(e) {
+            const rect = sCanvas.getBoundingClientRect();
+            const mouseX = (e.clientX - rect.left) * (sCanvas.width / rect.width);
+            const mouseY = (e.clientY - rect.top) * (sCanvas.height / rect.height);
+            return { mouseX, mouseY, worldX: (mouseX - offsetX) / scale, worldY: (mouseY - offsetY) / scale };
+        }
+
+        sCanvas.addEventListener('wheel', (e) => {
+            e.preventDefault();
+            const { mouseX, mouseY, worldX, worldY } = getMouseWorldPos(e);
+            const zoomDirection = e.deltaY > 0 ? -1 : 1;
+            let newScale = scale * (zoomDirection > 0 ? 1.1 : 1 / 1.1);
+            newScale = Math.max(0.3, Math.min(newScale, 4));
+            offsetX = mouseX - worldX * newScale; offsetY = mouseY - worldY * newScale;
+            scale = newScale; drawSchematic();
+        }, { passive: false });
+
+        sCanvas.addEventListener('dblclick', (e) => {
+            const { worldX, worldY } = getMouseWorldPos(e);
+            const targetComp = circuit.find(c => Math.hypot(c.x - worldX, c.y - worldY) < 20);
+            if (targetComp && targetComp.type !== 'W') { targetComp.rotation = (targetComp.rotation + 90) % 360; drawSchematic(); }
+        });
+
+        sCanvas.addEventListener('mousedown', (e) => {
+            const { mouseX, mouseY, worldX, worldY } = getMouseWorldPos(e);
+            draggedNode = nodes.find(n => Math.hypot(n.x - worldX, n.y - worldY) < 14);
+            if (!draggedNode) draggedComponent = circuit.find(c => Math.hypot(c.x - worldX, c.y - worldY) < 20);
+            if (!draggedNode && !draggedComponent) { isPanning = true; startPanX = mouseX - offsetX; startPanY = mouseY - offsetY; sCanvas.style.cursor = 'grabbing'; }
+        });
+
+        sCanvas.addEventListener('mousemove', (e) => {
+            const { mouseX, mouseY, worldX, worldY } = getMouseWorldPos(e);
+            if (isPanning) { offsetX = mouseX - startPanX; offsetY = mouseY - startPanY; drawSchematic(); } 
+            else if (draggedNode) { draggedNode.x = worldX; draggedNode.y = worldY; drawSchematic(); } 
+            else if (draggedComponent) { draggedComponent.x = worldX; draggedComponent.y = worldY; drawSchematic(); }
+        });
+
+        window.addEventListener('mouseup', () => { isPanning = false; draggedNode = null; draggedComponent = null; sCanvas.style.cursor = 'grab'; });
+
+function drawSchematic() {
+            sCtx.clearRect(0, 0, sCanvas.width, sCanvas.height);
+            sCtx.save(); sCtx.translate(offsetX, offsetY); sCtx.scale(scale, scale);
+            
+            // Grid
+            const startX = -offsetX / scale; const startY = -offsetY / scale;
+            const endX = startX + sCanvas.width / scale; const endY = startY + sCanvas.height / scale;
+            sCtx.fillStyle = '#cbd5e1';
+            for (let x = Math.floor(startX / 25) * 25; x < endX; x += 25) {
+                for (let y = Math.floor(startY / 25) * 25; y < endY; y += 25) sCtx.fillRect(x, y, 1.5 / scale, 1.5 / scale);
+            }
+
+            circuit.forEach(c => {
+                const ptA = nodes.find(n => n.id === c.nodeFrom); const ptB = nodes.find(n => n.id === c.nodeTo);
+                if (!ptA || !ptB) return;
+
+                sCtx.strokeStyle = '#0f172a'; sCtx.lineWidth = 2;
+
+                let t1x, t1y, t2x, t2y;
+                if (c.rotation % 180 === 0) { t1x = c.x - 18; t1y = c.y; t2x = c.x + 18; t2y = c.y; } 
+                else { t1x = c.x; t1y = c.y - 18; t2x = c.x; t2y = c.y + 18; }
+
+                let d1 = Math.hypot(ptA.x - t1x, ptA.y - t1y) + Math.hypot(ptB.x - t2x, ptB.y - t2y);
+                let d2 = Math.hypot(ptA.x - t2x, ptA.y - t2y) + Math.hypot(ptB.x - t1x, ptB.y - t1y);
+                let w1x = t1x, w1y = t1y, w2x = t2x, w2y = t2y;
+                if (d2 < d1) { w1x = t2x; w1y = t2y; w2x = t1x; w2y = t1y; }
+
+                if (c.type === 'W') {
+                    sCtx.beginPath(); sCtx.moveTo(ptA.x, ptA.y);
+                    sCtx.lineTo(c.x, ptA.y); sCtx.lineTo(c.x, ptB.y); sCtx.lineTo(ptB.x, ptB.y); sCtx.stroke();
+                } else {
+                    sCtx.beginPath(); sCtx.moveTo(ptA.x, ptA.y);
+                    if (c.rotation % 180 === 0) sCtx.lineTo(ptA.x, w1y); else sCtx.lineTo(w1x, ptA.y);
+                    sCtx.lineTo(w1x, w1y); sCtx.stroke();
+
+                    sCtx.beginPath(); sCtx.moveTo(w2x, w2y);
+                    if (c.rotation % 180 === 0) { sCtx.lineTo(ptB.x, w2y); sCtx.lineTo(ptB.x, ptB.y); } 
+                    else { if (ptB.y < w2y) sCtx.lineTo(ptB.x, w2y); else sCtx.lineTo(w2x, ptB.y); sCtx.lineTo(ptB.x, ptB.y); }
+                    sCtx.stroke();
+
+                    sCtx.save(); sCtx.translate(c.x, c.y); sCtx.rotate(c.rotation * Math.PI / 180);
+                    sCtx.lineWidth = 2 / Math.sqrt(scale); sCtx.strokeStyle = '#0f172a';
+
+                    if (c.type === 'R') {
+                        sCtx.beginPath(); sCtx.moveTo(-18, 0); sCtx.lineTo(-13, 0);
+                        sCtx.lineTo(-10, -6); sCtx.lineTo(-4, 6); sCtx.lineTo(2, -6); sCtx.lineTo(8, 6); sCtx.lineTo(13, 0); sCtx.lineTo(18, 0); sCtx.stroke();
+                    } else if (c.type === 'C') {
+                        sCtx.beginPath(); sCtx.moveTo(-18, 0); sCtx.lineTo(-4, 0); sCtx.moveTo(-4, -10); sCtx.lineTo(-4, 10);
+                        sCtx.moveTo(4, -10); sCtx.lineTo(4, 10); sCtx.moveTo(4, 0); sCtx.lineTo(18, 0); sCtx.stroke();
+                    } else if (c.type === 'L') {
+                        sCtx.beginPath(); sCtx.moveTo(-18, 0); sCtx.lineTo(-12, 0);
+                        sCtx.arc(-8, 0, 4, Math.PI, 0); sCtx.arc(0, 0, 4, Math.PI, 0); sCtx.arc(8, 0, 4, Math.PI, 0);
+                        sCtx.lineTo(18, 0); sCtx.stroke();
+                    } else if (c.type === 'V') {
+                        // Hastes de conexão
+                        sCtx.beginPath(); sCtx.moveTo(-18, 0); sCtx.lineTo(-12, 0); sCtx.moveTo(12, 0); sCtx.lineTo(18, 0); sCtx.stroke();
+                        
+                        // Círculo principal da fonte
+                        sCtx.beginPath(); sCtx.arc(0, 0, 12, 0, 2 * Math.PI); sCtx.stroke();
+                        
+                        // Senoide perfeita usando curvas quadráticas
+                        sCtx.beginPath(); 
+                        sCtx.moveTo(-6, 0); 
+                        sCtx.quadraticCurveTo(-3, -6, 0, 0); 
+                        sCtx.quadraticCurveTo(3, 6, 6, 0); 
+                        sCtx.stroke();
+                        
+                        // Sinais de polaridade (+) e (-) posicionados externamente
+                        sCtx.fillStyle = '#0f172a'; 
+                        sCtx.font = 'bold 11px sans-serif'; 
+                        sCtx.textAlign = 'center'; 
+                        sCtx.textBaseline = 'middle';
+                        sCtx.fillText('+', -15, -10); 
+                        sCtx.fillText('-', 15, -10);
+                    }
+                    sCtx.restore();
+                }
+
+                sCtx.font = `bold ${10/scale}px Fira Code`; sCtx.textBaseline = 'middle';
+                let idX = c.x, idY = c.y - 18/scale, valX = c.x, valY = c.y + 18/scale, idA = 'center', valA = 'center';
+                if (c.rotation % 180 !== 0) { idX = c.x - 22/scale; idY = c.y; valX = c.x + 22/scale; valY = c.y; idA = 'right'; valA = 'left'; }
+                
+                sCtx.fillStyle = '#0f172a'; sCtx.textAlign = idA; sCtx.fillText(c.id, idX, idY);
+                if (c.type !== 'W') {
+                    sCtx.fillStyle = '#475569'; sCtx.font = `${9/scale}px font-sans`; sCtx.textAlign = valA;
+                    let disp = c.value + (c.type==='R'?'Ω':c.type==='L'?'mH':c.type==='C'?'μF':'V');
+                    sCtx.fillText(disp, valX, valY);
+                }
+            });
+
+            nodes.forEach(n => {
+                sCtx.fillStyle = n.id === "0" ? '#94a3b8' : '#ffffff';
+                sCtx.beginPath(); sCtx.arc(n.x, n.y, 8, 0, 2 * Math.PI); sCtx.fill();
+                sCtx.strokeStyle = '#0f172a'; sCtx.lineWidth = 2 / Math.sqrt(scale); sCtx.stroke();
+                sCtx.fillStyle = n.id === "0" ? '#ffffff' : '#0f172a'; sCtx.font = `bold ${9/scale}px Inter`;
+                sCtx.textAlign = 'center'; sCtx.textBaseline = 'middle'; sCtx.fillText(n.id, n.x, n.y);
+            });
+            sCtx.restore();
+        }
+        
+        // Função utilitária para formatar Math.complex para Polar
+        function formatPolar(cplx, unit) {
+            const r = cplx.toPolar().r;
+            let phi = cplx.toPolar().phi * (180 / Math.PI);
+            if(r < 1e-10) return `0.00 ${unit}`;
+            return `${r.toFixed(2)} ${unit} ∠${phi.toFixed(1)}°`;
+        }
+
+        // SOLVER MNA COM NÚMEROS COMPLEXOS
+        function solveCircuit() {
+            const errorAlert = document.getElementById('errorAlert');
+            errorAlert.classList.add('hidden');
+            if (circuit.length === 0) return;
+
+            let nodeSet = new Set(nodes.map(n => n.id));
+            if (!nodeSet.has("0")) { showError("Referência de Terra (Nó 0) ausente na malha."); return; }
+
+            let nonZeroNodes = Array.from(nodeSet).filter(n => n !== "0");
+            let nodeMap = {}; nonZeroNodes.forEach((node, idx) => { nodeMap[node] = idx; });
+
+            const freq = parseFloat(document.getElementById('globalFreq').value) || 60;
+            const w = 2 * Math.PI * freq;
+
+            const N = nonZeroNodes.length;
+            const vSources = circuit.filter(c => c.type === 'V' || c.type === 'W');
+            const M = vSources.length; const dim = N + M;
+            
+            let A = Array(dim).fill(0).map(() => Array(dim).fill(math.complex(0,0)));
+            let Z = Array(dim).fill(0).map(() => math.complex(0,0));
+
+            circuit.forEach(c => {
+                if (['R', 'L', 'C'].includes(c.type)) {
+                    let y_comp;
+                    if (c.type === 'R') y_comp = math.complex(1/c.value, 0);
+                    else if (c.type === 'L') y_comp = math.complex(0, -1/(w * c.value * 1e-3));
+                    else if (c.type === 'C') y_comp = math.complex(0, w * c.value * 1e-6);
+
+                    const i = c.nodeFrom !== "0" ? nodeMap[c.nodeFrom] : -1;
+                    const j = c.nodeTo !== "0" ? nodeMap[c.nodeTo] : -1;
+                    
+                    if (i !== -1) A[i][i] = math.add(A[i][i], y_comp);
+                    if (j !== -1) A[j][j] = math.add(A[j][j], y_comp);
+                    if (i !== -1 && j !== -1) { 
+                        A[i][j] = math.subtract(A[i][j], y_comp); 
+                        A[j][i] = math.subtract(A[j][i], y_comp); 
+                    }
+                }
+            });
+
+            vSources.forEach((src, idx) => {
+                const k = N + idx;
+                const i = src.nodeFrom !== "0" ? nodeMap[src.nodeFrom] : -1;
+                const j = src.nodeTo !== "0" ? nodeMap[src.nodeTo] : -1;
+                const one = math.complex(1,0);
+
+                if (i !== -1) { A[i][k] = math.add(A[i][k], one); A[k][i] = math.add(A[k][i], one); }
+                if (j !== -1) { A[j][k] = math.subtract(A[j][k], one); A[k][j] = math.subtract(A[k][j], one); }
+                
+                if (src.type === 'V') {
+                    Z[k] = math.complex({ r: src.value, phi: src.phase * Math.PI / 180 });
+                }
+            });
+
+            try {
+                const X = math.lusolve(A, Z);
+                let nodeVoltages = { "0": math.complex(0,0) };
+                nonZeroNodes.forEach(node => { nodeVoltages[node] = X[nodeMap[node]][0]; });
+                let sourceCurrents = {}; 
+                vSources.forEach((src, idx) => { sourceCurrents[src.id] = X[N + idx][0]; });
+                
+                lastVoltages = nodeVoltages;
+                lastSourceCurrents = sourceCurrents;
+                renderResults(nodeVoltages, sourceCurrents, w);
+            } catch (err) {
+                lastVoltages = null; lastSourceCurrents = null; lastBranchData = null;
+                showError("A matriz de admitância é singular. Verifique curtos ou frequências nulas.");
+            }
+        }
+
+        function renderResults(voltages, sourceCurrents, w) {
+            const nodeGrid = document.getElementById('nodeResultsGrid');
+            nodeGrid.innerHTML = `
+                <div class="text-center p-3 bg-slate-100 border border-slate-200 rounded-lg font-mono text-xs">
+                    <p class="text-[10px] font-sans font-bold text-slate-400 uppercase mb-1">Nó 0 (GND)</p>
+                    <p class="text-sm font-black text-slate-400">0.00 V ∠0.0°</p>
+                </div>`;
+            
+            Object.keys(voltages).forEach(node => {
+                if (node === "0") return;
+                nodeGrid.innerHTML += `
+                    <div class="text-center p-3 bg-indigo-50 border border-indigo-200 text-indigo-800 rounded-lg font-mono text-xs shadow-sm">
+                        <p class="text-[10px] font-sans font-bold text-indigo-600 uppercase mb-1">Nó ${node}</p>
+                        <p class="text-sm font-black text-indigo-700">${formatPolar(voltages[node], 'V')}</p>
+                    </div>`;
+            });
+
+            const branchBody = document.getElementById('branchResultsBody');
+            branchBody.innerHTML = "";
+            lastBranchData = [];
+
+            circuit.forEach(c => {
+                const vFrom = voltages[c.nodeFrom] || math.complex(0,0); 
+                const vTo = voltages[c.nodeTo] || math.complex(0,0);
+                const deltaV = math.subtract(vFrom, vTo); 
+                let current = math.complex(0,0); 
+                
+                if (['R', 'L', 'C'].includes(c.type)) {
+                    let y_comp;
+                    if (c.type === 'R') y_comp = math.complex(1/c.value, 0);
+                    else if (c.type === 'L') y_comp = math.complex(0, -1/(w * c.value * 1e-3));
+                    else if (c.type === 'C') y_comp = math.complex(0, w * c.value * 1e-6);
+                    current = math.multiply(deltaV, y_comp);
+                } else {
+                    current = sourceCurrents[c.id] || math.complex(0,0);
+                }
+                
+                const S = math.multiply(deltaV, math.conj(current));
+                const P = S.re; const Q = S.im;
+
+                let powerText = `P: ${P.toFixed(2)}W<br>Q: ${Q.toFixed(2)}VAr`;
+                if (c.type === 'W') powerText = "Ideal";
+
+                lastBranchData.push({ id: c.id, dV: deltaV, I: current, P: P, Q: Q });
+
+                branchBody.innerHTML += `
+                    <tr class="hover:bg-slate-50 transition-colors">
+                        <td class="py-3 font-sans font-bold text-slate-800">${c.id}</td>
+                        <td class="whitespace-nowrap">${formatPolar(deltaV, '')}</td>
+                        <td class="whitespace-nowrap font-bold text-indigo-600">${formatPolar(current, '')}</td>
+                        <td class="text-right leading-tight text-[10px] text-slate-500">${powerText}</td>
+                    </tr>
+                `;
+            });
+        }
+
+        function exportCircuitTikz() {
+            if (circuit.length === 0) { alert("Circuito vazio!"); return; }
+
+            let latex = "% Requer: \\usepackage{circuitikz}\n\\begin{figure}[htbp]\n\\centering\n\\begin{circuitikz}[american voltages]\n\n";
+            const scaleFact = 40; const maxY = 350; 
+
+            latex += "    % Coordenadas dos Nós\n";
+            nodes.forEach(n => {
+                let x = (n.x / scaleFact).toFixed(2); let y = ((maxY - n.y) / scaleFact).toFixed(2);
+                latex += `    \\coordinate (${n.id === "0" ? "GND" : `N${n.id}`}) at (${x}, ${y});\n`;
+            });
+
+            latex += "\n    % Roteamento\n";
+            circuit.forEach(c => {
+                const ptA = nodes.find(n => n.id === c.nodeFrom); const ptB = nodes.find(n => n.id === c.nodeTo);
+                if (!ptA || !ptB) return;
+
+                let cx = c.x / scaleFact; let cy = (maxY - c.y) / scaleFact; let halfLen = 0.75; 
+                let tx1, ty1, tx2, ty2; let isHoriz = (c.rotation % 180 === 0);
+                
+                if (isHoriz) { tx1 = cx - halfLen; ty1 = cy; tx2 = cx + halfLen; ty2 = cy; } 
+                else { tx1 = cx; ty1 = cy + halfLen; tx2 = cx; ty2 = cy - halfLen; }
+
+                let nAx = ptA.x/scaleFact; let nAy = (maxY - ptA.y)/scaleFact;
+                let nBx = ptB.x/scaleFact; let nBy = (maxY - ptB.y)/scaleFact;
+                let d1 = Math.hypot(nAx - tx1, nAy - ty1) + Math.hypot(nBx - tx2, nBy - ty2);
+                let d2 = Math.hypot(nAx - tx2, nAy - ty2) + Math.hypot(nBx - tx1, nBy - ty1);
+                
+                let tw1x = tx1, tw1y = ty1, tw2x = tx2, tw2y = ty2;
+                if (d2 < d1) { tw1x = tx2; tw1y = ty2; tw2x = tx1; tw2y = ty1; }
+
+                let nodeA_name = ptA.id === "0" ? "GND" : `N${ptA.id}`;
+                let nodeB_name = ptB.id === "0" ? "GND" : `N${ptB.id}`;
+                
+                let typeTikz = 'short', label = '';
+                if(c.type === 'R') { typeTikz = 'R'; label = `l=$${c.value}\\,\\Omega$`; }
+                else if(c.type === 'L') { typeTikz = 'L'; label = `l=$${c.value}\\,\\mathrm{mH}$`; }
+                else if(c.type === 'C') { typeTikz = 'C'; label = `l=$${c.value}\\,\\mu\\mathrm{F}$`; }
+                else if(c.type === 'V') { typeTikz = 'sV'; label = `v=$${c.value}\\angle${c.phase}^\\circ$`; }
+
+                let params = typeTikz !== 'short' ? `[${typeTikz}, ${label}, name=${c.id}]` : `[short]`;
+                let r1 = isHoriz ? '|-' : '-|'; let r2 = isHoriz ? '-|' : '|-';
+
+                latex += `    \\draw (${nodeA_name}) ${r1} (${tw1x.toFixed(2)}, ${tw1y.toFixed(2)})\n`;
+                latex += typeTikz !== 'short' ? `          to${params} (${tw2x.toFixed(2)}, ${tw2y.toFixed(2)})\n` : `          -- (${tw2x.toFixed(2)}, ${tw2y.toFixed(2)})\n`;
+                latex += `          ${r2} (${nodeB_name});\n\n`;
+            });
+
+            latex += "    % Marcadores\n";
+            nodes.forEach(n => {
+                let nodeName = n.id === "0" ? "GND" : `N${n.id}`;
+                if (n.id === "0") latex += `    \\node[ground] at (${nodeName}) {};\n`;
+                else latex += `    \\node[circ] at (${nodeName}) {};\n    \\node[above] at (${nodeName}) {Nó ${n.id}};\n`;
+            });
+
+            latex += "\\end{circuitikz}\n\\caption{Circuito CA - Módulo 5}\n\\end{figure}";
+            navigator.clipboard.writeText(latex).then(() => alert("TikZ CA copiado!"));
+        }
+
+        function exportResultsLatex() {
+            if (!lastBranchData) { alert("Execute o solver primeiro."); return; }
+
+            let latex = "\\begin{table}[h]\n\\centering\n\\renewcommand{\\arraystretch}{1.3}\n\\begin{tabular}{|c|c|c|c|c|}\n\\hline\n";
+            latex += "\\textbf{Ramo} & \\textbf{Tensão (V)} & \\textbf{Corrente (A)} & \\textbf{P (W)} & \\textbf{Q (VAr)} \\\\\n\\hline\n";
+
+            lastBranchData.forEach(d => {
+                let dvPolar = d.dV.toPolar(); let iPolar = d.I.toPolar();
+                let vStr = dvPolar.r < 1e-10 ? "0.00" : `${dvPolar.r.toFixed(2)}\\angle${(dvPolar.phi*180/Math.PI).toFixed(1)}^\\circ`;
+                let iStr = iPolar.r < 1e-10 ? "0.00" : `${iPolar.r.toFixed(2)}\\angle${(iPolar.phi*180/Math.PI).toFixed(1)}^\\circ`;
+                latex += `${d.id} & $${vStr}$ & $${iStr}$ & ${d.P.toFixed(2)} & ${d.Q.toFixed(2)} \\\\\n\\hline\n`;
+            });
+
+            latex += "\\end{tabular}\n\\caption{Gabarito Fasorial}\n\\end{table}";
+            navigator.clipboard.writeText(latex).then(() => alert("Gabarito LaTeX copiado!"));
+        }
+
+        window.onload = () => { updateNodeDropdowns(); renderCircuitTable(); renderNodesList(); drawSchematic(); };
+    </script>
+</body>
+</html>
